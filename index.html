@@ -4,50 +4,248 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>기프트클린 대한청소만세</title>
+
   <style>
     *{box-sizing:border-box}
-    body{margin:0;font-family:Arial,'Noto Sans KR',sans-serif;background:#f8fafc;color:#0f172a}
+    body{
+      margin:0;
+      font-family:Arial,'Noto Sans KR',sans-serif;
+      background:#f8fafc;
+      color:#0f172a;
+    }
     a{text-decoration:none;color:inherit}
-    .hero{min-height:90vh;background:linear-gradient(rgba(15,23,42,.86),rgba(15,23,42,.86)),url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1600&q=80') center/cover;color:white;display:flex;align-items:center;text-align:center;padding:40px 20px}
-    .hero-inner{max-width:900px;margin:auto}
-    .badge{display:inline-block;border:1px solid rgba(255,255,255,.35);padding:8px 16px;border-radius:999px;margin-bottom:22px;font-size:14px}
+
+    /* 인트로 */
+    .intro{
+      position:fixed;
+      inset:0;
+      background:#0f172a;
+      color:white;
+      z-index:9999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      animation:introOut 1s ease forwards;
+      animation-delay:5.2s;
+    }
+    .intro-box{
+      padding:24px;
+      animation:introScale 5.2s ease forwards;
+    }
+    .intro-logo{
+      width:150px;
+      height:150px;
+      object-fit:contain;
+      background:white;
+      border-radius:28px;
+      padding:12px;
+      margin-bottom:24px;
+      box-shadow:0 18px 40px rgba(0,0,0,.25);
+      animation:fadeUp .9s ease forwards;
+    }
+    .intro-title{
+      font-size:24px;
+      font-weight:800;
+      margin-bottom:18px;
+      opacity:0;
+      animation:fadeUp .9s ease forwards;
+      animation-delay:.8s;
+    }
+    .intro-main{
+      font-size:30px;
+      font-weight:900;
+      line-height:1.35;
+      opacity:0;
+      animation:fadeUp .9s ease forwards;
+      animation-delay:1.7s;
+    }
+    .intro-sub{
+      margin-top:24px;
+      font-size:16px;
+      line-height:1.8;
+      color:#e5e7eb;
+      opacity:0;
+      animation:fadeUp .9s ease forwards;
+      animation-delay:2.8s;
+    }
+    @keyframes fadeUp{
+      from{opacity:0;transform:translateY(16px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    @keyframes introScale{
+      0%{transform:scale(.96)}
+      100%{transform:scale(1)}
+    }
+    @keyframes introOut{
+      to{opacity:0;visibility:hidden;pointer-events:none}
+    }
+
+    /* 메인 */
+    .hero{
+      min-height:92vh;
+      background:
+        linear-gradient(rgba(15,23,42,.88),rgba(15,23,42,.88)),
+        url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1600&q=80') center/cover;
+      color:white;
+      display:flex;
+      align-items:center;
+      text-align:center;
+      padding:48px 20px;
+    }
+    .hero-inner{max-width:920px;margin:auto}
+    .main-logo{
+      width:130px;
+      height:130px;
+      object-fit:contain;
+      background:white;
+      border-radius:26px;
+      padding:10px;
+      margin-bottom:20px;
+      box-shadow:0 14px 32px rgba(0,0,0,.25);
+    }
+    .badge{
+      display:inline-block;
+      border:1px solid rgba(255,255,255,.35);
+      padding:8px 16px;
+      border-radius:999px;
+      margin-bottom:22px;
+      font-size:14px;
+    }
     h1{font-size:42px;margin:0 0 18px;line-height:1.25}
     .hero p{font-size:19px;line-height:1.7;color:#e5e7eb}
     .btns{margin-top:28px}
-    .btn{display:inline-block;padding:15px 24px;border-radius:999px;margin:6px;font-weight:700}
+    .btn{
+      display:inline-block;
+      padding:15px 24px;
+      border-radius:999px;
+      margin:6px;
+      font-weight:800;
+    }
     .red{background:#dc2626;color:white}
     .white{background:white;color:#0f172a}
-    section{padding:58px 20px;max-width:1100px;margin:auto}
+    .dark{background:#0f172a;color:white}
+
+    section{
+      padding:58px 20px;
+      max-width:1100px;
+      margin:auto;
+    }
     h2{font-size:30px;margin:0 0 14px}
     .sub{color:#64748b;line-height:1.7;margin-bottom:28px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
-    .card{background:white;border-radius:22px;padding:24px;box-shadow:0 8px 24px rgba(15,23,42,.08)}
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:16px;
+    }
+    .card{
+      background:white;
+      border-radius:22px;
+      padding:24px;
+      box-shadow:0 8px 24px rgba(15,23,42,.08);
+    }
     .card b{display:block;font-size:19px;margin-bottom:8px}
     .card p{margin:0;color:#64748b;line-height:1.6}
+
+    .gallery{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:14px;
+    }
+    .photo{
+      height:190px;
+      border-radius:20px;
+      background:#cbd5e1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#475569;
+      font-weight:800;
+    }
+
     .process{display:grid;gap:12px}
-    .step{background:white;border-left:5px solid #dc2626;border-radius:16px;padding:18px 20px;box-shadow:0 6px 18px rgba(15,23,42,.06)}
-    .gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
-    .photo{height:190px;border-radius:20px;background:#cbd5e1;display:flex;align-items:center;justify-content:center;color:#475569;font-weight:700}
-    .notice{background:#0f172a;color:white;border-radius:28px;padding:34px;line-height:1.8}
-    footer{background:#0f172a;color:white;text-align:center;padding:46px 20px 90px}
-    .fixed-call{position:fixed;left:14px;right:14px;bottom:14px;background:#dc2626;color:white;text-align:center;padding:16px;border-radius:18px;font-weight:800;box-shadow:0 10px 28px rgba(0,0,0,.25);z-index:99}
+    .step{
+      background:white;
+      border-left:5px solid #dc2626;
+      border-radius:16px;
+      padding:18px 20px;
+      box-shadow:0 6px 18px rgba(15,23,42,.06);
+    }
+    .notice{
+      background:#0f172a;
+      color:white;
+      border-radius:28px;
+      padding:34px;
+      line-height:1.8;
+    }
+    .link-box{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:20px;
+    }
+    footer{
+      background:#0f172a;
+      color:white;
+      text-align:center;
+      padding:46px 20px 95px;
+    }
+    .fixed-call{
+      position:fixed;
+      left:14px;
+      right:14px;
+      bottom:14px;
+      background:#dc2626;
+      color:white;
+      text-align:center;
+      padding:16px;
+      border-radius:18px;
+      font-weight:900;
+      box-shadow:0 10px 28px rgba(0,0,0,.25);
+      z-index:99;
+    }
+
     @media(max-width:600px){
       h1{font-size:32px}
       .hero p{font-size:16px}
       section{padding:44px 18px}
+      .intro-main{font-size:25px}
+      .intro-logo{width:130px;height:130px}
+      .main-logo{width:115px;height:115px}
     }
   </style>
 </head>
+
 <body>
+
+  <div class="intro">
+    <div class="intro-box">
+      <img class="intro-logo" src="logo.svg" alt="대한청소만세 로고">
+      <div class="intro-title">기프트클린 대한청소만세</div>
+      <div class="intro-main">깨끗한 공간,<br>새로운 시작을 선물합니다.</div>
+      <div class="intro-sub">
+        누군가에게는 설레는 내일을<br>
+        누군가에게는 다시 일어설 용기를<br>
+        누군가에게는 마지막 배려와 따뜻한 위로를
+      </div>
+    </div>
+  </div>
 
   <div class="hero">
     <div class="hero-inner">
+      <img class="main-logo" src="logo.svg" alt="대한청소만세 로고">
+      <br>
       <div class="badge">기프트클린 대한청소만세</div>
       <h1>깨끗한 공간,<br>새로운 시작을 선물합니다.</h1>
-      <p>입주청소 · 이사청소 · 특수청소 · 유품정리 · 폐기물 처리 · 비둘기 퇴치까지<br>현장 상황에 맞춰 필요한 작업을 안내드립니다.</p>
+      <p>
+        입주청소 · 이사청소 · 특수청소 · 유품정리 · 폐기물 처리 · 비둘기 퇴치까지<br>
+        현장 상황에 맞춰 필요한 작업을 안내드립니다.
+      </p>
       <div class="btns">
-        <a class="btn red" href="tel:010-0000-0000">전화 상담</a>
-        <a class="btn white" href="#">카카오톡 상담</a>
+        <a class="btn red" href="tel:010-4122-9207">전화 상담</a>
+        <a class="btn white" href="http://pt.kakao.com/_lxhwGX" target="_blank">카카오톡 상담</a>
+        <a class="btn white" href="https://m.blog.naver.com/krcleangod?tab=1" target="_blank">네이버 블로그</a>
+        <a class="btn white" href="https://www.instagram.com/gift.clean" target="_blank">인스타그램</a>
       </div>
     </div>
   </div>
@@ -68,7 +266,7 @@
 
   <section>
     <h2>작업 사진</h2>
-    <p class="sub">아래 영역은 나중에 실제 전후사진으로 교체하면 됩니다.</p>
+    <p class="sub">아래 영역은 실제 전후사진으로 교체하면 더 신뢰감 있게 보입니다.</p>
     <div class="gallery">
       <div class="photo">BEFORE / AFTER</div>
       <div class="photo">입주청소 사진</div>
@@ -91,9 +289,17 @@
   <section>
     <div class="notice">
       <h2>안내사항</h2>
-      <p>※ 현장 상황 및 오염도에 따라 비용이 변동될 수 있습니다.<br>
-      ※ 추가 작업 발생 시 사전 안내 후 진행됩니다.<br>
-      ※ 사진 상담만으로도 대략적인 예상 견적 안내가 가능합니다.</p>
+      <p>
+        ※ 현장 상황 및 오염도에 따라 비용이 변동될 수 있습니다.<br>
+        ※ 추가 작업 발생 시 사전 안내 후 진행됩니다.<br>
+        ※ 사진 상담만으로도 대략적인 예상 견적 안내가 가능합니다.
+      </p>
+      <div class="link-box">
+        <a class="btn red" href="tel:010-4122-9207">전화 상담</a>
+        <a class="btn white" href="http://pt.kakao.com/_lxhwGX" target="_blank">카카오톡 상담</a>
+        <a class="btn white" href="https://m.blog.naver.com/krcleangod?tab=1" target="_blank">블로그 보기</a>
+        <a class="btn white" href="https://www.instagram.com/gift.clean" target="_blank">인스타 보기</a>
+      </div>
     </div>
   </section>
 
