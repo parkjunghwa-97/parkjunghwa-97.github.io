@@ -13,12 +13,12 @@
     .intro{
       position:fixed;inset:0;background:#0f172a;color:white;z-index:9999;
       display:flex;align-items:center;justify-content:center;text-align:center;
-      animation:introOut .7s ease forwards;animation-delay:2.8s;
+      animation:introOut .7s ease forwards;animation-delay:3s;
     }
     .intro-box{padding:24px}
-    .intro-logo-text{
-      font-size:48px;font-weight:900;margin-bottom:22px;
-      text-shadow:0 8px 24px rgba(0,0,0,.45);
+    .intro-logo{
+      width:170px;height:170px;object-fit:contain;margin-bottom:22px;
+      filter:drop-shadow(0 12px 28px rgba(0,0,0,.45));
       animation:fadeUp .7s ease forwards;
     }
     .intro-main{
@@ -39,9 +39,9 @@
       color:white;display:flex;align-items:center;text-align:center;padding:48px 20px;
     }
     .hero-inner{max-width:920px;margin:auto}
-    .main-logo-text{
-      font-size:42px;font-weight:900;color:white;margin-bottom:20px;
-      text-shadow:0 8px 24px rgba(0,0,0,.45);
+    .main-logo{
+      width:145px;height:145px;object-fit:contain;margin-bottom:18px;
+      filter:drop-shadow(0 12px 28px rgba(0,0,0,.45));
     }
     .badge{
       display:inline-block;border:1px solid rgba(255,255,255,.35);
@@ -78,9 +78,9 @@
       h1{font-size:32px}
       .hero p{font-size:16px}
       section{padding:44px 18px}
-      .intro-logo-text{font-size:38px}
+      .intro-logo{width:145px;height:145px}
       .intro-main{font-size:24px}
-      .main-logo-text{font-size:34px}
+      .main-logo{width:125px;height:125px}
     }
   </style>
 </head>
@@ -89,7 +89,7 @@
 
   <div class="intro">
     <div class="intro-box">
-      <div class="intro-logo-text">대한청소만세</div>
+      <img class="intro-logo" src="logo.svg" alt="대한청소만세 로고">
       <div class="intro-main">깨끗한 공간,<br>새로운 시작을 선물합니다.</div>
       <div class="intro-sub">
         누군가에게는 설레는 내일을<br>
@@ -101,7 +101,8 @@
 
   <div class="hero">
     <div class="hero-inner">
-      <div class="main-logo-text">대한청소만세</div>
+      <img class="main-logo" src="logo.svg" alt="대한청소만세 로고">
+      <br>
       <div class="badge">기프트클린 대한청소만세</div>
       <h1>깨끗한 공간,<br>새로운 시작을 선물합니다.</h1>
       <p>
@@ -132,17 +133,6 @@
   </section>
 
   <section>
-    <h2>작업 사진</h2>
-    <p class="sub">아래 영역은 실제 전후사진으로 교체하면 더 신뢰감 있게 보입니다.</p>
-    <div class="gallery">
-      <div class="photo">BEFORE / AFTER</div>
-      <div class="photo">입주청소 사진</div>
-      <div class="photo">쓰레기집 정리</div>
-      <div class="photo">비둘기 퇴치</div>
-    </div>
-  </section>
-
-  <section>
     <h2>상담 절차</h2>
     <div class="process">
       <div class="step">1. 현장 사진 또는 영상 전달</div>
@@ -161,12 +151,6 @@
         ※ 추가 작업 발생 시 사전 안내 후 진행됩니다.<br>
         ※ 사진 상담만으로도 대략적인 예상 견적 안내가 가능합니다.
       </p>
-      <div class="link-box">
-        <a class="btn red" href="tel:010-4122-9207">전화 상담</a>
-        <a class="btn white" href="http://pt.kakao.com/_lxhwGX" target="_blank">카카오톡 상담</a>
-        <a class="btn white" href="https://m.blog.naver.com/krcleangod?tab=1" target="_blank">블로그 보기</a>
-        <a class="btn white" href="https://www.instagram.com/gift.clean" target="_blank">인스타 보기</a>
-      </div>
     </div>
   </section>
 
