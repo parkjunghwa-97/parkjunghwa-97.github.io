@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>기프트클린 대한청소만세</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
   <style>
     *{box-sizing:border-box}
@@ -11,114 +12,91 @@
     a{text-decoration:none;color:inherit}
 
     .intro{
-      position:fixed;
-      inset:0;
-      background:#0f172a;
-      color:white;
-      z-index:9999;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      animation:introOut .7s ease forwards;
-      animation-delay:3s;
+      position:fixed;inset:0;background:#0f172a;color:white;z-index:9999;
+      display:flex;align-items:center;justify-content:center;text-align:center;
+      animation:introOut .7s ease forwards;animation-delay:3s;
     }
     .intro-box{padding:24px}
     .intro-logo{
-      width:300px;
-      max-width:80vw;
-      object-fit:contain;
-      margin-bottom:16px;
+      width:300px;max-width:80vw;object-fit:contain;margin-bottom:16px;
       filter:drop-shadow(0 12px 28px rgba(0,0,0,.45));
       animation:fadeUp .7s ease forwards;
     }
     .intro-main{
-      font-size:30px;
-      font-weight:900;
-      line-height:1.35;
-      opacity:0;
-      animation:fadeUp .7s ease forwards;
-      animation-delay:.7s;
+      font-size:30px;font-weight:900;line-height:1.35;opacity:0;
+      animation:fadeUp .7s ease forwards;animation-delay:.7s;
     }
     .intro-sub{
-      margin-top:20px;
-      font-size:16px;
-      line-height:1.8;
-      color:#e5e7eb;
-      opacity:0;
-      animation:fadeUp .7s ease forwards;
-      animation-delay:1.4s;
+      margin-top:20px;font-size:16px;line-height:1.8;color:#e5e7eb;opacity:0;
+      animation:fadeUp .7s ease forwards;animation-delay:1.4s;
     }
-    @keyframes fadeUp{
-      from{opacity:0;transform:translateY(14px)}
-      to{opacity:1;transform:translateY(0)}
-    }
-    @keyframes introOut{
-      to{opacity:0;visibility:hidden;pointer-events:none}
-    }
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes introOut{to{opacity:0;visibility:hidden;pointer-events:none}}
 
     .hero{
       min-height:92vh;
       background:
         linear-gradient(rgba(15,23,42,.35),rgba(15,23,42,.35)),
         url('hero.jpg') center center/cover no-repeat;
-      color:white;
-      display:flex;
-      align-items:center;
-      text-align:center;
-      padding:48px 20px;
+      color:white;display:flex;align-items:center;text-align:center;padding:48px 20px;
     }
     .hero-inner{max-width:920px;margin:auto}
     .main-logo{
-      width:230px;
-      max-width:70vw;
-      object-fit:contain;
-      margin-bottom:18px;
+      width:230px;max-width:70vw;object-fit:contain;margin-bottom:18px;
       filter:drop-shadow(0 12px 28px rgba(0,0,0,.45));
     }
     .badge{
-      display:inline-block;
-      border:1px solid rgba(255,255,255,.45);
-      background:rgba(15,23,42,.35);
-      padding:8px 16px;
-      border-radius:999px;
-      margin-bottom:22px;
-      font-size:14px;
+      display:inline-block;border:1px solid rgba(255,255,255,.45);
+      background:rgba(15,23,42,.35);padding:8px 16px;border-radius:999px;
+      margin-bottom:22px;font-size:14px;
     }
     h1{font-size:42px;margin:0 0 18px;line-height:1.25}
     .hero p{
-      font-size:19px;
-      line-height:1.7;
-      color:#f1f5f9;
+      font-size:19px;line-height:1.7;color:#f1f5f9;
       text-shadow:0 3px 14px rgba(0,0,0,.35);
     }
-    .btns{margin-top:28px}
-    .btn{
-      display:inline-block;
-      padding:15px 24px;
-      border-radius:999px;
-      margin:6px;
-      font-weight:800;
-    }
-    .red{background:#dc2626;color:white}
-    .white{background:white;color:#0f172a}
 
-    section{
-      padding:58px 20px;
-      max-width:1100px;
-      margin:auto;
+    .social-icons{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:16px;
+      margin-top:30px;
+      flex-wrap:wrap;
     }
+    .social-icons a{
+      width:66px;
+      height:66px;
+      border-radius:50%;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 10px 25px rgba(0,0,0,.18);
+      overflow:hidden;
+    }
+    .social-icons img{
+      width:38px;
+      height:38px;
+      object-fit:contain;
+    }
+    .social-icons i{
+      font-size:30px;
+      color:#0f172a;
+    }
+    .naver-icon{
+      font-size:31px;
+      font-weight:900;
+      color:#03c75a;
+      line-height:1;
+    }
+
+    section{padding:58px 20px;max-width:1100px;margin:auto}
     h2{font-size:30px;margin:0 0 14px}
     .sub{color:#64748b;line-height:1.7;margin-bottom:28px}
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-      gap:16px;
-    }
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
     .card{
-      background:white;
-      border-radius:22px;
-      padding:24px;
+      background:white;border-radius:22px;padding:24px;
       box-shadow:0 8px 24px rgba(15,23,42,.08);
     }
     .card b{display:block;font-size:19px;margin-bottom:8px}
@@ -126,38 +104,19 @@
 
     .process{display:grid;gap:12px}
     .step{
-      background:white;
-      border-left:5px solid #dc2626;
-      border-radius:16px;
-      padding:18px 20px;
-      box-shadow:0 6px 18px rgba(15,23,42,.06);
+      background:white;border-left:5px solid #dc2626;border-radius:16px;
+      padding:18px 20px;box-shadow:0 6px 18px rgba(15,23,42,.06);
     }
     .notice{
-      background:#0f172a;
-      color:white;
-      border-radius:28px;
-      padding:34px;
-      line-height:1.8;
+      background:#0f172a;color:white;border-radius:28px;padding:34px;line-height:1.8;
     }
     footer{
-      background:#0f172a;
-      color:white;
-      text-align:center;
-      padding:46px 20px 95px;
+      background:#0f172a;color:white;text-align:center;padding:46px 20px 95px;
     }
     .fixed-call{
-      position:fixed;
-      left:14px;
-      right:14px;
-      bottom:14px;
-      background:#dc2626;
-      color:white;
-      text-align:center;
-      padding:16px;
-      border-radius:18px;
-      font-weight:900;
-      box-shadow:0 10px 28px rgba(0,0,0,.25);
-      z-index:99;
+      position:fixed;left:14px;right:14px;bottom:14px;background:#dc2626;
+      color:white;text-align:center;padding:16px;border-radius:18px;font-weight:900;
+      box-shadow:0 10px 28px rgba(0,0,0,.25);z-index:99;
     }
 
     @media(max-width:600px){
@@ -167,6 +126,8 @@
       .intro-logo{width:260px}
       .intro-main{font-size:24px}
       .main-logo{width:210px}
+      .social-icons a{width:60px;height:60px}
+      .social-icons img{width:34px;height:34px}
     }
   </style>
 </head>
@@ -195,11 +156,23 @@
         입주청소 · 이사청소 · 특수청소 · 유품정리 · 폐기물 처리 · 비둘기 퇴치까지<br>
         현장 상황에 맞춰 필요한 작업을 안내드립니다.
       </p>
-      <div class="btns">
-        <a class="btn red" href="tel:010-4122-9207">전화 상담</a>
-        <a class="btn white" href="http://pt.kakao.com/_lxhwGX" target="_blank">카카오톡 상담</a>
-        <a class="btn white" href="https://m.blog.naver.com/krcleangod?tab=1" target="_blank">네이버 블로그</a>
-        <a class="btn white" href="https://www.instagram.com/gift.clean" target="_blank">인스타그램</a>
+
+      <div class="social-icons">
+        <a href="tel:010-4122-9207" title="전화">
+          <i class="fa-solid fa-phone"></i>
+        </a>
+
+        <a href="http://pt.kakao.com/_lxhwGX" target="_blank" title="카카오톡">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg" alt="카카오톡">
+        </a>
+
+        <a href="https://m.blog.naver.com/krcleangod?tab=1" target="_blank" title="네이버 블로그">
+          <span class="naver-icon">N</span>
+        </a>
+
+        <a href="https://www.instagram.com/gift.clean" target="_blank" title="인스타그램">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="인스타그램">
+        </a>
       </div>
     </div>
   </div>
