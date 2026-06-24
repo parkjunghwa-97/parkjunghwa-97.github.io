@@ -35,29 +35,60 @@
     .hero{
       position:relative;
       min-height:100vh;
-      background:linear-gradient(rgba(15,23,42,.35),rgba(15,23,42,.35)),url('hero.jpg') center center/cover no-repeat;
+      background:#0f172a;
       color:white;
       text-align:center;
       padding:96px 20px 58px;
+      overflow:hidden;
+    }
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(rgba(15,23,42,.35),rgba(15,23,42,.35)),
+        url('hero.jpg') center center/cover no-repeat;
+      transform:scale(1.08);
+      animation:heroZoom 7s ease forwards;
+      animation-delay:3s;
+      z-index:0;
     }
     .hero.active{display:flex}
     .hero-inner{max-width:920px;margin:auto;position:relative;z-index:2;width:100%}
 
-    .main-logo{
-      position:absolute;
-      left:22px;
-      top:86px;
-      width:96px;
-      max-width:28vw;
-      object-fit:contain;
-      filter:none;
-      opacity:1;
-      z-index:3;
-      pointer-events:none;
+    .hero-service{
+      text-align:center;
+      font-size:22px;
+      font-weight:800;
+      line-height:1.85;
+      color:#fff;
+      text-shadow:0 3px 14px rgba(0,0,0,.35);
+      opacity:0;
+      transform:translateY(34px);
+      animation:heroTextIn .9s ease forwards;
+      animation-delay:3.25s;
     }
-
-    .hero-service{text-align:center;font-size:22px;font-weight:800;line-height:1.85;color:#fff;text-shadow:0 3px 14px rgba(0,0,0,.35)}
-    .hero-slogan{text-align:center;margin-top:28px;font-size:18px;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:.08em;text-shadow:0 3px 14px rgba(0,0,0,.35)}
+    .hero-slogan{
+      text-align:center;
+      margin-top:28px;
+      font-size:18px;
+      font-weight:700;
+      color:rgba(255,255,255,.9);
+      letter-spacing:.08em;
+      text-shadow:0 3px 14px rgba(0,0,0,.35);
+      opacity:0;
+      transform:translateY(22px);
+      animation:heroTextIn .9s ease forwards;
+      animation-delay:3.65s;
+    }
+    .hero .social-icons{
+      opacity:0;
+      transform:translateY(22px);
+      animation:heroTextIn .9s ease forwards;
+      animation-delay:4.05s;
+    }
+    @keyframes heroTextIn{to{opacity:1;transform:translateY(0)}}
+    @keyframes heroZoom{to{transform:scale(1)}}
 
     h2{font-size:34px;margin:0 0 14px}
     .hero p{font-size:19px;line-height:1.7;color:#f1f5f9;text-shadow:0 3px 14px rgba(0,0,0,.35)}
@@ -109,21 +140,12 @@
       .nav-brand{display:block;font-size:22px;margin-bottom:12px}
       .nav-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 8px;width:100%;justify-content:center}
       .nav-menu button{font-size:14px;padding:4px 0;text-align:center}
-      .page,.hero{padding:148px 36px 54px;align-items:flex-start}
+      .page,.hero{padding:185px 36px 54px;align-items:flex-start}
       .page.active{align-items:flex-start}
       h2{font-size:30px}
       .hero p{font-size:16px}
       .intro-logo{width:260px}
       .intro-main{font-size:24px}
-
-      .main-logo{
-        left:18px;
-        top:138px;
-        width:74px;
-        max-width:24vw;
-        opacity:1;
-      }
-
       .hero-service{font-size:18px;line-height:1.8}
       .hero-slogan{margin-top:22px;font-size:14px;letter-spacing:.06em}
       .social-icons a{width:60px;height:60px}
@@ -159,12 +181,10 @@
   </nav>
 
   <section id="home" class="page hero active">
-    <img class="main-logo" src="https://parkjunghwa-97.github.io/logo.svg" alt="대한청소만세 로고">
-
     <div class="hero-inner">
       <div class="hero-service">
         입주청소 · 이사청소 · 특수청소<br>
-        유품정리 · 폐기물 처리 · 비둘기 퇴치
+        고독사청소 · 유품정리 · 폐기물 처리 · 비둘기 퇴치
       </div>
 
       <div class="hero-slogan">깨끗한 공간, 새로운 시작</div>
@@ -185,7 +205,7 @@
         <div class="about-block">
           <p><strong>'기프트클린'</strong>은 깨끗한 공간을 선물한다는 의미를 담고 있습니다.</p>
           <p><strong>'대한'</strong>에는 더 넓은 세상과 사람들을 향한 마음을,<br><strong>'만세'</strong>에는 더 나은 공간을 되찾았을 때의 기쁨을 담았습니다.</p>
-          <p>대한청소만세는 입주청소, 이사청소, 사무실·상가청소, 쓰레기집 정리, 특수청소, 유품정리, 폐기물 처리, 비둘기 퇴치 등 다양한 현장 서비스를 제공하고 있습니다.</p>
+          <p>대한청소만세는 입주청소, 이사청소, 사무실·상가청소, 쓰레기집 정리, 특수청소, 고독사 특수청소, 유품정리, 폐기물 처리, 비둘기 퇴치 등 다양한 현장 서비스를 제공하고 있습니다.</p>
           <p class="about-point">서비스의 종류는 다르지만 고객이 저희를 찾는 이유는 결국 같습니다.</p>
           <div class="about-highlight">새로운 시작이 필요하기 때문입니다.</div>
           <p>입주를 준비하는 공간도,<br>정리가 필요한 공간도,<br>오랫동안 손대지 못했던 공간도.</p>
@@ -205,6 +225,7 @@
         <div class="card"><b>🏢 사무실 · 상가청소</b><p>업무공간과 영업공간의 상태에 맞춰 청소 범위를 안내합니다.</p></div>
         <div class="card"><b>🗑 쓰레기집 정리</b><p>폐기물 양과 오염 상태를 확인한 뒤 필요한 인원과 작업을 산정합니다.</p></div>
         <div class="card"><b>🧹 특수청소</b><p>일반 청소로 해결하기 어려운 오염 현장을 상황에 맞게 처리합니다.</p></div>
+        <div class="card"><b>🕯 고독사 특수청소</b><p>고인 발견 장소 처리 및 특수 오염 제거 작업을 진행합니다.</p></div>
         <div class="card"><b>🤍 유품정리</b><p>남겨진 공간을 조심스럽고 차분하게 정리합니다.</p></div>
         <div class="card"><b>🚛 폐기물 처리</b><p>현장 폐기물 양에 따라 수거와 정리 범위를 안내합니다.</p></div>
         <div class="card"><b>🕊 비둘기 퇴치</b><p>분변 제거, 둥지 제거, 유입경로 차단 작업을 진행합니다.</p></div>
@@ -228,6 +249,7 @@
         <div class="photo-box">비둘기 퇴치 전후사진</div>
         <div class="photo-box">쓰레기집 정리 전후사진</div>
         <div class="photo-box">특수청소 작업사례</div>
+        <div class="photo-box">고독사 특수청소</div>
         <div class="photo-box">유품정리 작업사례</div>
         <div class="photo-box">사무실 · 상가청소</div>
       </div>
