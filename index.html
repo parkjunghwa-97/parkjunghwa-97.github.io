@@ -49,41 +49,34 @@
     .naver-icon{font-size:31px;font-weight:900;color:#03c75a;line-height:1}
 
     .about-page{position:relative;text-align:center;background:#f8fafc}
-    .about-main{opacity:1}
     .about-kicker{font-size:14px;color:#64748b;font-weight:900;margin-bottom:18px;letter-spacing:.08em}
-    .about-title{
-      font-size:clamp(38px,6vw,64px);
-      line-height:1.18;
-      font-weight:900;
-      color:#0f172a;
-      margin:0 0 34px;
-      letter-spacing:-.04em;
-      transform-origin:center center;
-      will-change:transform,opacity;
-    }
-    .about-page.active .about-title{
-      animation:titleIntro .85s cubic-bezier(.16,1,.3,1) forwards;
-    }
-    @keyframes titleIntro{
-      0%{opacity:0;transform:scale(2.45)}
-      18%{opacity:1;transform:scale(2.15)}
-      62%{opacity:1;transform:scale(1.45)}
-      100%{opacity:1;transform:scale(1)}
-    }
-    .about-content{opacity:1}
-    .about-page.active .about-content{
-      opacity:0;
-      animation:aboutContentIn .45s ease forwards;
-      animation-delay:.78s;
-    }
-    @keyframes aboutContentIn{
-      from{opacity:0;transform:translateY(16px)}
-      to{opacity:1;transform:translateY(0)}
-    }
+    .about-content{opacity:1;transition:opacity .25s ease}
+    .about-page.prep .about-content{opacity:0}
     .about-block{background:white;border-radius:22px;padding:28px;box-shadow:0 10px 26px rgba(15,23,42,.07);text-align:left;line-height:1.85;color:#334155;font-size:16px;max-width:880px;margin:auto}
     .about-block strong{color:#0f172a}
     .about-point{margin:22px auto;padding:14px 20px;background:#0f172a;color:white;border-radius:14px;text-align:center;font-size:18px;font-weight:800;line-height:1.5;max-width:720px}
+    .about-highlight{
+      margin:26px auto;
+      text-align:center;
+      font-size:clamp(30px,5vw,48px);
+      font-weight:900;
+      line-height:1.28;
+      color:#0f172a;
+      letter-spacing:-.04em;
+    }
     .about-ending{margin-top:34px;text-align:center;font-size:30px;font-weight:900;line-height:1.45;color:#0f172a}
+    .fly-about-text{
+      position:fixed;
+      z-index:4000;
+      color:#0f172a;
+      font-weight:900;
+      line-height:1.18;
+      letter-spacing:-.06em;
+      text-align:center;
+      pointer-events:none;
+      white-space:normal;
+      will-change:left,top,width,font-size,transform,opacity;
+    }
 
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
     .card{background:white;border-radius:22px;padding:24px;box-shadow:0 8px 24px rgba(15,23,42,.08)}
@@ -124,16 +117,10 @@
       .main-logo{width:210px}
       .social-icons a{width:60px;height:60px}
       .social-icons img{width:34px;height:34px}
-      .about-title{font-size:clamp(34px,10vw,52px);margin-bottom:28px}
       .about-block{padding:22px;font-size:15px;border-radius:20px}
       .about-point{font-size:16px;padding:13px 16px;border-radius:12px}
+      .about-highlight{font-size:clamp(28px,8vw,40px);margin:24px auto}
       .about-ending{font-size:27px}
-      @keyframes titleIntro{
-        0%{opacity:0;transform:scale(2.15)}
-        18%{opacity:1;transform:scale(1.95)}
-        62%{opacity:1;transform:scale(1.35)}
-        100%{opacity:1;transform:scale(1)}
-      }
     }
   </style>
 </head>
@@ -177,15 +164,15 @@
   <section id="about" class="page about-page">
     <div class="page-inner about-main">
       <div class="about-kicker">회사소개</div>
-      <h2 class="about-title">새로운 시작이 필요하기 때문입니다.</h2>
       <div class="about-content">
         <div class="about-block">
           <p><strong>'기프트클린'</strong>은 깨끗한 공간을 선물한다는 의미를 담고 있습니다.</p>
           <p><strong>'대한'</strong>에는 더 넓은 세상과 사람들을 향한 마음을,<br><strong>'만세'</strong>에는 더 나은 공간을 되찾았을 때의 기쁨을 담았습니다.</p>
           <p>대한청소만세는 입주청소, 이사청소, 사무실·상가청소, 쓰레기집 정리, 특수청소, 유품정리, 폐기물 처리, 비둘기 퇴치 등 다양한 현장 서비스를 제공하고 있습니다.</p>
           <div class="about-point">서비스의 종류는 다르지만 고객이 저희를 찾는 이유는 결국 같습니다.</div>
+          <div class="about-highlight">새로운 시작이 필요하기 때문입니다.</div>
           <p>입주를 준비하는 공간도,<br>정리가 필요한 공간도,<br>오랫동안 손대지 못했던 공간도.</p>
-          <p>대한청소만세는 현장마다 다른 상황을 확인하고 필요한 작업을 안내하며, 고객이 다시 공간을 사용할 수 있도록 함께합니다.</p>
+          <p>대한청소만세는 현장마다 다른 상황을 확인하고 필요한 작업을 안내하며, 고객의 새로운 시작을 함께합니다.</p>
           <div class="about-ending">깨끗한 공간,<br>새로운 시작을 선물합니다.</div>
         </div>
       </div>
@@ -275,13 +262,18 @@
 
   <script>
     function showPage(id){
+      document.querySelectorAll('.fly-about-text').forEach(function(el){el.remove()});
       document.querySelectorAll('.page').forEach(function(page){
         page.classList.remove('active');
+        page.classList.remove('prep');
       });
 
       const target=document.getElementById(id);
       if(target){
         target.classList.add('active');
+        if(id === 'about'){
+          playAboutLanding(target);
+        }
       }
 
       document.querySelectorAll('.nav-btn').forEach(function(btn){
@@ -296,6 +288,82 @@
       });
 
       window.scrollTo({top:0,behavior:'auto'});
+    }
+
+    function playAboutLanding(section){
+      const content=section.querySelector('.about-content');
+      const targetText=section.querySelector('.about-highlight');
+      if(!content || !targetText){return}
+
+      section.classList.add('prep');
+      targetText.style.visibility='hidden';
+
+      requestAnimationFrame(function(){
+        const rect=targetText.getBoundingClientRect();
+        const style=getComputedStyle(targetText);
+
+        const fly=document.createElement('div');
+        fly.className='fly-about-text';
+        fly.textContent='새로운 시작이 필요하기 때문입니다.';
+        document.body.appendChild(fly);
+
+        const startWidth=Math.min(window.innerWidth * 0.92, 980);
+        fly.style.left='50vw';
+        fly.style.top='50vh';
+        fly.style.width=startWidth + 'px';
+        fly.style.fontSize=window.innerWidth <= 760 ? '58px' : '112px';
+        fly.style.transform='translate(-50%,-50%) scale(1)';
+        fly.style.opacity='0';
+
+        const animation=fly.animate([
+          {
+            left:'50vw',
+            top:'50vh',
+            width:startWidth + 'px',
+            fontSize:window.innerWidth <= 760 ? '58px' : '112px',
+            transform:'translate(-50%,-50%) scale(1.18)',
+            opacity:0,
+            offset:0
+          },
+          {
+            left:'50vw',
+            top:'50vh',
+            width:startWidth + 'px',
+            fontSize:window.innerWidth <= 760 ? '58px' : '112px',
+            transform:'translate(-50%,-50%) scale(1)',
+            opacity:1,
+            offset:.24
+          },
+          {
+            left:'50vw',
+            top:'50vh',
+            width:startWidth + 'px',
+            fontSize:window.innerWidth <= 760 ? '58px' : '112px',
+            transform:'translate(-50%,-50%) scale(.92)',
+            opacity:1,
+            offset:.55
+          },
+          {
+            left:rect.left + 'px',
+            top:rect.top + 'px',
+            width:rect.width + 'px',
+            fontSize:style.fontSize,
+            transform:'translate(0,0) scale(1)',
+            opacity:1,
+            offset:1
+          }
+        ],{
+          duration:950,
+          easing:'cubic-bezier(.16,1,.3,1)',
+          fill:'forwards'
+        });
+
+        animation.onfinish=function(){
+          fly.remove();
+          targetText.style.visibility='visible';
+          section.classList.remove('prep');
+        };
+      });
     }
   </script>
 </body>
