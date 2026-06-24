@@ -34,8 +34,20 @@
 
     .hero{min-height:100vh;background:linear-gradient(rgba(15,23,42,.35),rgba(15,23,42,.35)),url('hero.jpg') center center/cover no-repeat;color:white;text-align:center;padding:96px 20px 58px}
     .hero.active{display:flex}
-    .hero-inner{max-width:920px;margin:auto}
-    .main-logo{width:230px;max-width:70vw;object-fit:contain;margin-bottom:18px;filter:drop-shadow(0 12px 28px rgba(0,0,0,.45))}
+    .hero-inner{max-width:920px;margin:auto;position:relative;z-index:2}
+
+.main-logo{
+  position:absolute;
+  left:50%;
+  top:48%;
+  transform:translate(-50%,-50%);
+  width:340px;
+  max-width:75vw;
+  opacity:.12;
+  filter:none;
+  z-index:1;
+  pointer-events:none;
+}
     .badge{
   display:inline-block;
   border:1px solid rgba(255,255,255,.45);
@@ -114,7 +126,10 @@
   .hero p{font-size:16px}
   .intro-logo{width:260px}
   .intro-main{font-size:24px}
-  .main-logo{width:170px}
+  .main-logo{
+  width:240px;
+  opacity:.08;
+}
   .social-icons a{width:60px;height:60px}
   .social-icons img{width:34px;height:34px}
   .about-block{font-size:15.5px}
@@ -157,7 +172,7 @@
   <section id="home" class="page hero active">
     <div class="hero-inner">
       <img class="main-logo" src="https://parkjunghwa-97.github.io/logo.svg" alt="대한청소만세 로고"><br>
-      <div class="badge">기프트클린 대한청소만세</div>
+      
       <h1>깨끗한 공간,<br>새로운 시작을 선물합니다.</h1>
       <p>
 입주청소 · 이사청소 · 특수청소<br>
