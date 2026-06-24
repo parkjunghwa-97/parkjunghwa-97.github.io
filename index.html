@@ -106,17 +106,33 @@
     .about-kicker{
       font-size:14px;color:#64748b;font-weight:900;margin-bottom:20px;letter-spacing:.08em;
     }
-    .about-title{
-      font-size:clamp(42px,8vw,88px);
-      line-height:1.2;font-weight:900;color:#0f172a;margin:0 0 44px;
-    }
-    .about-page.active .about-title{
-      animation:brandTitle .8s ease-out forwards;
-    }
-    @keyframes brandTitle{
-      0%{opacity:0;transform:scale(1.9)}
-      100%{opacity:1;transform:scale(1)}
-    }
+.about-title{
+  font-size:clamp(48px,10vw,120px);
+  line-height:1.08;
+  font-weight:900;
+  color:#0f172a;
+  margin:0 0 42px;
+  transform-origin:center center;
+}
+
+.about-page.active .about-title{
+  animation:brandTitle .8s cubic-bezier(.16,1,.3,1) forwards;
+}
+
+@keyframes brandTitle{
+  0%{
+    opacity:0;
+    transform:scale(2.8);
+  }
+  65%{
+    opacity:1;
+    transform:scale(1.08);
+  }
+  100%{
+    opacity:1;
+    transform:scale(1);
+  }
+}
     .about-content{opacity:1}
     .about-page.active .about-content{
       opacity:0;
@@ -283,7 +299,7 @@
 
           <p>대한청소만세는 현장마다 다른 상황을 확인하고 필요한 작업을 안내하며, 고객이 다시 공간을 사용할 수 있도록 함께합니다.</p>
 
-          <div class="about-point">
+          <div class="about-ending">
             깨끗한 공간,<br>
             새로운 시작을 선물합니다.
           </div>
@@ -291,7 +307,14 @@
       </div>
     </div>
   </section>
-
+.about-ending{
+  margin-top:42px;
+  text-align:center;
+  font-size:32px;
+  font-weight:900;
+  line-height:1.45;
+  color:#0f172a;
+}
   <section id="service" class="page">
     <div class="page-inner">
       <h2>서비스 안내</h2>
