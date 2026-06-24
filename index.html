@@ -32,32 +32,33 @@
     .page-inner{max-width:1100px;margin:auto;width:100%}
     @keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-    .hero{min-height:100vh;background:linear-gradient(rgba(15,23,42,.35),rgba(15,23,42,.35)),url('hero.jpg') center center/cover no-repeat;color:white;text-align:center;padding:96px 20px 58px}
+    .hero{
+      position:relative;
+      min-height:100vh;
+      background:linear-gradient(rgba(15,23,42,.35),rgba(15,23,42,.35)),url('hero.jpg') center center/cover no-repeat;
+      color:white;
+      text-align:center;
+      padding:96px 20px 58px;
+    }
     .hero.active{display:flex}
-    .hero-inner{max-width:920px;margin:auto;position:relative;z-index:2}
+    .hero-inner{max-width:920px;margin:auto;position:relative;z-index:2;width:100%}
 
-.main-logo{
-  position:absolute;
-  left:50%;
-  top:48%;
-  transform:translate(-50%,-50%);
-  width:340px;
-  max-width:75vw;
-  opacity:.12;
-  filter:none;
-  z-index:1;
-  pointer-events:none;
-}
-    .badge{
-  display:inline-block;
-  border:1px solid rgba(255,255,255,.45);
-  background:rgba(15,23,42,.35);
-  padding:8px 16px;
-  border-radius:999px;
-  margin-bottom:22px;
-  font-size:16px;
-  font-weight:800;
-}
+    .main-logo{
+      position:absolute;
+      left:22px;
+      top:86px;
+      width:96px;
+      max-width:28vw;
+      object-fit:contain;
+      filter:none;
+      opacity:1;
+      z-index:3;
+      pointer-events:none;
+    }
+
+    .hero-service{text-align:center;font-size:22px;font-weight:800;line-height:1.85;color:#fff;text-shadow:0 3px 14px rgba(0,0,0,.35)}
+    .hero-slogan{text-align:center;margin-top:28px;font-size:18px;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:.08em;text-shadow:0 3px 14px rgba(0,0,0,.35)}
+
     h2{font-size:34px;margin:0 0 14px}
     .hero p{font-size:19px;line-height:1.7;color:#f1f5f9;text-shadow:0 3px 14px rgba(0,0,0,.35)}
     .sub{color:#64748b;line-height:1.7;margin-bottom:28px}
@@ -73,20 +74,9 @@
     .about-content{opacity:1;transition:opacity .25s ease}
     .about-page.prep .about-content{opacity:0}
     .about-block{background:transparent;border-radius:0;padding:0;box-shadow:none;text-align:left;line-height:1.9;color:#334155;font-size:16px;max-width:880px;margin:auto}
-    .about-block strong{
-  color:#0f172a;
-  font-size:19px;
-  font-weight:900;
-}
+    .about-block strong{color:#0f172a;font-size:19px;font-weight:900}
     .about-point{margin:24px 0 20px;padding:0;background:none;color:#334155;border-radius:0;text-align:left;font-size:16px;font-weight:400;line-height:1.9;max-width:none}
-    .about-highlight{
-  font-size:18px;
-  font-weight:700;
-  line-height:1.8;
-  text-align:left;
-  color:#334155;
-  margin:24px 0;
-}
+    .about-highlight{font-size:18px;font-weight:700;line-height:1.8;text-align:left;color:#334155;margin:24px 0}
     .about-ending{margin-top:36px;text-align:center;font-size:24px;font-weight:900;line-height:1.45;color:#0f172a}
     .fly-about-text{position:fixed;z-index:4000;color:#0f172a;font-weight:900;line-height:1.18;letter-spacing:-.06em;text-align:center;pointer-events:none;white-space:normal;will-change:left,top,width,font-size,transform,opacity}
 
@@ -114,37 +104,36 @@
     .company-info{margin-top:30px;font-size:12px;color:#94a3b8;line-height:1.8}
     .fixed-call{position:fixed;right:20px;bottom:90px;background:#0f172a;color:white;padding:12px 18px;border-radius:999px;font-size:14px;font-weight:700;box-shadow:0 8px 20px rgba(0,0,0,.20);z-index:999}
 
- @media(max-width:760px){
-  .top-nav{padding:14px 12px;display:block;text-align:center}
-  .nav-brand{display:block;font-size:22px;margin-bottom:12px}
-  .nav-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 8px;width:100%;justify-content:center}
-  .nav-menu button{font-size:14px;padding:4px 0;text-align:center}
-  .page,.hero{padding:148px 36px 54px;align-items:flex-start}
-  .page.active{align-items:flex-start}
-  h1{font-size:28px;line-height:1.25}
-  h2{font-size:30px}
-  .hero p{font-size:16px}
-  .intro-logo{width:260px}
-  .intro-main{font-size:24px}
-  .main-logo{
-  width:240px;
-  opacity:.08;
-}
-  .social-icons a{width:60px;height:60px}
-  .social-icons img{width:34px;height:34px}
-  .about-block{font-size:15.5px}
-  .about-point{font-size:15.5px}
-  .about-highlight{
-  font-size:18px;
-  font-weight:700;
-  line-height:1.8;
-  text-align:left;
-  color:#334155;
-  margin:24px 0;
-}
-  .about-ending{font-size:22px}
-  .fixed-call{right:18px;bottom:78px;padding:11px 16px}
-}
+    @media(max-width:760px){
+      .top-nav{padding:14px 12px;display:block;text-align:center}
+      .nav-brand{display:block;font-size:22px;margin-bottom:12px}
+      .nav-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 8px;width:100%;justify-content:center}
+      .nav-menu button{font-size:14px;padding:4px 0;text-align:center}
+      .page,.hero{padding:148px 36px 54px;align-items:flex-start}
+      .page.active{align-items:flex-start}
+      h2{font-size:30px}
+      .hero p{font-size:16px}
+      .intro-logo{width:260px}
+      .intro-main{font-size:24px}
+
+      .main-logo{
+        left:18px;
+        top:138px;
+        width:74px;
+        max-width:24vw;
+        opacity:1;
+      }
+
+      .hero-service{font-size:18px;line-height:1.8}
+      .hero-slogan{margin-top:22px;font-size:14px;letter-spacing:.06em}
+      .social-icons a{width:60px;height:60px}
+      .social-icons img{width:34px;height:34px}
+      .about-block{font-size:15.5px}
+      .about-point{font-size:15.5px}
+      .about-highlight{font-size:18px;font-weight:700;line-height:1.8;text-align:left;color:#334155;margin:24px 0}
+      .about-ending{font-size:22px}
+      .fixed-call{right:18px;bottom:78px;padding:11px 16px}
+    }
   </style>
 </head>
 
@@ -170,15 +159,16 @@
   </nav>
 
   <section id="home" class="page hero active">
+    <img class="main-logo" src="https://parkjunghwa-97.github.io/logo.svg" alt="대한청소만세 로고">
+
     <div class="hero-inner">
-      <img class="main-logo" src="https://parkjunghwa-97.github.io/logo.svg" alt="대한청소만세 로고"><br>
-      
-      <h1>깨끗한 공간,<br>새로운 시작을 선물합니다.</h1>
-      <p>
-입주청소 · 이사청소 · 특수청소<br>
-유품정리 · 폐기물 처리 · 비둘기 퇴치까지<br>
-현장 상황에 맞춰 필요한 작업을 안내드립니다.
-</p>
+      <div class="hero-service">
+        입주청소 · 이사청소 · 특수청소<br>
+        유품정리 · 폐기물 처리 · 비둘기 퇴치
+      </div>
+
+      <div class="hero-slogan">깨끗한 공간, 새로운 시작</div>
+
       <div class="social-icons">
         <a href="tel:010-4122-9207" title="전화"><i class="fa-solid fa-phone"></i></a>
         <a href="https://pt.kakao.com/_lxhwGX" target="_blank" title="카카오톡"><img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg" alt="카카오톡"></a>
@@ -234,7 +224,12 @@
       <h2>작업사례</h2>
       <p class="sub">실제 전후사진을 넣으면 홈페이지 신뢰도가 가장 크게 올라갑니다.</p>
       <div class="portfolio-grid">
-        <div class="photo-box">입주청소 전후사진</div><div class="photo-box">비둘기 퇴치 전후사진</div><div class="photo-box">쓰레기집 정리 전후사진</div><div class="photo-box">특수청소 작업사례</div><div class="photo-box">유품정리 작업사례</div><div class="photo-box">사무실 · 상가청소</div>
+        <div class="photo-box">입주청소 전후사진</div>
+        <div class="photo-box">비둘기 퇴치 전후사진</div>
+        <div class="photo-box">쓰레기집 정리 전후사진</div>
+        <div class="photo-box">특수청소 작업사례</div>
+        <div class="photo-box">유품정리 작업사례</div>
+        <div class="photo-box">사무실 · 상가청소</div>
       </div>
     </div>
   </section>
@@ -271,7 +266,7 @@
       <p class="sub">사진 또는 영상으로 현장 상태를 전달해 주시면 작업 범위와 예상 견적을 안내드립니다.</p>
       <div class="social-icons">
         <a href="tel:010-4122-9207" title="전화"><i class="fa-solid fa-phone"></i></a>
-        <a href="http://pt.kakao.com/_lxhwGX" target="_blank" title="카카오톡"><img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg" alt="카카오톡"></a>
+        <a href="https://pt.kakao.com/_lxhwGX" target="_blank" title="카카오톡"><img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg" alt="카카오톡"></a>
         <a href="https://m.blog.naver.com/krcleangod?tab=1" target="_blank" title="네이버 블로그"><span class="naver-icon">N</span></a>
         <a href="https://www.instagram.com/gift.clean" target="_blank" title="인스타그램"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="인스타그램"></a>
       </div>
