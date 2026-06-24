@@ -50,11 +50,18 @@
         url('hero.jpg') center center/cover no-repeat;
       transform:scale(1.08);
       animation:heroZoom 7s ease forwards;
-      animation-delay:3s;
+      animation-delay:.15s;
       z-index:0;
     }
     .hero.active{display:flex}
-    .hero-inner{max-width:920px;margin:auto;position:relative;z-index:2;width:100%}
+    .hero-inner{
+      max-width:920px;
+      margin:auto;
+      position:relative;
+      z-index:2;
+      width:100%;
+      transform:translateY(95px);
+    }
 
     .hero-service{
       text-align:center;
@@ -65,8 +72,8 @@
       text-shadow:0 3px 14px rgba(0,0,0,.35);
       opacity:0;
       transform:translateY(34px);
-      animation:heroTextIn .9s ease forwards;
-      animation-delay:3.25s;
+      animation:heroTextIn .75s ease forwards;
+      animation-delay:.2s;
     }
     .hero-slogan{
       text-align:center;
@@ -78,14 +85,14 @@
       text-shadow:0 3px 14px rgba(0,0,0,.35);
       opacity:0;
       transform:translateY(22px);
-      animation:heroTextIn .9s ease forwards;
-      animation-delay:3.65s;
+      animation:heroTextIn .75s ease forwards;
+      animation-delay:.45s;
     }
     .hero .social-icons{
       opacity:0;
       transform:translateY(22px);
-      animation:heroTextIn .9s ease forwards;
-      animation-delay:4.05s;
+      animation:heroTextIn .75s ease forwards;
+      animation-delay:.7s;
     }
     @keyframes heroTextIn{to{opacity:1;transform:translateY(0)}}
     @keyframes heroZoom{to{transform:scale(1)}}
@@ -140,13 +147,14 @@
       .nav-brand{display:block;font-size:22px;margin-bottom:12px}
       .nav-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 8px;width:100%;justify-content:center}
       .nav-menu button{font-size:14px;padding:4px 0;text-align:center}
-      .page,.hero{padding:185px 36px 54px;align-items:flex-start}
+      .page,.hero{padding:195px 34px 54px;align-items:flex-start}
       .page.active{align-items:flex-start}
+      .hero-inner{transform:translateY(70px)}
       h2{font-size:30px}
       .hero p{font-size:16px}
       .intro-logo{width:260px}
       .intro-main{font-size:24px}
-      .hero-service{font-size:18px;line-height:1.8}
+      .hero-service{font-size:17px;line-height:1.85}
       .hero-slogan{margin-top:22px;font-size:14px;letter-spacing:.06em}
       .social-icons a{width:60px;height:60px}
       .social-icons img{width:34px;height:34px}
@@ -184,7 +192,8 @@
     <div class="hero-inner">
       <div class="hero-service">
         입주청소 · 이사청소 · 특수청소<br>
-        고독사청소 · 유품정리 · 폐기물 처리 · 비둘기 퇴치
+        고독사청소 · 유품정리<br>
+        폐기물 처리 · 비둘기 퇴치
       </div>
 
       <div class="hero-slogan">깨끗한 공간, 새로운 시작</div>
@@ -326,7 +335,7 @@
 
       document.querySelectorAll('.nav-btn').forEach(function(btn){
         const clickValue=btn.getAttribute('onclick')||'';
-        if(clickValue.includes("'"+id+"'")){
+        if(clickValue.includes("'" + id + "'")){
           btn.classList.add('active');
         }
       });
