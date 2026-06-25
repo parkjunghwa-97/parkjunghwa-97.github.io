@@ -196,6 +196,110 @@
       .about-ending{font-size:22px}
       .fixed-call{right:18px;bottom:78px;padding:11px 16px}
     }
+    .form-card{
+  max-width:760px;
+  margin:24px auto 34px;
+  background:#fff;
+  border-radius:26px;
+  padding:26px;
+  box-shadow:0 10px 30px rgba(15,23,42,.10);
+  text-align:left;
+}
+
+.form-card h3{
+  margin:0 0 8px;
+  font-size:24px;
+  color:#0f172a;
+}
+
+.form-card p{
+  margin:0 0 20px;
+  color:#64748b;
+  line-height:1.7;
+}
+
+.contact-form{
+  display:grid;
+  gap:14px;
+}
+
+.form-row{
+  display:grid;
+  gap:8px;
+}
+
+.form-row label{
+  font-size:14px;
+  font-weight:900;
+  color:#0f172a;
+}
+
+.form-row input,
+.form-row select,
+.form-row textarea{
+  width:100%;
+  border:1px solid #cbd5e1;
+  border-radius:14px;
+  padding:14px 15px;
+  font-size:15px;
+  color:#0f172a;
+  background:#fff;
+  outline:none;
+}
+
+.form-row textarea{
+  min-height:120px;
+  resize:vertical;
+}
+
+.form-row input:focus,
+.form-row select:focus,
+.form-row textarea:focus{
+  border-color:#1c4fa7;
+  box-shadow:0 0 0 3px rgba(28,79,167,.12);
+}
+
+.form-check{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  font-size:13.5px;
+  color:#475569;
+  line-height:1.6;
+}
+
+.form-check input{
+  margin-top:4px;
+}
+
+.submit-btn{
+  border:0;
+  cursor:pointer;
+  margin-top:4px;
+  padding:16px 22px;
+  border-radius:999px;
+  background:#051231;
+  color:white;
+  font-weight:900;
+  font-size:16px;
+  box-shadow:0 10px 24px rgba(15,23,42,.22);
+}
+
+.submit-btn:disabled{
+  opacity:.65;
+  cursor:wait;
+}
+
+.form-success{
+  margin-top:16px;
+  padding:16px;
+  border-radius:18px;
+  background:#ecfdf5;
+  color:#065f46;
+  font-weight:800;
+  line-height:1.6;
+  text-align:center;
+}
   </style>
 </head>
 
@@ -328,9 +432,79 @@
       <h2>상담문의</h2>
       <p class="sub">사진이나 영상으로 먼저 예상 견적을 안내드릴 수 있습니다.<br>정확한 작업 범위와 최종 금액은 현장 상태를 직접 확인한 후 안내드립니다.</p>
 
-      <a class="apply-btn" href="https://tally.so/r/A7aV9W" target="_blank" rel="noopener">
-        📋 상담 예약
-      </a>
+<div class="form-card">
+  <h3>상담 예약하기</h3>
+  <p>
+    전화가 어려우신 경우 아래 내용을 남겨주세요.<br>
+    확인 후 빠르게 연락드리겠습니다.
+  </p>
+
+  <form class="contact-form"
+        action="https://script.google.com/macros/s/AKfycbwKumtkD3EF37zMncVjGbN7ZNueTZO-qn-WusDR0JRSyI5K2HOyE5h_m1j9HKUFms7Ydw/exec"
+        method="POST"
+        target="hidden_iframe"
+        onsubmit="handleContactSubmit(event)">
+
+    <div class="form-row">
+      <label>성함</label>
+      <input type="text" name="customerName" placeholder="성함을 입력해주세요" required>
+    </div>
+
+    <div class="form-row">
+      <label>연락처</label>
+      <input type="tel" name="phone" placeholder="010-0000-0000" required>
+    </div>
+
+    <div class="form-row">
+      <label>서비스 종류</label>
+      <select name="service" required>
+        <option value="">서비스를 선택해주세요</option>
+        <option value="입주청소">입주청소</option>
+        <option value="이사청소">이사청소</option>
+        <option value="사무실·상가청소">사무실·상가청소</option>
+        <option value="쓰레기집 청소">쓰레기집 청소</option>
+        <option value="특수청소">특수청소</option>
+        <option value="고독사 특수청소">고독사 특수청소</option>
+        <option value="유품정리">유품정리</option>
+        <option value="폐기물 처리">폐기물 처리</option>
+        <option value="비둘기 퇴치">비둘기 퇴치</option>
+        <option value="기타 문의">기타 문의</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label>작업 지역 / 주소</label>
+      <input type="text" name="address" placeholder="예: 대전 서구 / 아파트명 / 건물명">
+    </div>
+
+    <div class="form-row">
+      <label>희망 작업일</label>
+      <input type="date" name="desiredDate">
+    </div>
+
+    <div class="form-row">
+      <label>현장 상태 / 문의 내용</label>
+      <textarea name="message" placeholder="평수, 오염 상태, 짐 유무, 폐기물 여부 등을 적어주세요."></textarea>
+    </div>
+
+    <input type="hidden" name="photoMethod" value="카카오톡 또는 문자">
+    <input type="hidden" name="source" value="홈페이지">
+
+    <label class="form-check">
+      <input type="checkbox" required>
+      <span>사진 견적은 예상 견적이며, 정확한 작업 범위와 최종 금액은 현장 확인 후 달라질 수 있음을 확인했습니다.</span>
+    </label>
+
+    <button type="submit" class="submit-btn">📝 상담 예약하기</button>
+
+    <div id="formSuccess" class="form-success" style="display:none;">
+      상담 예약이 접수되었습니다.<br>
+      확인 후 빠르게 연락드리겠습니다.
+    </div>
+  </form>
+
+  <iframe name="hidden_iframe" style="display:none;"></iframe>
+</div>
 
       <div class="social-icons">
         <a href="tel:010-4122-9207" title="전화"><i class="fa-solid fa-phone"></i></a>
@@ -434,6 +608,21 @@
         }
       }, 3200);
     });
+    function handleContactSubmit(event){
+  const form = event.target;
+  const submitBtn = form.querySelector('.submit-btn');
+  const successBox = document.getElementById('formSuccess');
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = '접수 중...';
+
+  setTimeout(function(){
+    successBox.style.display = 'block';
+    submitBtn.disabled = false;
+    submitBtn.textContent = '📝 상담 예약하기';
+    form.reset();
+  }, 1200);
+}
   </script>
 </body>
 </html>
