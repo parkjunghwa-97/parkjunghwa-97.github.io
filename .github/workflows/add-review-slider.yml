@@ -80,13 +80,13 @@ jobs:
                   raise SystemExit('기존 고객 후기 블록을 찾지 못했습니다. index.html을 변경하지 않습니다.')
               text = text.replace(old, new, 1)
 
-          workflow = Path('.github/workflows/add-review-slider.yml')
-          if workflow.exists():
-              workflow.unlink()
-
           test_file = Path('.chatgpt-write-test.txt')
           if test_file.exists():
               test_file.unlink()
+
+          trigger = Path('.chatgpt-review-trigger.txt')
+          if trigger.exists():
+              trigger.unlink()
 
           index.write_text(text, encoding='utf-8')
           PY
