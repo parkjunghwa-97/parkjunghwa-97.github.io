@@ -1,4 +1,4 @@
-name: Add review slider
+name: Patch site SEO FAQ review
 
 on:
   push:
@@ -10,91 +10,19 @@ permissions:
   contents: write
 
 jobs:
-  patch-index:
+  patch-site:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Patch index.html safely
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
+      - name: Patch homepage
+        run: python3 .github/scripts/patch_site.py
 
-          index = Path('index.html')
-          text = index.read_text(encoding='utf-8')
-
-          review_css = r'''
-    /* 고객 후기 자동 슬라이드 - ChatGPT 추가 */
-    .review-sub{margin-top:-4px;margin-bottom:18px;color:#64748b;line-height:1.7}
-    .review-marquee{width:100%;overflow:hidden;position:relative;margin-top:8px;padding:8px 0 20px}
-    .review-marquee:before,.review-marquee:after{content:"";position:absolute;top:0;width:46px;height:100%;z-index:2;pointer-events:none}
-    .review-marquee:before{left:0;background:linear-gradient(to right,#f8fafc,rgba(248,250,252,0))}
-    .review-marquee:after{right:0;background:linear-gradient(to left,#f8fafc,rgba(248,250,252,0))}
-    .review-track{display:flex;align-items:flex-start;gap:18px;width:max-content;animation:reviewMove 58s linear infinite}
-    .review-marquee:hover .review-track{animation-play-state:paused}
-    .review-shot{flex:0 0 auto;background:#fff;border-radius:22px;padding:12px;box-shadow:0 8px 24px rgba(15,23,42,.10)}
-    .review-shot img{display:block;height:520px;width:auto;max-width:none;object-fit:contain;border-radius:16px}
-    @keyframes reviewMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-    @media(max-width:760px){.review-track{gap:14px;animation-duration:50s}.review-shot{padding:10px;border-radius:18px}.review-shot img{height:430px;border-radius:14px}.review-marquee:before,.review-marquee:after{width:30px}}
-    @media(max-width:430px){.review-shot img{height:390px}}
-'''
-
-          if '/* 고객 후기 자동 슬라이드 - ChatGPT 추가 */' not in text:
-              text = text.replace('  </style>', review_css + '\n  </style>', 1)
-
-          old = '''<h3 class="review-title">고객 후기</h3>
-
-<div class="review-grid">
-  <div class="review-card review-image-card">
-    <img src="review1.jpg" alt="고객 후기 1">
-  </div>
-
-  <div class="review-card review-image-card">
-    <img src="review2.jpg" alt="고객 후기 2">
-  </div>
-
-  <div class="review-card review-image-card">
-    <img src="review3.jpg" alt="고객 후기 3">
-  </div>
-</div>'''
-
-          review_items = '\n'.join(
-              f'''          <div class="review-shot"><img src="images/reviews/review-{i:02d}.jpg" alt="고객 후기 {i}"></div>'''
-              for i in range(1, 9)
-          )
-
-          new = f'''<h3 class="review-title">고객 후기</h3>
-<p class="sub review-sub">실제 고객님들이 남겨주신 후기입니다.</p>
-
-<div class="review-marquee" aria-label="고객 후기 자동 슬라이드">
-  <div class="review-track">
-{review_items}
-
-{review_items}
-  </div>
-</div>'''
-
-          if 'images/reviews/review-01.jpg' not in text:
-              if old not in text:
-                  raise SystemExit('기존 고객 후기 블록을 찾지 못했습니다. index.html을 변경하지 않습니다.')
-              text = text.replace(old, new, 1)
-
-          test_file = Path('.chatgpt-write-test.txt')
-          if test_file.exists():
-              test_file.unlink()
-
-          trigger = Path('.chatgpt-review-trigger.txt')
-          if trigger.exists():
-              trigger.unlink()
-
-          index.write_text(text, encoding='utf-8')
-          PY
-
-      - name: Commit patched index
+      - name: Commit site updates
         run: |
           git config user.name "ChatGPT Codex Connector"
           git config user.email "actions@github.com"
           git add -A
-          git commit -m "Add customer review slider" || echo "No changes to commit"
+          git commit -m "Add SEO FAQ and review slider" || echo "No changes to commit"
           git push
