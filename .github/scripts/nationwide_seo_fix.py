@@ -6,6 +6,8 @@ s = p.read_text(encoding='utf-8')
 bad = '<div class="review-shot"><img src="images/reviews/review-03.jpg" alt="고객 후기 3"></div>'
 s = s.replace(bad, '')
 
+s = s.replace('전국 특수청소 · 유품정리 · 고독사청소', '전국 특수청소 · 유품정리 · 고독사청소 · 쓰레기집 청소')
+
 s = s.replace(
     '.intro-logo{width:300px;max-width:80vw;object-fit:contain;margin-bottom:16px;filter:drop-shadow(0 12px 28px rgba(0,0,0,.45));animation:fadeUp .7s ease forwards}',
     '.intro-logo{width:250px;max-width:68vw;object-fit:contain;margin-bottom:14px;filter:drop-shadow(0 12px 28px rgba(0,0,0,.45));animation:fadeUp .7s ease forwards}'
