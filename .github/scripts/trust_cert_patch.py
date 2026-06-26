@@ -8,6 +8,28 @@ s = s.replace("if(track){track.style.animation='none';}", "if(track){track.style
 s = s.replace("document.querySelectorAll('.case-row,.cert-marquee').forEach(makeSlider);", "document.querySelectorAll('.case-row,.review-marquee,.cert-marquee').forEach(makeSlider);")
 s = s.replace("var track=slider.querySelector('.case-strip,.cert-marquee-track');", "var track=slider.querySelector('.case-strip,.review-track,.cert-marquee-track');")
 
+# Make company intro action slower and easier to see on mobile.
+s = s.replace("const startTop=isMobile ? '45vh' : '50vh';", "const startTop=isMobile ? '38vh' : '50vh';")
+s = s.replace("const startTop=isMobile ? '39vh' : '50vh';", "const startTop=isMobile ? '38vh' : '50vh';")
+s = s.replace("const startFont=isMobile ? '38px' : '80px';", "const startFont=isMobile ? '36px' : '80px';")
+s = s.replace("const startFont=isMobile ? '36px' : '80px';", "const startFont=isMobile ? '36px' : '80px';")
+s = s.replace("const duration=isMobile ? 1500 : 950;", "const duration=isMobile ? 3200 : 950;")
+s = s.replace("const duration=isMobile ? 1250 : 950;", "const duration=isMobile ? 3200 : 950;")
+s = s.replace("{left:'50vw',top:startTop,width:startWidth+'px',fontSize:startFont,transform:'translate(-50%,-50%) scale(1)',opacity:1,offset:.26}", "{left:'50vw',top:startTop,width:startWidth+'px',fontSize:startFont,transform:'translate(-50%,-50%) scale(1)',opacity:1,offset:.18}")
+s = s.replace("{left:'50vw',top:startTop,width:startWidth+'px',fontSize:startFont,transform:'translate(-50%,-50%) scale(.92)',opacity:1,offset:.60}", "{left:'50vw',top:startTop,width:startWidth+'px',fontSize:startFont,transform:'translate(-50%,-50%) scale(.98)',opacity:1,offset:.72}")
+s = s.replace("setTimeout(function(){playAboutLanding(target);}, window.innerWidth <= 760 ? 300 : 40);", "setTimeout(function(){playAboutLanding(target);}, window.innerWidth <= 760 ? 450 : 40);")
+
+# Keep the flying text visible above floating contact buttons.
+css_about = '''
+
+    /* MOBILE_ABOUT_ACTION_VISIBILITY */
+    @media(max-width:760px){
+      .fly-about-text{z-index:2147483646!important;color:#0f172a!important;text-shadow:0 10px 30px rgba(255,255,255,.98),0 2px 10px rgba(255,255,255,.96)!important}
+    }
+'''
+if '/* MOBILE_ABOUT_ACTION_VISIBILITY */' not in s:
+    s = s.replace('</style>', css_about + '\n</style>', 1)
+
 # Strong lightbox CSS, independent from the older one.
 css = '''
 
