@@ -33,23 +33,25 @@ css = r'''
     .cert-trust-title{font-size:17px;font-weight:950;letter-spacing:-.02em;margin-bottom:8px}
     .cert-trust-people{font-size:15px;color:#475569;font-weight:850;margin-bottom:18px}
     .cert-trust-people span{display:inline-block;margin:0 10px;color:#94a3b8}
-    .cert-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;align-items:flex-start}
-    .cert-toggle{display:inline-block;text-align:center}
-    .cert-toggle summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-width:154px;padding:11px 16px;border-radius:999px;background:#0f172a;color:#fff;font-weight:950;font-size:14px;box-shadow:0 8px 18px rgba(15,23,42,.16)}
-    .cert-toggle summary::-webkit-details-marker{display:none}
-    .cert-toggle[open] summary{background:#334155}
-    .cert-view{width:min(860px,calc(100vw - 72px));margin:16px auto 0;padding:18px 0 0;border-top:1px solid #e2e8f0;text-align:center}
-    .cert-view-single img{width:min(280px,80vw);height:auto;border:1px solid #e2e8f0;background:#fff;box-shadow:0 6px 18px rgba(15,23,42,.08)}
-    .cert-person{margin:0 0 20px;text-align:left}
-    .cert-person b{display:block;margin:0 0 10px;color:#0f172a;font-size:15px}
-    .cert-thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-    .cert-thumbs img{width:100%;height:210px;object-fit:contain;background:#fff;border:1px solid #e2e8f0;box-shadow:0 5px 14px rgba(15,23,42,.06)}
-    @media(max-width:760px){.cert-trust{margin-top:30px;padding-top:22px}.cert-actions{display:grid;grid-template-columns:1fr;gap:10px}.cert-toggle{display:block}.cert-toggle summary{width:100%}.cert-view{width:100%;padding-top:14px}.cert-thumbs{grid-template-columns:1fr 1fr}.cert-thumbs img{height:190px}.cert-trust-people span{margin:0 6px}}
-    @media(max-width:430px){.cert-thumbs img{height:165px}}
+    .cert-actions{display:none!important}
+    @media(max-width:760px){.cert-trust{margin:24px auto 0;padding-top:18px}.cert-trust-title{font-size:15px}.cert-trust-people{font-size:13.5px;margin-bottom:0}.cert-trust-people span{margin:0 6px}}
 '''
 
 if '/* CERT_TRUST_SECTION */' not in s:
     s = s.replace('</style>', css + '\n</style>', 1)
+
+cleanup_css = r'''
+
+    /* CERT_TRUST_CLEANUP */
+    .cert-trust{margin:28px auto 0!important;padding:18px 0 0!important;border-top:1px solid #d7dee8!important;background:transparent!important;box-shadow:none!important;max-width:760px!important}
+    .cert-trust-title{font-size:15.5px!important;font-weight:900!important;color:#0f172a!important;letter-spacing:-.03em!important;margin-bottom:6px!important}
+    .cert-trust-people{font-size:13.5px!important;color:#64748b!important;font-weight:800!important;margin-bottom:0!important}
+    .cert-actions{display:none!important}
+    .cert-toggle,.cert-view,.cert-person,.cert-thumbs{display:none!important}
+    @media(max-width:760px){.cert-trust{margin-top:22px!important;padding-top:16px!important}.cert-trust-title{font-size:14.5px!important}.cert-trust-people{font-size:12.8px!important}}
+'''
+if '/* CERT_TRUST_CLEANUP */' not in s:
+    s = s.replace('</style>', cleanup_css + '\n</style>', 1)
 
 partner_css = r'''
 
