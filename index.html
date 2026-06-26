@@ -664,6 +664,19 @@
     .slider-lightbox img{max-width:94vw;max-height:88vh;object-fit:contain;background:#fff;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.38)}
     .slider-lightbox button{position:fixed;top:14px;right:14px;border:0;background:#fff;color:#0f172a;border-radius:999px;width:42px;height:42px;font-size:24px;font-weight:900;cursor:pointer}
 
+
+
+    /* IMAGE_LOADING_AND_REVIEW_READABILITY */
+    .review-marquee,.case-row,.cert-marquee{contain:layout paint;transform:translateZ(0)}
+    .review-shot,.case-mini{background:linear-gradient(135deg,#f8fafc,#e2e8f0)!important}
+    .review-shot img,.cert-marquee img{display:block;backface-visibility:hidden;transform:translateZ(0);will-change:transform;transition:opacity .18s ease}
+    .review-shot img:not([src]){opacity:0}
+    .review-text-section{margin:46px auto 0!important;max-width:980px!important;background:#f8fafc!important;border:1px solid #e2e8f0!important;border-radius:30px!important;padding:26px!important;box-shadow:0 14px 36px rgba(15,23,42,.08)!important;text-align:left!important}
+    .review-text-section h3{margin-top:0!important;color:#0f172a!important}
+    .review-text-section>p,.review-text-lead{color:#475569!important;font-weight:700!important}
+    .review-text-grid article,.review-text-card{background:#fff!important;border:1px solid #dbe3ee!important;border-radius:22px!important;box-shadow:0 10px 26px rgba(15,23,42,.09)!important}
+    @media(max-width:760px){.review-text-section{padding:20px!important;border-radius:24px!important;margin-top:36px!important}.review-shot{background:#eef2f7!important}}
+
 </style>
 
   <script type="application/ld+json">
@@ -983,27 +996,27 @@
             <div class="cert-trust-people">대표 박정화 <span>|</span> 총괄대표 김수현</div>
             <div class="cert-marquee" aria-hidden="true">
               <div class="cert-marquee-track">
-                <img decoding="async" loading="lazy" src="images/certificates/certificates/women-company.jpg" alt="">
-                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-clean.jpg" alt="">
-                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-pest.jpg" alt="">
-                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-estate.jpg" alt="">
-                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-clean.jpg" alt="">
-                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-pest.jpg" alt="">
-                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-estate.jpg" alt="">
-                <img decoding="async" loading="lazy" src="images/certificates/certificates/women-company.jpg" alt="">
-                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-clean.jpg" alt="">
-                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-pest.jpg" alt="">
-                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-estate.jpg" alt="">
-                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-clean.jpg" alt="">
-                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-pest.jpg" alt="">
-                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-estate.jpg" alt="">
+                <img decoding="async" loading="eager" src="images/certificates/certificates/women-company.jpg" alt="">
+                <img decoding="async" loading="eager" src="images/certificates/certificates/park-clean.jpg" alt="">
+                <img decoding="async" loading="eager" src="images/certificates/certificates/park-pest.jpg" alt="">
+                <img decoding="async" loading="eager" src="images/certificates/certificates/park-estate.jpg" alt="">
+                <img decoding="async" loading="eager" src="images/certificates/certificates/kim-clean.jpg" alt="">
+                <img decoding="async" loading="eager" src="images/certificates/certificates/kim-pest.jpg" alt="">
+                <img decoding="async" loading="eager" src="images/certificates/certificates/kim-estate.jpg" alt="">
+                <img decoding="async" loading="eager" src="images/certificates/certificates/women-company.jpg" alt="">
+                <img decoding="async" loading="eager" src="images/certificates/certificates/park-clean.jpg" alt="">
+                <img decoding="async" loading="eager" src="images/certificates/certificates/park-pest.jpg" alt="">
+                <img decoding="async" loading="eager" src="images/certificates/certificates/park-estate.jpg" alt="">
+                <img decoding="async" loading="eager" src="images/certificates/certificates/kim-clean.jpg" alt="">
+                <img decoding="async" loading="eager" src="images/certificates/certificates/kim-pest.jpg" alt="">
+                <img decoding="async" loading="eager" src="images/certificates/certificates/kim-estate.jpg" alt="">
               </div>
             </div>
             <div class="cert-actions">
               <details class="cert-toggle">
                 <summary>여성기업 확인서 보기</summary>
                 <div class="cert-view cert-view-single">
-                  <img decoding="async" loading="lazy" src="images/certificates/certificates/women-company.jpg" alt="기프트클린 대한청소만세 여성기업 확인서">
+                  <img decoding="async" loading="eager" src="images/certificates/certificates/women-company.jpg" alt="기프트클린 대한청소만세 여성기업 확인서">
                 </div>
               </details>
               <details class="cert-toggle">
@@ -1012,17 +1025,17 @@
                   <div class="cert-person">
                     <b>대표 박정화</b>
                     <div class="cert-thumbs">
-                      <img decoding="async" loading="lazy" src="images/certificates/certificates/park-clean.jpg" alt="박정화 청소전문가 1급 자격증">
-                      <img decoding="async" loading="lazy" src="images/certificates/certificates/park-pest.jpg" alt="박정화 방역관리사 1급 자격증">
-                      <img decoding="async" loading="lazy" src="images/certificates/certificates/park-estate.jpg" alt="박정화 유품정리사 1급 자격증">
+                      <img decoding="async" loading="eager" src="images/certificates/certificates/park-clean.jpg" alt="박정화 청소전문가 1급 자격증">
+                      <img decoding="async" loading="eager" src="images/certificates/certificates/park-pest.jpg" alt="박정화 방역관리사 1급 자격증">
+                      <img decoding="async" loading="eager" src="images/certificates/certificates/park-estate.jpg" alt="박정화 유품정리사 1급 자격증">
                     </div>
                   </div>
                   <div class="cert-person">
                     <b>총괄대표 김수현</b>
                     <div class="cert-thumbs">
-                      <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-clean.jpg" alt="김수현 청소전문가 1급 자격증">
-                      <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-pest.jpg" alt="김수현 방역관리사 1급 자격증">
-                      <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-estate.jpg" alt="김수현 유품정리사 1급 자격증">
+                      <img decoding="async" loading="eager" src="images/certificates/certificates/kim-clean.jpg" alt="김수현 청소전문가 1급 자격증">
+                      <img decoding="async" loading="eager" src="images/certificates/certificates/kim-pest.jpg" alt="김수현 방역관리사 1급 자격증">
+                      <img decoding="async" loading="eager" src="images/certificates/certificates/kim-estate.jpg" alt="김수현 유품정리사 1급 자격증">
                     </div>
                   </div>
                 </div>
@@ -1122,18 +1135,18 @@
 
 <div class="review-marquee" aria-label="고객 후기 자동 슬라이드">
   <div class="review-track">
-          <div class="review-shot"><img decoding="async" loading="lazy" src="images/reviews/review-02.jpg" alt="고객 후기 2"></div>
+          <div class="review-shot"><img decoding="async" loading="eager" src="images/reviews/review-02.jpg" alt="고객 후기 2"></div>
           
-          <div class="review-shot"><img decoding="async" loading="lazy" src="images/reviews/review-05.jpg" alt="고객 후기 5"></div>
-          <div class="review-shot"><img decoding="async" loading="lazy" src="images/reviews/review-06.jpg" alt="고객 후기 6"></div>
-          <div class="review-shot"><img decoding="async" loading="lazy" src="images/reviews/review-07.jpg" alt="고객 후기 7"></div>
-          <div class="review-shot"><img decoding="async" loading="lazy" src="images/reviews/review-08.jpg" alt="고객 후기 8"></div>
-          <div class="review-shot"><img decoding="async" loading="lazy" src="images/reviews/review-02.jpg" alt="고객 후기 2"></div>
+          <div class="review-shot"><img decoding="async" loading="eager" src="images/reviews/review-05.jpg" alt="고객 후기 5"></div>
+          <div class="review-shot"><img decoding="async" loading="eager" src="images/reviews/review-06.jpg" alt="고객 후기 6"></div>
+          <div class="review-shot"><img decoding="async" loading="eager" src="images/reviews/review-07.jpg" alt="고객 후기 7"></div>
+          <div class="review-shot"><img decoding="async" loading="eager" src="images/reviews/review-08.jpg" alt="고객 후기 8"></div>
+          <div class="review-shot"><img decoding="async" loading="eager" src="images/reviews/review-02.jpg" alt="고객 후기 2"></div>
           
-          <div class="review-shot"><img decoding="async" loading="lazy" src="images/reviews/review-05.jpg" alt="고객 후기 5"></div>
-          <div class="review-shot"><img decoding="async" loading="lazy" src="images/reviews/review-06.jpg" alt="고객 후기 6"></div>
-          <div class="review-shot"><img decoding="async" loading="lazy" src="images/reviews/review-07.jpg" alt="고객 후기 7"></div>
-          <div class="review-shot"><img decoding="async" loading="lazy" src="images/reviews/review-08.jpg" alt="고객 후기 8"></div>
+          <div class="review-shot"><img decoding="async" loading="eager" src="images/reviews/review-05.jpg" alt="고객 후기 5"></div>
+          <div class="review-shot"><img decoding="async" loading="eager" src="images/reviews/review-06.jpg" alt="고객 후기 6"></div>
+          <div class="review-shot"><img decoding="async" loading="eager" src="images/reviews/review-07.jpg" alt="고객 후기 7"></div>
+          <div class="review-shot"><img decoding="async" loading="eager" src="images/reviews/review-08.jpg" alt="고객 후기 8"></div>
   </div>
 </div>
     </div>
@@ -1372,6 +1385,9 @@
         setTimeout(function(){playAboutLanding(target);}, window.innerWidth <= 760 ? 300 : 40);
       }
       if(window.initSliders){setTimeout(window.initSliders, 80);}
+      if(window.preloadSliderImages){setTimeout(function(){window.preloadSliderImages(target || document);}, 90);}
+      if(window.preloadSliderImages){setTimeout(function(){window.preloadSliderImages(target || document);}, 90);}
+      if(window.initSliders){setTimeout(window.initSliders, 80);}
       if(window.initSliders){setTimeout(window.initSliders, 80);}
     }
 
@@ -1512,6 +1528,30 @@
       };
       function init(){window.initSliders();}
       if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
+    })();
+
+
+    /* SLIDER_IMAGE_PRELOAD */
+    (function(){
+      window.preloadSliderImages=function(scope){
+        var root=scope || document;
+        var imgs=root.querySelectorAll('.review-marquee img,.cert-marquee img,.case-row img');
+        imgs.forEach(function(img,idx){
+          try{
+            img.loading='eager';
+            img.decoding='async';
+            if(idx<4){img.fetchPriority='high';}
+            var pre=new Image();
+            pre.decoding='async';
+            pre.src=img.currentSrc || img.src;
+          }catch(e){}
+        });
+      };
+      if(document.readyState==='loading'){
+        document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){window.preloadSliderImages(document);},900);});
+      }else{
+        setTimeout(function(){window.preloadSliderImages(document);},900);
+      }
     })();
 </script>
 </body>
