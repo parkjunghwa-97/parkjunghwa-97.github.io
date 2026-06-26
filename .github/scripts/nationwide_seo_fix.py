@@ -31,8 +31,20 @@ fixes = {
     '예약금 환불은 이렇게 안내드려요 적용': '예약금 환불 기준 적용',
     '비대면 작업 안내 시': '비대면 작업 시',
     '비대면 작업 안내 완료 후에는': '비대면 작업 완료 후에는',
-    '폐기물 처리 비용 안내 비용': '폐기물 처리 비용'
+    '폐기물 처리 비용 안내 비용': '폐기물 처리 비용',
+    '폐기물 처리 비용 안내</b>': '폐기물 처리</b>',
+    '오염도와 작업 범위는 상담 기준으로 진행돼요 확인': '오염도와 작업 범위 확인'
 }
 for a,b in fixes.items():
     s = s.replace(a,b)
+mobile_css = '''
+    /* MOBILE_NAV_FLOW_FIX */
+    @media(max-width:760px){
+      .top-nav{position:sticky;top:0;left:auto;right:auto}
+      .page,.hero{padding-top:36px}
+      #portfolio{padding-top:36px}
+    }
+'''
+if 'MOBILE_NAV_FLOW_FIX' not in s:
+    s = s.replace('\n  </style>', mobile_css + '\n  </style>', 1)
 p.write_text(s, encoding='utf-8')
