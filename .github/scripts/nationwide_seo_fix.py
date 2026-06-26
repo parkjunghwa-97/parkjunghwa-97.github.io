@@ -6,6 +6,7 @@ old = '<button class="nav-btn" onclick="showPage(\'contact\')">상담문의</but
 new = '<button class="nav-btn" onclick="location.href=\'partner.html\'">파트너모집</button>\n      ' + old
 if 'partner.html' not in s:
     s = s.replace(old, new, 1)
+s = s.replace('<p class="sub">상담 전 많이 물어보시는 내용을 먼저 정리했습니다.</p>', '')
 s = re.sub(r'\n\s*<p class="more-info-intro">.*?</p>', '', s, count=1, flags=re.S)
 repls = {
     '<summary>예약은 이렇게 진행돼요</summary>': '<summary>예약 안내</summary>',
