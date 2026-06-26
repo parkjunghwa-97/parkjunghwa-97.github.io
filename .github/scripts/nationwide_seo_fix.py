@@ -58,21 +58,67 @@ for a,b in fixes.items():
     s = s.replace(a,b)
 
 partner = '''
-  <section id="partner" class="page">
+  <section id="partner" class="page partner-page">
     <div class="page-inner">
       <h2>파트너 모집</h2>
       <p class="sub">대한청소만세의 현장 기준을 함께 배워갈 지역 파트너를 기다립니다.</p>
-      <div class="trust-box">
+
+      <div class="trust-box partner-hero">
         <b>청소 기술만으로는 부족합니다.<br>현장을 운영하는 기준이 필요합니다.</b>
-        <p>대한청소만세는 현장을 대하는 태도,<br>고객에게 안내하는 방식,<br>추가 작업을 설명하는 기준까지 함께 배워갈<br>지역 파트너를 찾습니다.</p>
-        <p class="trust-note">대한청소만세는 지역 파트너와 함께 성장할 준비를 하고 있습니다.<br>현재는 현장 교육 및 파트너 상담을 우선 진행합니다.</p>
+        <p>현장을 대하는 태도, 고객에게 안내하는 방식,<br>추가 작업을 설명하는 기준까지 함께 배워갑니다.</p>
       </div>
+
+      <div class="partner-grid">
+        <div class="partner-card">
+          <b>누가 지원하면 좋나요?</b>
+          <ul>
+            <li>청소 일을 제대로 배워 오래 해보고 싶은 분</li>
+            <li>고객 응대와 약속 시간을 중요하게 생각하는 분</li>
+            <li>혼자 일하더라도 현장 기준이 필요한 분</li>
+            <li>지역에서 꾸준히 청소 일을 키워가고 싶은 분</li>
+          </ul>
+        </div>
+
+        <div class="partner-card">
+          <b>무엇을 배우나요?</b>
+          <ul>
+            <li>사진 상담으로 현장 상태를 보는 법</li>
+            <li>작업 범위와 추가 비용을 안내하는 기준</li>
+            <li>입주·이사청소 기본 작업 흐름</li>
+            <li>쓰레기집·특수현장 상담 시 주의할 점</li>
+            <li>작업 후 확인, 후기, 고객 응대 방식</li>
+          </ul>
+        </div>
+
+        <div class="partner-card">
+          <b>지역 파트너가 되면</b>
+          <ul>
+            <li>가능 지역과 가능한 작업을 먼저 확인합니다.</li>
+            <li>대한청소만세의 상담·작업 기준을 공유합니다.</li>
+            <li>현장 경험과 준비 상태에 따라 협업 범위를 정합니다.</li>
+            <li>무리한 현장보다 가능한 현장부터 시작합니다.</li>
+          </ul>
+        </div>
+
+        <div class="partner-card">
+          <b>문의 후 절차</b>
+          <ol>
+            <li>카카오톡으로 파트너 문의</li>
+            <li>지역·경험·가능 작업 확인</li>
+            <li>전화 또는 카톡 상담</li>
+            <li>현장 기준 안내</li>
+            <li>협업 가능 여부 확인</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="partner-note">처음부터 모든 현장을 맡기는 방식이 아니라,<br>가능한 작업과 지역을 확인한 뒤 단계적으로 협의합니다.</div>
       <a class="apply-btn" href="https://pf.kakao.com/_lxhwGX" target="_blank">파트너 문의하기</a>
     </div>
   </section>
 
 '''
-s = re.sub(r'\n\s*<section id="partner" class="page">.*?</section>\s*', '\n', s, flags=re.S)
+s = re.sub(r'\n\s*<section id="partner" class="page[^\"]*">.*?</section>\s*', '\n', s, flags=re.S)
 m = re.search(r'\n\s*<section id="contact" class="page">', s)
 if m:
     s = s[:m.start()] + '\n' + partner + s[m.start():]
@@ -93,6 +139,14 @@ css = '''
       .page,.hero{padding-top:36px}
       #portfolio{padding-top:36px}
     }
+    /* PARTNER_SECTION */
+    .partner-page .page-inner{max-width:960px}
+    .partner-hero{margin-top:24px;margin-bottom:20px}
+    .partner-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:20px 0 22px;text-align:left}
+    .partner-card{background:#fff;border-radius:22px;padding:22px;box-shadow:0 8px 24px rgba(15,23,42,.08);border:1px solid rgba(226,232,240,.9)}
+    .partner-card b{display:block;font-size:18px;color:#0f172a;margin-bottom:12px}
+    .partner-card ul,.partner-card ol{margin:0;padding-left:18px;color:#475569;line-height:1.75;font-size:15px}
+    .partner-note{margin:18px 0 22px;padding:18px;border-radius:20px;background:#f8fafc;border:1px solid #e2e8f0;color:#475569;line-height:1.7;font-weight:800}
     /* FIXED_CONTACT_BAR */
     .fixed-contact-bar{position:fixed;right:16px;bottom:82px;z-index:999;display:flex;flex-direction:column;gap:8px;background:rgba(15,23,42,.94);padding:9px;border-radius:22px;box-shadow:0 12px 30px rgba(0,0,0,.25);backdrop-filter:blur(8px);width:150px}
     .fixed-contact-bar a{text-align:center;border-radius:999px;padding:12px 10px;background:#fff;color:#0f172a;font-weight:950;font-size:14px;text-decoration:none}
@@ -100,9 +154,10 @@ css = '''
     @media(max-width:760px){.fixed-contact-bar{right:12px;bottom:76px;width:142px}.fixed-contact-bar a{font-size:14px;padding:12px 8px}footer{padding-bottom:170px}.fixed-call{display:none}}
 '''
 s = re.sub(r'\n\s*/\* MOBILE_NAV_FLOW_FIX \*/.*?/\* FIXED_CONTACT_BAR \*/.*?(?=\n\s*</style>)', '\n' + css, s, count=1, flags=re.S)
+s = re.sub(r'\n\s*/\* MOBILE_NAV_FLOW_FIX \*/.*?/\* PARTNER_SECTION \*/.*?/\* FIXED_CONTACT_BAR \*/.*?(?=\n\s*</style>)', '\n' + css, s, count=1, flags=re.S)
 if 'MOBILE_NAV_FLOW_FIX' not in s:
     s = s.replace('\n  </style>', css + '\n  </style>', 1)
-elif 'FIXED_CONTACT_BAR' not in s:
+elif 'PARTNER_SECTION' not in s:
     s = s.replace('\n  </style>', '\n' + css + '\n  </style>', 1)
 
 p.write_text(s, encoding='utf-8')
