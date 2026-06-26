@@ -4,35 +4,20 @@ import re
 p = Path('index.html')
 s = p.read_text(encoding='utf-8')
 
-s = re.sub(r'(· 쓰레기집 청소)(?: · 쓰레기집 청소)+', r'\1', s)
-s = s.replace('폐기물 처리 비용 안내', '폐기물 처리')
-s = s.replace('작업 범위는 상담 기준으로 진행돼요를 확인해 예상 견적을 안내드립니다.', '작업 범위를 확인해 예상 견적을 안내드립니다.')
-s = s.replace('<b>사업장 기준</b>', '<b>사업장</b>')
+card = '<div class="movein-check"><b>\uc2e0\ucd95 \uc785\uc8fc \uc804\ud6c4 \ud655\uc778\ud558\uba74 \uc88b\uc740 \uccb4\ud06c\ub9ac\uc2a4\ud2b8</b><p>\uc815\ubc00 \uc810\uac80\uc740 \uc544\ub2c8\uc9c0\ub9cc, \uc785\uc8fc\uccad\uc18c \uacfc\uc815\uc5d0\uc11c \ub208\uc5d0 \ub744\ub294 \ub9c8\uac10 \uc0c1\ud0dc\uc640 \uc0dd\ud65c \uccb4\ud06c \ud3ec\uc778\ud2b8\ub97c \ud568\uaed8 \ud655\uc778\ud569\ub2c8\ub2e4.</p><div><span>\ucc3d\ud2c0\xb7\uc0f7\uc2dc</span><span>\uc2f1\ud06c\ub300 \ud558\ubd80</span><span>\uc695\uc2e4 \ubc30\uc218</span><span>\ubb38\ud2c0\xb7\ubab0\ub529</span><span>\uc218\ub0a9\uc7a5 \ub0b4\ubd80</span><span>\ubc14\ub2e5 \ucc0d\ud798</span></div><a href="/cases/new-apartment-checklist.html">30\uac00\uc9c0 \uccb4\ud06c\ub9ac\uc2a4\ud2b8 \ubcf4\uae30</a></div>'
 
-# 서비스 가능 지역에는 사업장 주소를 두지 않음
-s = re.sub(r'\s*<p class="area-business">.*?</p>', '', s, flags=re.S)
+s = re.sub(r'\s*<div class="movein-check".*?</div>\s*', '\n', s, flags=re.S)
+anchor = '<div class="service-area" aria-label="서비스 가능 지역 안내">'
+if anchor in s:
+    s = s.replace(anchor, card + '\n' + anchor, 1)
 
-# 상담문의 예약금 안내 박스 제거
-s = re.sub(r'\s*<div class="deposit-box">.*?</div>\s*', '\n', s, flags=re.S)
+faq = '<div class="faq-card"><b>\uc785\uc8fc\uccad\uc18c\ud560 \ub54c \ud558\uc790\ub3c4 \uac19\uc774 \ud655\uc778\ud574\uc8fc\uc2dc\ub098\uc694?</b><p>\uc815\ubc00 \ud558\uc790\uc9c4\ub2e8\uc740 \uc544\ub2c8\uc9c0\ub9cc, \uccad\uc18c \uacfc\uc815\uc5d0\uc11c \ub208\uc5d0 \ub744\ub294 \ub9c8\uac10 \uc0c1\ud0dc\ub098 \uc0dd\ud65c \ud558\uc790 \uac00\ub2a5 \ubd80\ubd84\uc740 \ud568\uaed8 \ud655\uc778\ud574\ub4dc\ub9bd\ub2c8\ub2e4.</p></div>'
+s = re.sub(r'\s*<div class="faq-card"><b>.*?\ud558\uc790.*?</div>', '', s, flags=re.S)
+if '<div class="faq-grid">' in s and faq not in s:
+    s = s.replace('<div class="faq-grid">', '<div class="faq-grid">\n        ' + faq, 1)
 
-# 잘못 빠져나온 후기 텍스트 영역 제거
-s = re.sub(r'\s*<div class="review-text-section".*?</div>\s*', '\n', s, flags=re.S)
-
-# 작업사례 섹션 뒤에 남은 잘못된 div 닫힘 정리
-s = s.replace('  </section></div>\n</div>\n<section id="journal"', '  </section>\n<section id="journal"')
-s = s.replace('  </section></div>\n<section id="journal"', '  </section>\n<section id="journal"')
-s = s.replace('  </section>\n</div>\n<section id="journal"', '  </section>\n<section id="journal"')
-
-# 푸터: 지역 박스에는 지역만, 사업장은 회사정보의 사업자등록번호 아래 표시
-footer_local = '<div class="footer-local"><b>주요 서비스 지역</b><p>서울 · 경기 · 인천 / 부평 · 부천 · 송도 · 청라 · 검단 · 계양 · 수원 · 용인 · 성남 · 고양 · 김포 · 파주 · 안산 · 시흥 · 화성 · 평택</p><p>전국 출장 상담 가능 서비스: 특수청소 · 유품정리 · 정리 청소 · 폐기물 처리 등</p></div>'
-s = re.sub(r'\s*<div class="footer-local".*?</div>\s*', '\n', s, flags=re.S)
-s = s.replace('<div class="company-info">', footer_local + '\n<div class="company-info">', 1)
-s = re.sub(r'<br>사업장: 인천광역시 부평구 부영로 165', '', s)
-s = s.replace('사업자등록번호 825-04-03699<br>Tel.', '사업자등록번호 825-04-03699<br>사업장: 인천광역시 부평구 부영로 165<br>Tel.', 1)
-
-# 푸터/상담문의/서비스안내 보정
-css = '/* FOOTER_LOCAL_TEXT */.footer-local{max-width:900px;margin:0 auto 18px;padding:18px;border-radius:22px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb;line-height:1.7}.footer-local b{display:block;color:#fff;margin-bottom:8px}.footer-local p{margin:6px 0;color:#cbd5e1;font-size:14px}#contact .page-inner{max-width:960px;margin:0 auto;text-align:center}#contact .form-card{margin-left:auto;margin-right:auto;text-align:left}#contact .social-icons,#contact .notice{max-width:760px;margin-left:auto;margin-right:auto}@media(min-width:761px){.service-area{max-width:820px}.area-split{grid-template-columns:1fr!important}.area-box.strong p{line-height:1.9}.area-region p{max-width:720px}.area-note{max-width:720px}}'
-s = re.sub(r'\n\s*/\* FOOTER_LOCAL_TEXT \*/.*?(?=\n\s*</style>)', '\n', s, flags=re.S)
+css = '/* MOVEIN_CHECK */.movein-check{margin:34px auto 0;max-width:820px;text-align:left;background:#fff;border:1px solid #e2e8f0;border-radius:28px;padding:28px;box-shadow:0 12px 34px rgba(15,23,42,.08)}.movein-check b{display:block;font-size:25px;color:#0f172a;margin-bottom:10px}.movein-check p{color:#475569;line-height:1.8}.movein-check div{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.movein-check span{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:999px;padding:10px;text-align:center;font-weight:900}.movein-check a{display:inline-flex;margin-top:18px;border-radius:999px;background:#0f172a;color:#fff;padding:12px 18px;font-weight:950}@media(max-width:760px){.movein-check{padding:22px}.movein-check div{grid-template-columns:1fr 1fr}}'
+s = re.sub(r'\n\s*/\* MOVEIN_CHECK \*/.*?(?=\n\s*</style>)', '\n', s, flags=re.S)
 s = s.replace('</style>', css + '</style>', 1)
 
 p.write_text(s, encoding='utf-8')
