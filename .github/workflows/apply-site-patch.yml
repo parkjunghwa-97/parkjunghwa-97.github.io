@@ -1,0 +1,36 @@
+name: Apply Site Patch
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/scripts/trust_cert_patch.py'
+      - 'index.html'
+      - '.github/workflows/apply-site-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Apply trust certification patch
+        run: python .github/scripts/trust_cert_patch.py
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet; then
+            git add index.html
+            git commit -m "Add trust certification section [skip ci]"
+            git push
+          else
+            echo "No changes"
+          fi
