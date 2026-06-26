@@ -8,16 +8,20 @@ s = s.replace("if(track){track.style.animation='none';}", "if(track){track.style
 s = s.replace("document.querySelectorAll('.case-row,.cert-marquee').forEach(makeSlider);", "document.querySelectorAll('.case-row,.review-marquee,.cert-marquee').forEach(makeSlider);")
 s = s.replace("var track=slider.querySelector('.case-strip,.cert-marquee-track');", "var track=slider.querySelector('.case-strip,.review-track,.cert-marquee-track');")
 
-# Make company intro action slower and easier to see on mobile.
-s = s.replace("const startTop=isMobile ? '45vh' : '50vh';", "const startTop=isMobile ? '38vh' : '50vh';")
-s = s.replace("const startTop=isMobile ? '39vh' : '50vh';", "const startTop=isMobile ? '38vh' : '50vh';")
-s = s.replace("const startFont=isMobile ? '38px' : '80px';", "const startFont=isMobile ? '36px' : '80px';")
-s = s.replace("const startFont=isMobile ? '36px' : '80px';", "const startFont=isMobile ? '36px' : '80px';")
-s = s.replace("const duration=isMobile ? 1500 : 950;", "const duration=isMobile ? 3200 : 950;")
-s = s.replace("const duration=isMobile ? 1250 : 950;", "const duration=isMobile ? 3200 : 950;")
-s = s.replace("{left:'50vw',top:startTop,width:startWidth+'px',fontSize:startFont,transform:'translate(-50%,-50%) scale(1)',opacity:1,offset:.26}", "{left:'50vw',top:startTop,width:startWidth+'px',fontSize:startFont,transform:'translate(-50%,-50%) scale(1)',opacity:1,offset:.18}")
-s = s.replace("{left:'50vw',top:startTop,width:startWidth+'px',fontSize:startFont,transform:'translate(-50%,-50%) scale(.92)',opacity:1,offset:.60}", "{left:'50vw',top:startTop,width:startWidth+'px',fontSize:startFont,transform:'translate(-50%,-50%) scale(.98)',opacity:1,offset:.72}")
-s = s.replace("setTimeout(function(){playAboutLanding(target);}, window.innerWidth <= 760 ? 300 : 40);", "setTimeout(function(){playAboutLanding(target);}, window.innerWidth <= 760 ? 450 : 40);")
+# Match company-intro animation feel on mobile and desktop.
+s = s.replace("const startTop=isMobile ? '38vh' : '50vh';", "const startTop=isMobile ? '43vh' : '50vh';")
+s = s.replace("const startTop=isMobile ? '45vh' : '50vh';", "const startTop=isMobile ? '43vh' : '50vh';")
+s = s.replace("const startTop=isMobile ? '39vh' : '50vh';", "const startTop=isMobile ? '43vh' : '50vh';")
+s = s.replace("const startFont=isMobile ? '36px' : '80px';", "const startFont=isMobile ? '37px' : '80px';")
+s = s.replace("const startFont=isMobile ? '38px' : '80px';", "const startFont=isMobile ? '37px' : '80px';")
+s = s.replace("const duration=isMobile ? 3200 : 950;", "const duration=isMobile ? 1750 : 950;")
+s = s.replace("const duration=isMobile ? 1500 : 950;", "const duration=isMobile ? 1750 : 950;")
+s = s.replace("const duration=isMobile ? 1250 : 950;", "const duration=isMobile ? 1750 : 950;")
+s = s.replace("offset:.18", "offset:.24")
+s = s.replace("transform:'translate(-50%,-50%) scale(.98)',opacity:1,offset:.72", "transform:'translate(-50%,-50%) scale(.94)',opacity:1,offset:.58")
+s = s.replace("transform:'translate(-50%,-50%) scale(.92)',opacity:1,offset:.60", "transform:'translate(-50%,-50%) scale(.94)',opacity:1,offset:.58")
+s = s.replace("setTimeout(function(){playAboutLanding(target);}, window.innerWidth <= 760 ? 450 : 40);", "setTimeout(function(){playAboutLanding(target);}, window.innerWidth <= 760 ? 260 : 40);")
+s = s.replace("setTimeout(function(){playAboutLanding(target);}, window.innerWidth <= 760 ? 300 : 40);", "setTimeout(function(){playAboutLanding(target);}, window.innerWidth <= 760 ? 260 : 40);")
 
 # Keep the flying text visible above floating contact buttons.
 css_about = '''
