@@ -448,17 +448,17 @@
     .hero-btn.secondary{background:rgba(15,23,42,.72);color:#fff;border:1px solid rgba(255,255,255,.45)}
     .hero-proof{margin-top:20px;font-size:15px;font-weight:800;line-height:1.6;color:rgba(255,255,255,.88);text-shadow:0 3px 14px rgba(0,0,0,.38);opacity:0;transform:translateY(24px);animation:heroTextIn 1s ease forwards;animation-delay:2.15s}
     @media(max-width:760px){.hero .hero-inner{transform:translateY(42px)}.hero-main{font-size:28px;line-height:1.34}.hero-sub{font-size:15.5px;margin-top:16px}.hero-cta{margin-top:22px;gap:9px}.hero-btn{padding:12px 16px;font-size:14px}.hero-proof{font-size:13.5px}}
-
     /* PROCESS_FLOW_SECTION */
     .flow-process{display:flex;align-items:center;justify-content:center;gap:12px;margin:34px auto 10px;flex-wrap:nowrap;overflow-x:auto;padding:10px 4px 18px;scrollbar-width:none}
     .flow-process::-webkit-scrollbar{display:none}
-    .flow-step{flex:0 0 118px;width:118px;height:118px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 10px 26px rgba(15,23,42,.08);border:1px solid #e2e8f0;padding:13px;color:#0f172a}
-    .flow-step span{display:block;font-size:12px;font-weight:950;color:#dc2626;margin-bottom:6px;letter-spacing:.03em}
-    .flow-step b{display:block;font-size:13px;line-height:1.32;font-weight:950;word-break:keep-all}
+    .flow-step{flex:0 0 108px;width:108px;height:108px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 10px 26px rgba(15,23,42,.08);border:1px solid #e2e8f0;padding:12px;color:#0f172a}
+    .flow-step span{display:block;font-size:11px;font-weight:950;color:#dc2626;margin-bottom:5px;letter-spacing:.03em}
+    .flow-step b{display:block;font-size:12.2px;line-height:1.3;font-weight:950;word-break:keep-all}
     .flow-step.key{background:#0f172a;color:#fff;border-color:#0f172a;box-shadow:0 14px 32px rgba(15,23,42,.22)}
     .flow-step.key span{color:#fca5a5}
-    .flow-arrow{flex:0 0 auto;color:#94a3b8;font-size:24px;font-weight:900}
-    @media(max-width:760px){.flow-process{justify-content:flex-start;gap:9px;margin-top:28px;padding-bottom:16px}.flow-step{flex-basis:96px;width:96px;height:96px;padding:10px}.flow-step b{font-size:11.5px}.flow-step span{font-size:11px;margin-bottom:4px}.flow-arrow{font-size:18px}}
+    .flow-arrow{flex:0 0 auto;color:#94a3b8;font-size:22px;font-weight:900}
+    @media(max-width:760px){.flow-process{justify-content:flex-start;gap:9px;margin-top:28px;padding-bottom:16px}.flow-step{flex-basis:92px;width:92px;height:92px;padding:9px}.flow-step b{font-size:11px}.flow-step span{font-size:10.5px;margin-bottom:4px}.flow-arrow{font-size:18px}}
+
 
     /* SERVICE_AREA_SECTION */
     .service-area{margin:34px auto 0;max-width:980px;text-align:left;background:linear-gradient(180deg,#ffffff,#f8fafc);border:1px solid rgba(226,232,240,.95);border-radius:30px;padding:30px;box-shadow:0 12px 34px rgba(15,23,42,.08)}
@@ -778,7 +778,7 @@
     <div class="hero-inner">
       <div class="hero-main">낮은 견적보다 중요한 건,<br>불안하지 않은 과정입니다.</div>
 
-      <div class="hero-sub">사진 상담으로 현장 상태를 먼저 확인하고<br>작업 범위와 추가 비용 가능성을 안내합니다.<br><br>서울·경기·인천 입주청소 · 이사청소<br>전국 특수청소 · 유품정리 · 고독사청소 · 쓰레기집 청소 · 쓰레기집 청소 · 쓰레기집 청소 · 쓰레기집 청소 · 쓰레기집 청소</div>
+      <div class="hero-sub">사진 상담으로 현장 상태를 먼저 확인하고<br>작업 범위와 추가 비용 가능성을 안내합니다.<br><br>서울·경기·인천 입주청소 · 이사청소<br>전국 특수청소 · 유품정리 · 고독사청소 · 쓰레기집 청소 · 쓰레기집 청소 · 쓰레기집 청소 · 쓰레기집 청소 · 쓰레기집 청소 · 쓰레기집 청소</div>
 
       <div class="hero-cta">
         <button class="hero-btn" onclick="showPage('contact')">내 상황 상담받기</button>
@@ -840,17 +840,19 @@
       </div>
 
       <div class="process flow-process" aria-label="상담부터 작업까지 진행 절차">
-        <div class="flow-step"><span>01</span><b>사진·영상 접수</b></div>
+        <div class="flow-step"><span>01</span><b>문의 상담</b></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-step"><span>02</span><b>현장 상태 확인</b></div>
+        <div class="flow-step"><span>02</span><b>사진·영상 접수</b></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-step"><span>03</span><b>예상 견적·예약금 안내</b></div>
+        <div class="flow-step"><span>03</span><b>현장 상태 확인</b></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-step key"><span>04</span><b>예약금 입금 후 예약 확정</b></div>
+        <div class="flow-step"><span>04</span><b>예상 견적·예약금 안내</b></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-step"><span>05</span><b>안내사항 발송 후 작업 진행</b></div>
+        <div class="flow-step key"><span>05</span><b>예약금 입금 후 예약 확정</b></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-step"><span>06</span><b>작업 완료 후 확인</b></div>
+        <div class="flow-step"><span>06</span><b>안내사항 발송 후 작업 진행</b></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span>07</span><b>작업 완료 후 확인</b></div>
       </div>
 
       <div class="service-area" aria-label="서비스 가능 지역 안내">
