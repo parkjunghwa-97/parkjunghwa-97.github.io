@@ -35,7 +35,7 @@ s = s.replace(
 # FAQ typo cleanup
 s = s.replace('작업 범위는 상담 기준으로 진행돼요를 확인해 예상 견적을 안내드립니다.', '작업 범위를 확인해 예상 견적을 안내드립니다.')
 
-# Schema.org JSON-LD for SEO/AEO/GEO. Do not expose a residential address here.
+# Schema.org JSON-LD for SEO/AEO/GEO.
 schema_json = '''  <!-- SCHEMA_ORG_JSONLD -->
   <script type="application/ld+json">
   {
@@ -48,6 +48,13 @@ schema_json = '''  <!-- SCHEMA_ORG_JSONLD -->
         "alternateName": ["대한청소만세", "기프트클린"],
         "url": "https://parkjunghwa-97.github.io/",
         "telephone": "+82-10-4122-9207",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "부영로 165",
+          "addressLocality": "부평구",
+          "addressRegion": "인천광역시",
+          "addressCountry": "KR"
+        },
         "image": "https://parkjunghwa-97.github.io/logo.png",
         "priceRange": "현장 상태에 따라 상담 후 안내",
         "description": "서울·경기·인천 입주청소와 이사청소, 전국 특수청소·고독사청소·유품정리·쓰레기집 청소·폐기물 처리·비둘기 퇴치 상담.",
@@ -168,6 +175,7 @@ area_html = '''
         <div class="area-kicker">서비스 가능 지역 안내</div>
         <h3>지역과 현장 상태를 확인한 뒤 안내드립니다</h3>
         <p class="area-lead">대한청소만세는 서울·경기·인천 등 수도권을 중심으로 입주청소와 이사청소를 상담하고 있습니다.</p>
+        <p class="area-business"><b>사업장 기준</b> 인천광역시 부평구 부영로 165</p>
 
         <div class="area-split">
           <div class="area-box">
@@ -197,7 +205,9 @@ area_css = '''
     .service-area{margin:34px auto 0;max-width:980px;text-align:left;background:linear-gradient(180deg,#ffffff,#f8fafc);border:1px solid rgba(226,232,240,.95);border-radius:30px;padding:30px;box-shadow:0 12px 34px rgba(15,23,42,.08)}
     .area-kicker{font-size:13px;font-weight:950;color:#64748b;letter-spacing:.02em;margin-bottom:8px}
     .service-area h3{margin:0 0 12px;font-size:28px;line-height:1.28;color:#0f172a}
-    .area-lead{margin:0 0 20px;color:#475569;line-height:1.7;font-size:16px}
+    .area-lead{margin:0 0 12px;color:#475569;line-height:1.7;font-size:16px}
+    .area-business{display:inline-flex;align-items:center;gap:8px;margin:0 0 20px;padding:10px 14px;border-radius:999px;background:#f1f5f9;border:1px solid #e2e8f0;color:#334155;font-size:14px;font-weight:800}
+    .area-business b{color:#0f172a;font-weight:950}
     .area-split{display:grid;grid-template-columns:1fr 1.4fr;gap:14px;margin:18px 0}
     .area-box{background:#fff;border-radius:22px;padding:20px;border:1px solid #e2e8f0;box-shadow:0 8px 20px rgba(15,23,42,.05)}
     .area-box.strong{background:#0f172a;color:#fff;border-color:#0f172a}
@@ -207,7 +217,7 @@ area_css = '''
     .area-region b{display:block;margin-bottom:10px;color:#0f172a;font-size:16px}
     .area-region p{margin:0;color:#475569;line-height:1.9;font-size:15px}
     .area-note{margin:18px 0 0;padding-left:16px;border-left:4px solid #0f172a;color:#334155;line-height:1.75;font-weight:800}
-    @media(max-width:760px){.service-area{padding:22px;border-radius:24px}.service-area h3{font-size:23px}.area-split{grid-template-columns:1fr}.area-region p{font-size:14.5px}.area-note{font-size:14.5px}}
+    @media(max-width:760px){.service-area{padding:22px;border-radius:24px}.service-area h3{font-size:23px}.area-business{font-size:13px;line-height:1.45;border-radius:18px}.area-split{grid-template-columns:1fr}.area-region p{font-size:14.5px}.area-note{font-size:14.5px}}
 '''
 s = re.sub(r'\n\s*/\* SERVICE_AREA_SECTION \*/.*?(?=\n\s*/\* MOBILE_NAV_FLOW_FIX \*/)', area_css, s, count=1, flags=re.S)
 if 'SERVICE_AREA_SECTION' not in s:
