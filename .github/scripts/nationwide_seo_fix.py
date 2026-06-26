@@ -8,6 +8,7 @@ bad = '<div class="review-shot"><img src="images/reviews/review-03.jpg" alt="고
 s = s.replace(bad, '')
 
 s = s.replace('전국 특수청소 · 유품정리 · 고독사청소', '전국 특수청소 · 유품정리 · 고독사청소 · 쓰레기집 청소')
+s = s.replace('폐기물 처리 비용 안내', '폐기물 처리')
 
 s = s.replace(
     '.intro-logo{width:300px;max-width:80vw;object-fit:contain;margin-bottom:16px;filter:drop-shadow(0 12px 28px rgba(0,0,0,.45));animation:fadeUp .7s ease forwards}',
@@ -31,20 +32,112 @@ s = s.replace(
     '@media(max-width:430px){.review-shot img{width:250px;height:auto;max-height:390px}}'
 )
 
+# FAQ typo cleanup
+s = s.replace('작업 범위는 상담 기준으로 진행돼요를 확인해 예상 견적을 안내드립니다.', '작업 범위를 확인해 예상 견적을 안내드립니다.')
+
+# Schema.org JSON-LD for SEO/AEO/GEO. Do not expose a residential address here.
+schema_json = '''  <!-- SCHEMA_ORG_JSONLD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "LocalBusiness",
+        "@id": "https://parkjunghwa-97.github.io/#business",
+        "name": "기프트클린 대한청소만세",
+        "alternateName": ["대한청소만세", "기프트클린"],
+        "url": "https://parkjunghwa-97.github.io/",
+        "telephone": "+82-10-4122-9207",
+        "image": "https://parkjunghwa-97.github.io/logo.png",
+        "priceRange": "현장 상태에 따라 상담 후 안내",
+        "description": "서울·경기·인천 입주청소와 이사청소, 전국 특수청소·고독사청소·유품정리·쓰레기집 청소·폐기물 처리·비둘기 퇴치 상담.",
+        "areaServed": ["서울", "경기", "인천", "대전", "세종", "충청", "강원", "부산", "대구", "울산", "광주", "전라", "경상"],
+        "serviceArea": ["서울", "경기", "인천", "전국 출장 상담 가능 서비스"],
+        "openingHoursSpecification": [{
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+          "opens": "00:00",
+          "closes": "23:59"
+        }],
+        "contactPoint": [{
+          "@type": "ContactPoint",
+          "telephone": "+82-10-4122-9207",
+          "contactType": "customer service",
+          "areaServed": "KR",
+          "availableLanguage": "Korean"
+        }],
+        "sameAs": ["https://pf.kakao.com/_lxhwGX"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://parkjunghwa-97.github.io/#website",
+        "url": "https://parkjunghwa-97.github.io/",
+        "name": "기프트클린 대한청소만세",
+        "publisher": {"@id": "https://parkjunghwa-97.github.io/#business"}
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://parkjunghwa-97.github.io/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "사진만 보내도 견적 가능한가요?",
+            "acceptedAnswer": {"@type": "Answer", "text": "네, 가능합니다. 현장 사진이나 영상을 보내주시면 오염도, 짐 유무, 폐기물 양, 작업 범위를 확인해 예상 견적을 안내드립니다. 다만 사진에 보이지 않는 오염이나 추가 작업이 있는 경우 현장에서 금액이 변동될 수 있습니다."}
+          },
+          {
+            "@type": "Question",
+            "name": "당일 청소도 가능한가요?",
+            "acceptedAnswer": {"@type": "Answer", "text": "일정이 맞는 경우 당일 작업도 가능합니다. 작업 종류, 현장 상태, 이동 거리, 투입 인원에 따라 가능 여부가 달라질 수 있어 상담 시 확인이 필요합니다."}
+          },
+          {
+            "@type": "Question",
+            "name": "입주청소와 이사청소는 다른가요?",
+            "acceptedAnswer": {"@type": "Answer", "text": "입주청소는 새로 들어가기 전 빈 공간을 기준으로 진행하는 경우가 많고, 이사청소는 이전 거주 흔적이나 생활 오염이 남아 있는 경우가 많습니다. 현장 상태에 따라 작업 범위와 비용이 달라질 수 있습니다."}
+          },
+          {
+            "@type": "Question",
+            "name": "쓰레기집 청소도 가능한가요?",
+            "acceptedAnswer": {"@type": "Answer", "text": "네, 가능합니다. 생활쓰레기, 음식물 쓰레기, 악취, 바닥 오염, 폐기물 양을 확인한 뒤 작업 범위와 예상 비용을 안내드립니다. 사진 확인 후 예상 견적 안내가 가능합니다."}
+          },
+          {
+            "@type": "Question",
+            "name": "비둘기 퇴치는 어떤 작업을 하나요?",
+            "acceptedAnswer": {"@type": "Answer", "text": "현장 상태에 따라 분변 제거, 둥지 제거, 알·새끼 확인, 유입경로 차단막 설치 등을 진행합니다. 스카이 장비나 외부 작업이 필요한 경우 별도 안내드립니다."}
+          },
+          {
+            "@type": "Question",
+            "name": "추가 비용은 언제 발생하나요?",
+            "acceptedAnswer": {"@type": "Answer", "text": "상담 당시 확인되지 않은 심한 오염, 폐기물 증가, 추가 공간, 추가 작업 요청, 장비 사용, 유료 주차비 등이 있는 경우 추가 비용이 발생할 수 있습니다. 추가 작업은 사전 안내 후 진행됩니다."}
+          },
+          {
+            "@type": "Question",
+            "name": "작업 후 A/S는 가능한가요?",
+            "acceptedAnswer": {"@type": "Answer", "text": "작업 완료 후 3일 이내 접수 가능합니다. 사진 또는 영상으로 확인 후 작업 범위 내 미흡한 부분인지 확인하여 안내드립니다. 작업 완료 후 새로 발생한 오염이나 사용 중 발생한 오염은 A/S 대상에서 제외될 수 있습니다."}
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+'''
+s = re.sub(r'\n\s*<!-- SCHEMA_ORG_JSONLD -->\s*<script type="application/ld\+json">.*?</script>\s*', '\n', s, flags=re.S)
+if 'SCHEMA_ORG_JSONLD' not in s:
+    s = s.replace('  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">', schema_json + '  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">', 1)
+
 process_html = '''      <div class="process flow-process" aria-label="상담부터 작업까지 진행 절차">
-        <div class="flow-step"><span>01</span><b>문의 상담</b></div>
+        <div class="flow-step t1"><span>01</span><b>문의 상담</b></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-step"><span>02</span><b>사진·영상 접수</b></div>
+        <div class="flow-step t2"><span>02</span><b>사진·영상 접수</b></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-step"><span>03</span><b>현장 상태 확인</b></div>
+        <div class="flow-step t3"><span>03</span><b>현장 상태 확인</b></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-step"><span>04</span><b>예상 견적·예약금 안내</b></div>
+        <div class="flow-step t4"><span>04</span><b>예상 견적·예약금 안내</b></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-step key"><span>05</span><b>예약금 입금 후 예약 확정</b></div>
+        <div class="flow-step t5"><span>05</span><b>예약금 확인 후 예약 확정</b></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-step"><span>06</span><b>안내사항 발송 후 작업 진행</b></div>
+        <div class="flow-step t6"><span>06</span><b>안내사항 발송 후 작업 진행</b></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-step"><span>07</span><b>작업 완료 후 확인</b></div>
+        <div class="flow-step t7"><span>07</span><b>작업 완료 후 확인</b></div>
       </div>'''
 s = re.sub(r'      <div class="process(?: flow-process)?"[^>]*>.*?\n      </div>', process_html, s, count=1, flags=re.S)
 
@@ -52,11 +145,16 @@ process_css = '''
     /* PROCESS_FLOW_SECTION */
     .flow-process{display:flex;align-items:center;justify-content:center;gap:12px;margin:34px auto 10px;flex-wrap:nowrap;overflow-x:auto;padding:10px 4px 18px;scrollbar-width:none}
     .flow-process::-webkit-scrollbar{display:none}
-    .flow-step{flex:0 0 108px;width:108px;height:108px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 10px 26px rgba(15,23,42,.08);border:1px solid #e2e8f0;padding:12px;color:#0f172a}
-    .flow-step span{display:block;font-size:11px;font-weight:950;color:#dc2626;margin-bottom:5px;letter-spacing:.03em}
-    .flow-step b{display:block;font-size:12.2px;line-height:1.3;font-weight:950;word-break:keep-all}
-    .flow-step.key{background:#0f172a;color:#fff;border-color:#0f172a;box-shadow:0 14px 32px rgba(15,23,42,.22)}
-    .flow-step.key span{color:#fca5a5}
+    .flow-step{flex:0 0 108px;width:108px;height:108px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 10px 26px rgba(15,23,42,.08);border:1px solid #e2e8f0;padding:12px;color:#0f172a;transition:.2s ease}
+    .flow-step span{display:block;font-size:11px;font-weight:950;margin-bottom:5px;letter-spacing:.03em;color:inherit;opacity:.78}
+    .flow-step b{display:block;font-size:12.2px;line-height:1.3;font-weight:950;word-break:keep-all;color:inherit}
+    .flow-step.t1{background:#ffffff}
+    .flow-step.t2{background:#f8fafc}
+    .flow-step.t3{background:#f1f5f9}
+    .flow-step.t4{background:#e2e8f0}
+    .flow-step.t5{background:#cbd5e1;color:#0f172a;border-color:#cbd5e1}
+    .flow-step.t6{background:#475569;color:#fff;border-color:#475569}
+    .flow-step.t7{background:#0f172a;color:#fff;border-color:#0f172a;box-shadow:0 14px 32px rgba(15,23,42,.22)}
     .flow-arrow{flex:0 0 auto;color:#94a3b8;font-size:22px;font-weight:900}
     @media(max-width:760px){.flow-process{justify-content:flex-start;gap:9px;margin-top:28px;padding-bottom:16px}.flow-step{flex-basis:92px;width:92px;height:92px;padding:9px}.flow-step b{font-size:11px}.flow-step span{font-size:10.5px;margin-bottom:4px}.flow-arrow{font-size:18px}}
 '''
@@ -97,7 +195,7 @@ if 'aria-label="서비스 가능 지역 안내"' not in s:
 area_css = '''
     /* SERVICE_AREA_SECTION */
     .service-area{margin:34px auto 0;max-width:980px;text-align:left;background:linear-gradient(180deg,#ffffff,#f8fafc);border:1px solid rgba(226,232,240,.95);border-radius:30px;padding:30px;box-shadow:0 12px 34px rgba(15,23,42,.08)}
-    .area-kicker{font-size:13px;font-weight:950;color:#dc2626;letter-spacing:.02em;margin-bottom:8px}
+    .area-kicker{font-size:13px;font-weight:950;color:#64748b;letter-spacing:.02em;margin-bottom:8px}
     .service-area h3{margin:0 0 12px;font-size:28px;line-height:1.28;color:#0f172a}
     .area-lead{margin:0 0 20px;color:#475569;line-height:1.7;font-size:16px}
     .area-split{display:grid;grid-template-columns:1fr 1.4fr;gap:14px;margin:18px 0}
@@ -108,9 +206,10 @@ area_css = '''
     .area-region{margin-top:16px;background:#f1f5f9;border-radius:22px;padding:20px;border:1px solid #e2e8f0}
     .area-region b{display:block;margin-bottom:10px;color:#0f172a;font-size:16px}
     .area-region p{margin:0;color:#475569;line-height:1.9;font-size:15px}
-    .area-note{margin:18px 0 0;padding-left:16px;border-left:4px solid #dc2626;color:#334155;line-height:1.75;font-weight:800}
+    .area-note{margin:18px 0 0;padding-left:16px;border-left:4px solid #0f172a;color:#334155;line-height:1.75;font-weight:800}
     @media(max-width:760px){.service-area{padding:22px;border-radius:24px}.service-area h3{font-size:23px}.area-split{grid-template-columns:1fr}.area-region p{font-size:14.5px}.area-note{font-size:14.5px}}
 '''
+s = re.sub(r'\n\s*/\* SERVICE_AREA_SECTION \*/.*?(?=\n\s*/\* MOBILE_NAV_FLOW_FIX \*/)', area_css, s, count=1, flags=re.S)
 if 'SERVICE_AREA_SECTION' not in s:
     s = s.replace('\n    /* MOBILE_NAV_FLOW_FIX */', area_css + '\n    /* MOBILE_NAV_FLOW_FIX */', 1)
 
