@@ -15,10 +15,15 @@ s = re.sub(r'\s*<p class="area-business">.*?</p>', '', s, flags=re.S)
 # 상담문의 예약금 안내 박스 제거
 s = re.sub(r'\s*<div class="deposit-box">.*?</div>\s*', '\n', s, flags=re.S)
 
-# 푸터에 사업장/지역 정보 표시
-footer_local = '<div class="footer-local"><b>주요 서비스 지역</b><p>서울 · 경기 · 인천 / 부평 · 부천 · 송도 · 청라 · 검단 · 계양 · 수원 · 용인 · 성남 · 고양 · 김포 · 파주 · 안산 · 시흥 · 화성 · 평택</p><p>전국 출장 상담 가능 서비스: 특수청소 · 유품정리 · 정리 청소 · 폐기물 처리 등</p><p>사업장: 인천광역시 부평구 부영로 165</p></div>'
+# 잘못 빠져나온 후기 텍스트 영역 제거
+s = re.sub(r'\s*<div class="review-text-section".*?</div>\s*', '\n', s, flags=re.S)
+
+# 푸터: 지역 박스에는 지역만, 사업장은 회사정보에 표시
+footer_local = '<div class="footer-local"><b>주요 서비스 지역</b><p>서울 · 경기 · 인천 / 부평 · 부천 · 송도 · 청라 · 검단 · 계양 · 수원 · 용인 · 성남 · 고양 · 김포 · 파주 · 안산 · 시흥 · 화성 · 평택</p><p>전국 출장 상담 가능 서비스: 특수청소 · 유품정리 · 정리 청소 · 폐기물 처리 등</p></div>'
 s = re.sub(r'\s*<div class="footer-local".*?</div>\s*', '\n', s, flags=re.S)
 s = s.replace('<div class="company-info">', footer_local + '\n<div class="company-info">', 1)
+s = re.sub(r'<br>사업장: 인천광역시 부평구 부영로 165', '', s)
+s = s.replace('사업자등록번호 825-04-03699<br>Tel.', '사업자등록번호 825-04-03699<br>사업장: 인천광역시 부평구 부영로 165<br>Tel.', 1)
 
 # 푸터/상담문의 정렬 보정
 css = '/* FOOTER_LOCAL_TEXT */.footer-local{max-width:900px;margin:0 auto 18px;padding:18px;border-radius:22px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb;line-height:1.7}.footer-local b{display:block;color:#fff;margin-bottom:8px}.footer-local p{margin:6px 0;color:#cbd5e1;font-size:14px}#contact .page-inner{max-width:960px;margin:0 auto;text-align:center}#contact .form-card{margin-left:auto;margin-right:auto;text-align:left}#contact .social-icons,#contact .notice{max-width:760px;margin-left:auto;margin-right:auto}'
