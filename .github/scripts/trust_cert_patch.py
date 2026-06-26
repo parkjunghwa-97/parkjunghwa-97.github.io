@@ -69,7 +69,7 @@ html = r'''
 '''
 
 anchor = '<div class="about-ending">깨끗한 공간,<br>새로운 시작을 선물합니다.</div>'
-if 'cert-trust-title' not in s and anchor in s:
+if 'aria-label="여성기업 확인 및 관련 자격 안내"' not in s and anchor in s:
     s = s.replace(anchor, anchor + html, 1)
 
 p.write_text(s, encoding='utf-8')
