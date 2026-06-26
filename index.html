@@ -677,6 +677,15 @@
     .review-text-grid article,.review-text-card{background:#fff!important;border:1px solid #dbe3ee!important;border-radius:22px!important;box-shadow:0 10px 26px rgba(15,23,42,.09)!important}
     @media(max-width:760px){.review-text-section{padding:20px!important;border-radius:24px!important;margin-top:36px!important}.review-shot{background:#eef2f7!important}}
 
+
+
+    /* UNIVERSAL_SLIDER_ZOOM */
+    .universal-slider-lightbox{position:fixed!important;inset:0!important;background:rgba(15,23,42,.92)!important;z-index:2147483647!important;display:none;align-items:center;justify-content:center;padding:18px}
+    .universal-slider-lightbox.open{display:flex!important}
+    .universal-slider-lightbox img{max-width:94vw;max-height:88vh;object-fit:contain;background:#fff;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.42)}
+    .universal-slider-lightbox button{position:fixed;top:14px;right:14px;border:0;background:#fff;color:#0f172a;border-radius:999px;width:42px;height:42px;font-size:24px;font-weight:900;cursor:pointer}
+    .review-marquee img,.cert-marquee img,.case-row img{cursor:zoom-in!important}
+
 </style>
 
   <script type="application/ld+json">
@@ -1552,6 +1561,63 @@
       }else{
         setTimeout(function(){window.preloadSliderImages(document);},900);
       }
+    })();
+
+
+    /* UNIVERSAL_SLIDER_ZOOM */
+    (function(){
+      var selector='.review-marquee img,.cert-marquee img,.case-row img';
+      var down=null;
+      var lastOpen=0;
+      function getImg(e){
+        return e && e.target && e.target.closest ? e.target.closest(selector) : null;
+      }
+      function box(){
+        var el=document.querySelector('.universal-slider-lightbox');
+        if(el){return el;}
+        el=document.createElement('div');
+        el.className='universal-slider-lightbox';
+        el.innerHTML='<button type="button" aria-label="닫기">×</button><img alt="확대 이미지">';
+        document.body.appendChild(el);
+        el.addEventListener('click',function(e){if(e.target===el || e.target.tagName==='BUTTON'){el.classList.remove('open');}},true);
+        document.addEventListener('keydown',function(e){if(e.key==='Escape'){el.classList.remove('open');}},true);
+        return el;
+      }
+      function openImg(img){
+        if(!img){return;}
+        var now=Date.now();
+        if(now-lastOpen<280){return;}
+        lastOpen=now;
+        var el=box();
+        el.querySelector('img').src=img.currentSrc || img.src;
+        el.classList.add('open');
+      }
+      document.addEventListener('pointerdown',function(e){
+        var img=getImg(e);
+        if(img){down={img:img,x:e.clientX,y:e.clientY};}
+      },true);
+      document.addEventListener('pointerup',function(e){
+        if(!down){return;}
+        var img=getImg(e) || down.img;
+        var dx=Math.abs((e.clientX||0)-down.x);
+        var dy=Math.abs((e.clientY||0)-down.y);
+        var same=img===down.img;
+        var smallMove=dx<9 && dy<9;
+        down=null;
+        if(same && smallMove){
+          e.preventDefault();
+          e.stopPropagation();
+          openImg(img);
+        }
+      },true);
+      document.addEventListener('click',function(e){
+        var img=getImg(e);
+        if(img){
+          e.preventDefault();
+          e.stopPropagation();
+          openImg(img);
+        }
+      },true);
     })();
 </script>
 </body>
