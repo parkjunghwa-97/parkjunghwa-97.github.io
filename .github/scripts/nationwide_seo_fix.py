@@ -128,8 +128,9 @@ schema_json = '''  <!-- SCHEMA_ORG_JSONLD -->
   </script>
 '''
 s = re.sub(r'\n\s*<!-- SCHEMA_ORG_JSONLD -->\s*<script type="application/ld\+json">.*?</script>\s*', '\n', s, flags=re.S)
-if 'SCHEMA_ORG_JSONLD' not in s:
-    s = s.replace('  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">', schema_json + '  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">', 1)
+font_link = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">'
+if 'SCHEMA_ORG_JSONLD' not in s and font_link in s:
+    s = s.replace(font_link, schema_json + '  ' + font_link, 1)
 
 process_html = '''      <div class="process flow-process" aria-label="상담부터 작업까지 진행 절차">
         <div class="flow-step t1"><span>01</span><b>문의 상담</b></div>
