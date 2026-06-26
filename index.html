@@ -610,6 +610,16 @@
     .cert-toggle,.cert-view,.cert-person,.cert-thumbs{display:none!important}
     @media(max-width:760px){.cert-trust{margin-top:22px!important;padding-top:16px!important}.cert-trust-title{font-size:14.5px!important}.cert-trust-people{font-size:12.8px!important}}
 
+
+
+    /* CERT_TRUST_SLIDER */
+    .cert-marquee{display:block;margin:16px auto 0;max-width:520px;overflow:hidden;position:relative;padding:4px 0 8px;mask-image:linear-gradient(to right,transparent,#000 12%,#000 88%,transparent);-webkit-mask-image:linear-gradient(to right,transparent,#000 12%,#000 88%,transparent)}
+    .cert-marquee-track{display:flex;gap:10px;width:max-content;animation:certSlide 42s linear infinite}
+    .cert-marquee img{width:70px;height:88px;object-fit:cover;background:#fff;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(15,23,42,.06);opacity:.86}
+    .cert-marquee:hover .cert-marquee-track{animation-play-state:paused}
+    @keyframes certSlide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    @media(max-width:760px){.cert-marquee{max-width:100%;margin-top:14px}.cert-marquee img{width:62px;height:78px}.cert-marquee-track{gap:8px;animation-duration:38s}}
+
 </style>
 
   <script type="application/ld+json">
@@ -927,6 +937,22 @@
           <div class="cert-trust" aria-label="여성기업 확인 및 관련 자격 안내">
             <div class="cert-trust-title">여성기업 확인 업체 · 관련 자격 보유</div>
             <div class="cert-trust-people">대표 박정화 <span>|</span> 총괄대표 김수현</div>
+            <div class="cert-marquee" aria-hidden="true">
+              <div class="cert-marquee-track">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-clean.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-pest.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-estate.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-clean.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-pest.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-estate.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-clean.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-pest.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-estate.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-clean.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-pest.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-estate.jpg" alt="">
+              </div>
+            </div>
             <div class="cert-actions">
               <details class="cert-toggle">
                 <summary>여성기업 확인서 보기</summary>
