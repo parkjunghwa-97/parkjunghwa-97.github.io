@@ -51,6 +51,17 @@ css = r'''
 if '/* CERT_TRUST_SECTION */' not in s:
     s = s.replace('</style>', css + '\n</style>', 1)
 
+partner_css = r'''
+
+    /* PARTNER_SYSTEM_BAR */
+    .partner-system{margin:18px auto 24px;padding:18px 0;border-top:1px solid #cbd5e1;border-bottom:1px solid #e2e8f0;text-align:center;max-width:850px;color:#0f172a}
+    .partner-system b{display:block;font-size:17px;line-height:1.55;margin-bottom:8px;color:#0f172a}
+    .partner-system p{margin:0;color:#475569;line-height:1.75;font-size:15px;font-weight:750}
+    @media(max-width:760px){.partner-system{margin:16px auto 22px;padding:16px 0}.partner-system b{font-size:15.5px}.partner-system p{font-size:14.5px}}
+'''
+if '/* PARTNER_SYSTEM_BAR */' not in s:
+    s = s.replace('</style>', partner_css + '\n</style>', 1)
+
 html = r'''
 
           <div class="cert-trust" aria-label="여성기업 확인 및 관련 자격 안내">
@@ -91,5 +102,23 @@ html = r'''
 anchor = '<div class="about-ending">깨끗한 공간,<br>새로운 시작을 선물합니다.</div>'
 if 'aria-label="여성기업 확인 및 관련 자격 안내"' not in s and anchor in s:
     s = s.replace(anchor, anchor + html, 1)
+
+old_partner_sub = '<p class="sub">대한청소만세의 현장 기준을 함께 배워갈 지역 파트너를 기다립니다.</p>'
+new_partner_sub = '<p class="sub">체계적으로 함께할 지역 파트너를 찾습니다.</p>'
+s = s.replace(old_partner_sub, new_partner_sub, 1)
+
+partner_block = '''
+
+      <div class="partner-system">
+        <b>여성기업 확인 업체 · 자체 현장관리 프로그램 운영</b>
+        <p>자체 현장관리 프로그램으로 일정, 현장 정보, 작업 내용, 정산 흐름을 기록하고 공유합니다.<br>함께하는 파트너가 현장에 집중할 수 있도록 상담부터 일정 공유, 작업 안내, 정산까지 명확하게 운영합니다.</p>
+      </div>
+'''
+partner_anchor = '''      <div class="trust-box partner-hero">
+        <b>청소 기술만으로는 부족합니다.<br>현장을 운영하는 기준이 필요합니다.</b>
+        <p>현장을 대하는 태도, 고객에게 안내하는 방식,<br>추가 작업을 설명하는 기준까지 함께 배워갑니다.</p>
+      </div>'''
+if '자체 현장관리 프로그램으로 일정' not in s and partner_anchor in s:
+    s = s.replace(partner_anchor, partner_anchor + partner_block, 1)
 
 p.write_text(s, encoding='utf-8')
