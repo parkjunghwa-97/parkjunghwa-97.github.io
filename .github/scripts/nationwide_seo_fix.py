@@ -12,6 +12,19 @@ SERVICE_COPY = '''서울·경기·인천 등 수도권 입주청소 · 이사청
 특수청소 · 유품정리 · 고독사청소 · 쓰레기집 청소 · 폐기물 처리 · 비둘기 퇴치<br>전국 출장 상담 가능.
 
 사진 상담으로 현장 상태를 먼저 확인하고,<br>작업 범위와 예상 견적을 안내해드립니다.'''
+DEPOSIT_STYLE = '''
+    .deposit-box{margin:0 0 20px;padding:18px;border-radius:20px;background:#f8fafc;border:1px solid #e2e8f0;line-height:1.7}
+    .deposit-box b{display:block;margin-bottom:8px;font-size:17px;color:#0f172a}
+    .deposit-box p{margin:0 0 14px;color:#64748b;font-size:14.5px}
+    .deposit-btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:999px;background:#0f172a;color:#fff;font-weight:900;font-size:14px;box-shadow:0 8px 18px rgba(15,23,42,.16)}
+'''
+DEPOSIT_BOX = '''<div class="deposit-box">
+          <b>예약금 안내</b>
+          <p>상담 후 일정이 확정되면 예약금 안내가 진행됩니다.<br>예약금은 최종 결제 금액에서 차감됩니다.</p>
+          <a class="deposit-btn" href="https://pf.kakao.com/_lxhwGX" target="_blank">예약금 안내 받기</a>
+        </div>
+
+        '''
 
 # Basic meta
 s = re.sub(r'<title>.*?</title>', f'<title>{TITLE}</title>', s, count=1, flags=re.S)
@@ -32,6 +45,11 @@ s = re.sub(r'<meta name="twitter:description" content="[^"]*">', f'<meta name="t
 
 # Visible service copy
 s = re.sub(r'(<section id="service" class="page">.*?<h2>서비스 안내</h2>\s*)<p class="sub">.*?</p>', r'\1<p class="sub">' + SERVICE_COPY + r'</p>', s, count=1, flags=re.S)
+
+# Reservation deposit guide UI
+if '.deposit-box{' not in s:
+    s = s.replace('\n  </style>', DEPOSIT_STYLE + '\n  </style>', 1)
+s = re.sub(r'(<div class="form-card">\s*<h3>상담 예약하기</h3>\s*<p>.*?</p>\s*)(?:<div class="deposit-box">.*?</div>\s*)?(<form class="contact-form")', r'\1' + DEPOSIT_BOX + r'\2', s, count=1, flags=re.S)
 
 # JSON-LD GEO/AI-readable service area
 m = re.search(r'(<script type="application/ld\+json">\s*)(\{.*?\})(\s*</script>)', s, flags=re.S)
