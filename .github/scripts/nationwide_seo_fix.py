@@ -73,7 +73,11 @@ partner = '''
 
 '''
 s = re.sub(r'\n\s*<section id="partner" class="page">.*?</section>\s*', '\n', s, flags=re.S)
-s = s.replace('  <section id="contact" class="page">', partner + '  <section id="contact" class="page">', 1)
+m = re.search(r'\n\s*<section id="contact" class="page">', s)
+if m:
+    s = s[:m.start()] + '\n' + partner + s[m.start():]
+else:
+    s = s.replace('<section id="contact" class="page">', partner + '<section id="contact" class="page">', 1)
 
 bar = '''<div class="fixed-contact-bar">
     <a href="tel:010-4122-9207">전화 상담</a>
@@ -90,10 +94,10 @@ css = '''
       #portfolio{padding-top:36px}
     }
     /* FIXED_CONTACT_BAR */
-    .fixed-contact-bar{position:fixed;right:14px;bottom:14px;z-index:999;display:flex;flex-direction:column;gap:8px;background:rgba(15,23,42,.94);padding:9px;border-radius:22px;box-shadow:0 12px 30px rgba(0,0,0,.25);backdrop-filter:blur(8px);width:150px}
+    .fixed-contact-bar{position:fixed;right:16px;bottom:82px;z-index:999;display:flex;flex-direction:column;gap:8px;background:rgba(15,23,42,.94);padding:9px;border-radius:22px;box-shadow:0 12px 30px rgba(0,0,0,.25);backdrop-filter:blur(8px);width:150px}
     .fixed-contact-bar a{text-align:center;border-radius:999px;padding:12px 10px;background:#fff;color:#0f172a;font-weight:950;font-size:14px;text-decoration:none}
     .fixed-contact-bar a.kakao{background:#facc15;color:#0f172a}
-    @media(max-width:760px){.fixed-contact-bar{right:12px;bottom:12px;width:142px}.fixed-contact-bar a{font-size:14px;padding:12px 8px}footer{padding-bottom:150px}.fixed-call{display:none}}
+    @media(max-width:760px){.fixed-contact-bar{right:12px;bottom:76px;width:142px}.fixed-contact-bar a{font-size:14px;padding:12px 8px}footer{padding-bottom:170px}.fixed-call{display:none}}
 '''
 s = re.sub(r'\n\s*/\* MOBILE_NAV_FLOW_FIX \*/.*?/\* FIXED_CONTACT_BAR \*/.*?(?=\n\s*</style>)', '\n' + css, s, count=1, flags=re.S)
 if 'MOBILE_NAV_FLOW_FIX' not in s:
