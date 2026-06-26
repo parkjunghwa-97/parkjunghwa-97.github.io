@@ -6,6 +6,26 @@ s = p.read_text(encoding='utf-8')
 # Remove accidentally inserted page-navigation JavaScript from the first JSON-LD block.
 s = s.replace('''\n    window.addEventListener('popstate', function(){\n      const id=(location.hash||'#home').replace('#','');\n      if(document.getElementById(id)){showPage(id,true);}\n    });\n    document.addEventListener('DOMContentLoaded', function(){\n      const id=(location.hash||'').replace('#','');\n      if(id && document.getElementById(id)){showPage(id,true);}\n    });\n''', '\n')
 
+# Home/top-left brand badge
+old_brand = '<div class="nav-brand" onclick="showPage(\'home\')">대한청소만세</div>'
+new_brand = '''<div class="nav-brand" onclick="showPage('home')">
+      <span class="nav-brand-main">대한청소만세</span>
+      <span class="nav-brand-cert">중소벤처기업부 여성기업 확인</span>
+    </div>'''
+if 'nav-brand-cert' not in s:
+    s = s.replace(old_brand, new_brand, 1)
+
+brand_css = r'''
+
+    /* BRAND_CERT_BADGE */
+    .nav-brand{display:flex;flex-direction:column;line-height:1.12;align-items:flex-start}
+    .nav-brand-main{font-weight:950;font-size:18px;white-space:nowrap}
+    .nav-brand-cert{margin-top:4px;font-size:11px;font-weight:850;color:#cbd5e1;letter-spacing:-.02em;white-space:nowrap}
+    @media(max-width:760px){.nav-brand{display:flex!important;align-items:center;justify-content:center;margin-bottom:12px}.nav-brand-main{font-size:22px}.nav-brand-cert{font-size:11px;margin-top:4px}}
+'''
+if '/* BRAND_CERT_BADGE */' not in s:
+    s = s.replace('</style>', brand_css + '\n</style>', 1)
+
 css = r'''
 
     /* CERT_TRUST_SECTION */
