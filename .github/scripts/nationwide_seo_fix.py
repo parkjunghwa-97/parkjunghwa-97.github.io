@@ -30,8 +30,8 @@ s = s.replace('<div class="company-info">', footer_local + '\n<div class="compan
 s = re.sub(r'<br>사업장: 인천광역시 부평구 부영로 165', '', s)
 s = s.replace('사업자등록번호 825-04-03699<br>Tel.', '사업자등록번호 825-04-03699<br>사업장: 인천광역시 부평구 부영로 165<br>Tel.', 1)
 
-# 푸터/상담문의 정렬 보정
-css = '/* FOOTER_LOCAL_TEXT */.footer-local{max-width:900px;margin:0 auto 18px;padding:18px;border-radius:22px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb;line-height:1.7}.footer-local b{display:block;color:#fff;margin-bottom:8px}.footer-local p{margin:6px 0;color:#cbd5e1;font-size:14px}#contact .page-inner{max-width:960px;margin:0 auto;text-align:center}#contact .form-card{margin-left:auto;margin-right:auto;text-align:left}#contact .social-icons,#contact .notice{max-width:760px;margin-left:auto;margin-right:auto}'
+# 푸터/상담문의/서비스안내 보정
+css = '/* FOOTER_LOCAL_TEXT */.footer-local{max-width:900px;margin:0 auto 18px;padding:18px;border-radius:22px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e7eb;line-height:1.7}.footer-local b{display:block;color:#fff;margin-bottom:8px}.footer-local p{margin:6px 0;color:#cbd5e1;font-size:14px}#contact .page-inner{max-width:960px;margin:0 auto;text-align:center}#contact .form-card{margin-left:auto;margin-right:auto;text-align:left}#contact .social-icons,#contact .notice{max-width:760px;margin-left:auto;margin-right:auto}@media(min-width:761px){.service-area{max-width:820px}.area-split{grid-template-columns:1fr!important}.area-box.strong p{line-height:1.9}.area-region p{max-width:720px}.area-note{max-width:720px}}'
 s = re.sub(r'\n\s*/\* FOOTER_LOCAL_TEXT \*/.*?(?=\n\s*</style>)', '\n', s, flags=re.S)
 s = s.replace('</style>', css + '</style>', 1)
 
