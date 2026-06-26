@@ -1,7 +1,136 @@
 from pathlib import Path
+import json
+import re
 
 p = Path('index.html')
 s = p.read_text(encoding='utf-8')
+
+# Strengthen SEO / social preview metadata.
+SITE_URL = 'https://parkjunghwa-97.github.io/'
+LOGO_URL = 'https://parkjunghwa-97.github.io/logo.png'
+TITLE = '대한청소만세 | 인천·부평 입주청소 이사청소 특수청소'
+DESC = '인천 부평 기반 청소업체 대한청소만세. 입주청소, 이사청소, 사무실·상가청소, 쓰레기집청소, 유품정리, 고독사청소, 비둘기퇴치 상담. 사진 확인 후 작업 범위와 추가비 가능성을 먼저 안내합니다.'
+KEYWORDS = '인천 입주청소, 부평 입주청소, 인천 이사청소, 부평 이사청소, 인천 청소업체, 부평 청소업체, 인천 특수청소, 인천 유품정리, 인천 고독사청소, 인천 쓰레기집청소, 인천 비둘기퇴치, 인천 폐기물 처리, 서울 입주청소, 경기 입주청소, 기프트클린, 대한청소만세, 기프트클린 대한청소만세'
+
+
+def replace_or_add_meta(html, selector, tag):
+    # selector examples: name="description", property="og:title"
+    pattern = r'<meta\s+[^>]*' + re.escape(selector) + r'[^>]*>'
+    if re.search(pattern, html, flags=re.I):
+        return re.sub(pattern, tag, html, count=1, flags=re.I)
+    return html.replace('<link rel="canonical"', tag + '\n  <link rel="canonical"', 1)
+
+s = re.sub(r'<title>.*?</title>', f'<title>{TITLE}</title>', s, count=1, flags=re.S | re.I)
+s = replace_or_add_meta(s, 'name="description"', f'<meta name="description" content="{DESC}">')
+s = replace_or_add_meta(s, 'name="keywords"', f'<meta name="keywords" content="{KEYWORDS}">')
+s = replace_or_add_meta(s, 'name="author"', '<meta name="author" content="기프트클린 대한청소만세">')
+s = replace_or_add_meta(s, 'name="robots"', '<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">')
+s = replace_or_add_meta(s, 'name="format-detection"', '<meta name="format-detection" content="telephone=yes,address=yes,email=no">')
+
+geo_metas = '''  <meta name="geo.region" content="KR-28">
+  <meta name="geo.placename" content="인천광역시 부평구">
+  <meta name="business:contact_data:locality" content="부평구">
+  <meta name="business:contact_data:region" content="인천광역시">
+  <meta name="business:contact_data:country_name" content="대한민국">'''
+if 'name="geo.region"' not in s:
+    s = s.replace('<link rel="canonical"', geo_metas + '\n  <link rel="canonical"', 1)
+
+s = re.sub(r'<link\s+rel="canonical"\s+href="[^"]*"\s*/?>', f'<link rel="canonical" href="{SITE_URL}">', s, count=1, flags=re.I)
+s = re.sub(r'<link\s+rel="sitemap"[^>]*>', f'<link rel="sitemap" type="application/xml" href="{SITE_URL}sitemap.xml">', s, count=1, flags=re.I)
+
+s = replace_or_add_meta(s, 'property="og:type"', '<meta property="og:type" content="website">')
+s = replace_or_add_meta(s, 'property="og:locale"', '<meta property="og:locale" content="ko_KR">')
+s = replace_or_add_meta(s, 'property="og:site_name"', '<meta property="og:site_name" content="기프트클린 대한청소만세">')
+s = replace_or_add_meta(s, 'property="og:title"', f'<meta property="og:title" content="{TITLE}">')
+s = replace_or_add_meta(s, 'property="og:description"', f'<meta property="og:description" content="{DESC}">')
+s = replace_or_add_meta(s, 'property="og:url"', f'<meta property="og:url" content="{SITE_URL}">')
+s = replace_or_add_meta(s, 'property="og:image"', f'<meta property="og:image" content="{LOGO_URL}">')
+if 'property="og:image:alt"' not in s:
+    s = s.replace(f'<meta property="og:image" content="{LOGO_URL}">', f'<meta property="og:image" content="{LOGO_URL}">\n  <meta property="og:image:alt" content="기프트클린 대한청소만세 로고">\n  <meta property="og:image:width" content="1200">\n  <meta property="og:image:height" content="630">', 1)
+
+s = replace_or_add_meta(s, 'name="twitter:card"', '<meta name="twitter:card" content="summary_large_image">')
+s = replace_or_add_meta(s, 'name="twitter:title"', f'<meta name="twitter:title" content="{TITLE}">')
+s = replace_or_add_meta(s, 'name="twitter:description"', f'<meta name="twitter:description" content="{DESC}">')
+s = replace_or_add_meta(s, 'name="twitter:image"', f'<meta name="twitter:image" content="{LOGO_URL}">')
+s = replace_or_add_meta(s, 'name="theme-color"', '<meta name="theme-color" content="#0f172a">')
+
+schema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "LocalBusiness",
+      "@id": SITE_URL + "#business",
+      "name": "기프트클린 대한청소만세",
+      "alternateName": ["대한청소만세", "기프트클린"],
+      "url": SITE_URL,
+      "telephone": "+82-10-4122-9207",
+      "image": LOGO_URL,
+      "logo": LOGO_URL,
+      "priceRange": "사진 확인 및 현장 상태에 따라 상담 후 안내",
+      "description": "인천 부평 기반 청소업체. 입주청소, 이사청소, 사무실·상가청소, 쓰레기집청소, 특수청소, 유품정리, 고독사청소, 폐기물 처리, 비둘기 퇴치 상담.",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "부영로 165",
+        "addressLocality": "부평구",
+        "addressRegion": "인천광역시",
+        "addressCountry": "KR"
+      },
+      "areaServed": ["인천", "부평", "계양", "서구", "남동구", "연수구", "송도", "청라", "검단", "서울", "경기", "전국 특수청소 상담"],
+      "serviceArea": ["인천", "서울", "경기", "전국 출장 상담 가능 서비스"],
+      "openingHoursSpecification": [{
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+        "opens": "00:00",
+        "closes": "23:59"
+      }],
+      "contactPoint": [{
+        "@type": "ContactPoint",
+        "telephone": "+82-10-4122-9207",
+        "contactType": "customer service",
+        "areaServed": "KR",
+        "availableLanguage": "Korean"
+      }],
+      "sameAs": [
+        "https://pf.kakao.com/_lxhwGX",
+        "https://m.blog.naver.com/krcleangod?tab=1",
+        "https://www.instagram.com/gift.clean"
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "대한청소만세 청소 서비스",
+        "itemListElement": [
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "입주청소"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "이사청소"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "사무실·상가청소"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "쓰레기집청소"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "유품정리"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "고독사청소"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "비둘기퇴치"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "폐기물 처리"}}
+        ]
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": SITE_URL + "#website",
+      "url": SITE_URL,
+      "name": "기프트클린 대한청소만세",
+      "publisher": {"@id": SITE_URL + "#business"}
+    },
+    {
+      "@type": "FAQPage",
+      "@id": SITE_URL + "#faq",
+      "mainEntity": [
+        {"@type":"Question","name":"사진만 보내도 견적 가능한가요?","acceptedAnswer":{"@type":"Answer","text":"현장 사진이나 영상을 보내주시면 오염도, 짐 유무, 폐기물 양, 작업 범위를 확인해 예상 견적을 안내드립니다. 사진에 보이지 않는 오염이나 추가 작업이 있는 경우 현장에서 금액이 변동될 수 있습니다."}},
+        {"@type":"Question","name":"입주청소와 이사청소는 다른가요?","acceptedAnswer":{"@type":"Answer","text":"입주청소는 새로 들어가기 전 빈 공간을 기준으로 진행하는 경우가 많고, 이사청소는 이전 거주 흔적이나 생활 오염이 남아 있는 경우가 많습니다. 현장 상태에 따라 작업 범위와 비용이 달라질 수 있습니다."}},
+        {"@type":"Question","name":"추가 비용은 언제 발생하나요?","acceptedAnswer":{"@type":"Answer","text":"상담 당시 확인되지 않은 심한 오염, 폐기물 증가, 추가 공간, 추가 작업 요청, 장비 사용, 유료 주차비 등이 있는 경우 추가 비용이 발생할 수 있습니다. 추가 작업은 사전 안내 후 진행됩니다."}},
+        {"@type":"Question","name":"비둘기 퇴치는 어떤 작업을 하나요?","acceptedAnswer":{"@type":"Answer","text":"현장 상태에 따라 분변 제거, 둥지 제거, 알·새끼 확인, 유입경로 차단막 설치 등을 진행합니다. 스카이 장비나 외부 작업이 필요한 경우 별도 안내드립니다."}}
+      ]
+    }
+  ]
+}
+jsonld = '  <!-- SCHEMA_ORG_JSONLD -->\n  <script type="application/ld+json">\n' + json.dumps(schema, ensure_ascii=False, indent=2) + '\n</script>'
+s = re.sub(r'\s*<!-- SCHEMA_ORG_JSONLD -->\s*<script type="application/ld\+json">.*?</script>', '\n' + jsonld, s, count=1, flags=re.S)
 
 # Keep slider moving while draggable.
 s = s.replace("if(track){track.style.animation='none';}", "if(track){track.style.animationPlayState='running';}")
