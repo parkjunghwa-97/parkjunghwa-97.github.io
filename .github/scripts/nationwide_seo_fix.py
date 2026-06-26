@@ -3,8 +3,9 @@ import re
 p = Path('index.html')
 s = p.read_text(encoding='utf-8')
 old = '<button class="nav-btn" onclick="showPage(\'contact\')">상담문의</button>'
-new = '<button class="nav-btn" onclick="location.href=\'partner.html\'">파트너모집</button>\n      ' + old
-if 'partner.html' not in s:
+new = '<button class="nav-btn" onclick="showPage(\'partner\')">파트너모집</button>\n      ' + old
+s = s.replace('<button class="nav-btn" onclick="location.href=\'partner.html\'">파트너모집</button>', '<button class="nav-btn" onclick="showPage(\'partner\')">파트너모집</button>')
+if "showPage('partner')" not in s:
     s = s.replace(old, new, 1)
 s = s.replace('<p class="sub">상담 전 많이 물어보시는 내용을 먼저 정리했습니다.</p>', '')
 s = re.sub(r'\n\s*<p class="more-info-intro">.*?</p>', '', s, count=1, flags=re.S)
@@ -38,6 +39,23 @@ fixes = {
 }
 for a,b in fixes.items():
     s = s.replace(a,b)
+partner = '''
+  <section id="partner" class="page">
+    <div class="page-inner">
+      <h2>파트너 모집</h2>
+      <p class="sub">대한청소만세의 현장 기준을 함께 배워갈 지역 파트너를 기다립니다.</p>
+      <div class="trust-box">
+        <b>청소 기술만으로는 부족합니다.<br>현장을 운영하는 기준이 필요합니다.</b>
+        <p>대한청소만세는 현장을 대하는 태도,<br>고객에게 안내하는 방식,<br>추가 작업을 설명하는 기준까지 함께 배워갈<br>지역 파트너를 찾습니다.</p>
+        <p class="trust-note">대한청소만세는 지역 파트너와 함께 성장할 준비를 하고 있습니다.<br>현재는 현장 교육 및 파트너 상담을 우선 진행합니다.</p>
+      </div>
+      <a class="apply-btn" href="https://pf.kakao.com/_lxhwGX" target="_blank">파트너 문의하기</a>
+    </div>
+  </section>
+
+'''
+s = re.sub(r'\n\s*<section id="partner" class="page">.*?</section>\s*', '\n', s, flags=re.S)
+s = s.replace('  <section id="contact" class="page">', partner + '  <section id="contact" class="page">', 1)
 mobile_css = '''
     /* MOBILE_NAV_FLOW_FIX */
     @media(max-width:760px){
