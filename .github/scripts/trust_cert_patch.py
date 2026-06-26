@@ -3,11 +3,13 @@ from pathlib import Path
 p = Path('index.html')
 s = p.read_text(encoding='utf-8')
 
+# Triggered patch for desktop slider controls.
+
 # Slider should keep moving; do not kill its action when making it draggable.
 s = s.replace('.grab-slider .case-strip,.grab-slider .review-track,.grab-slider .cert-marquee-track{animation:none!important;width:max-content!important}',
               '.grab-slider .case-strip,.grab-slider .review-track,.grab-slider .cert-marquee-track{width:max-content!important}')
 s = s.replace('.grab-slider .case-strip,.grab-slider .review-track,.grab-slider .cert-marquee-track{animation:none!important}',
-              '.grab-slider .case-strip,.grab-slider .review-track,.grab-slider .cert-marquee-track{}')
+              '.grab-slider .case-strip,.grab-slider .review-track,.cert-marquee-track{}')
 s = s.replace("if(track){track.style.animation='none';}", "if(track){track.style.animationPlayState='running';}")
 
 # Make review screenshots part of the draggable/zoomable sliders.
