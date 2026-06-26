@@ -9,9 +9,9 @@ s = s.replace('<button class="nav-btn" onclick="location.href=\'partner.html\'">
 if "showPage('partner')" not in s:
     s = s.replace(old, new, 1)
 
-hero_html = '''<div class="hero-main">말하기 어려운 현장도,<br>작업 전부터 정확하게 안내합니다.</div>
+hero_html = '''<div class="hero-main">낮은 견적보다 중요한 건,<br>불안하지 않은 과정입니다.</div>
 
-      <div class="hero-sub">낮은 견적보다 중요한 건<br>고객이 불안하지 않은 과정입니다.<br><br>서울·경기·인천 입주청소 · 이사청소<br>전국 특수청소 · 유품정리 · 고독사청소</div>
+      <div class="hero-sub">사진 상담으로 현장 상태를 먼저 확인하고<br>작업 범위와 추가 비용 가능성을 안내합니다.<br><br>서울·경기·인천 입주청소 · 이사청소<br>전국 특수청소 · 유품정리 · 고독사청소</div>
 
       <div class="hero-cta">
         <button class="hero-btn" onclick="showPage('contact')">내 상황 상담받기</button>
@@ -90,11 +90,12 @@ css = '''
       #portfolio{padding-top:36px}
     }
     /* FIXED_CONTACT_BAR */
-    .fixed-contact-bar{position:fixed;left:14px;right:14px;bottom:14px;z-index:999;display:flex;gap:10px;background:rgba(15,23,42,.94);padding:10px;border-radius:999px;box-shadow:0 12px 30px rgba(0,0,0,.25);backdrop-filter:blur(8px)}
-    .fixed-contact-bar a{flex:1;text-align:center;border-radius:999px;padding:13px 10px;background:#fff;color:#0f172a;font-weight:950;font-size:15px;text-decoration:none}
+    .fixed-contact-bar{position:fixed;right:14px;bottom:14px;z-index:999;display:flex;flex-direction:column;gap:8px;background:rgba(15,23,42,.94);padding:9px;border-radius:22px;box-shadow:0 12px 30px rgba(0,0,0,.25);backdrop-filter:blur(8px);width:150px}
+    .fixed-contact-bar a{text-align:center;border-radius:999px;padding:12px 10px;background:#fff;color:#0f172a;font-weight:950;font-size:14px;text-decoration:none}
     .fixed-contact-bar a.kakao{background:#facc15;color:#0f172a}
-    @media(min-width:761px){.fixed-contact-bar{left:auto;right:20px;bottom:20px;width:320px}}
+    @media(max-width:760px){.fixed-contact-bar{right:12px;bottom:12px;width:142px}.fixed-contact-bar a{font-size:14px;padding:12px 8px}footer{padding-bottom:150px}.fixed-call{display:none}}
 '''
+s = re.sub(r'\n\s*/\* MOBILE_NAV_FLOW_FIX \*/.*?/\* FIXED_CONTACT_BAR \*/.*?(?=\n\s*</style>)', '\n' + css, s, count=1, flags=re.S)
 if 'MOBILE_NAV_FLOW_FIX' not in s:
     s = s.replace('\n  </style>', css + '\n  </style>', 1)
 elif 'FIXED_CONTACT_BAR' not in s:
