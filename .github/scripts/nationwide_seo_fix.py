@@ -2,13 +2,28 @@ from pathlib import Path
 import re
 p = Path('index.html')
 s = p.read_text(encoding='utf-8')
+
 old = '<button class="nav-btn" onclick="showPage(\'contact\')">상담문의</button>'
 new = '<button class="nav-btn" onclick="showPage(\'partner\')">파트너모집</button>\n      ' + old
 s = s.replace('<button class="nav-btn" onclick="location.href=\'partner.html\'">파트너모집</button>', '<button class="nav-btn" onclick="showPage(\'partner\')">파트너모집</button>')
 if "showPage('partner')" not in s:
     s = s.replace(old, new, 1)
+
+hero_html = '''<div class="hero-main">말하기 어려운 현장도,<br>먼저 괜찮습니다.</div>
+
+      <div class="hero-sub">낮은 견적보다 중요한 건<br>작업 전 정확한 안내입니다.<br><br>서울·경기·인천 입주청소 · 이사청소<br>전국 특수청소 · 유품정리 · 고독사청소</div>
+
+      <div class="hero-cta">
+        <button class="hero-btn" onclick="showPage('contact')">내 상황 상담받기</button>
+        <button class="hero-btn secondary" onclick="showPage('portfolio')">작업사례 보기</button>
+      </div>
+
+      <div class="hero-proof">동의 없는 추가 작업은 진행하지 않습니다.</div>'''
+s = re.sub(r'(<section id="home" class="page hero">\s*<div class="hero-inner">\s*).*?(\s*<div class="social-icons">)', r'\1' + hero_html + r'\2', s, count=1, flags=re.S)
+
 s = s.replace('<p class="sub">상담 전 많이 물어보시는 내용을 먼저 정리했습니다.</p>', '')
 s = re.sub(r'\n\s*<p class="more-info-intro">.*?</p>', '', s, count=1, flags=re.S)
+
 repls = {
     '<summary>예약은 이렇게 진행돼요</summary>': '<summary>예약 안내</summary>',
     '<summary>예약금 환불은 이렇게 안내드려요</summary>': '<summary>예약금 환불 기준</summary>',
@@ -27,6 +42,7 @@ repls = {
 }
 for a,b in repls.items():
     s = s.replace(a,b)
+
 fixes = {
     '작업 범위는 상담 기준으로 진행돼요 내': '작업 범위 내',
     '작업 범위는 상담 기준으로 진행돼요에 대한': '작업 범위에 대한',
@@ -39,6 +55,7 @@ fixes = {
 }
 for a,b in fixes.items():
     s = s.replace(a,b)
+
 partner = '''
   <section id="partner" class="page">
     <div class="page-inner">
@@ -56,14 +73,30 @@ partner = '''
 '''
 s = re.sub(r'\n\s*<section id="partner" class="page">.*?</section>\s*', '\n', s, flags=re.S)
 s = s.replace('  <section id="contact" class="page">', partner + '  <section id="contact" class="page">', 1)
-mobile_css = '''
+
+bar = '''<div class="fixed-contact-bar">
+    <a href="tel:010-4122-9207">전화 상담</a>
+    <a class="kakao" href="https://pf.kakao.com/_lxhwGX" target="_blank">카톡 상담</a>
+  </div>'''
+s = re.sub(r'\s*<a class="fixed-call" href="tel:010-4122-9207">📞 상담</a>\s*', '\n  ' + bar + '\n', s, count=1)
+s = re.sub(r'<div class="fixed-contact-bar">.*?</div>', bar, s, count=1, flags=re.S)
+
+css = '''
     /* MOBILE_NAV_FLOW_FIX */
     @media(max-width:760px){
       .top-nav{position:sticky;top:0;left:auto;right:auto}
       .page,.hero{padding-top:36px}
       #portfolio{padding-top:36px}
     }
+    /* FIXED_CONTACT_BAR */
+    .fixed-contact-bar{position:fixed;left:14px;right:14px;bottom:14px;z-index:999;display:flex;gap:10px;background:rgba(15,23,42,.94);padding:10px;border-radius:999px;box-shadow:0 12px 30px rgba(0,0,0,.25);backdrop-filter:blur(8px)}
+    .fixed-contact-bar a{flex:1;text-align:center;border-radius:999px;padding:13px 10px;background:#fff;color:#0f172a;font-weight:950;font-size:15px;text-decoration:none}
+    .fixed-contact-bar a.kakao{background:#facc15;color:#0f172a}
+    @media(min-width:761px){.fixed-contact-bar{left:auto;right:20px;bottom:20px;width:320px}}
 '''
 if 'MOBILE_NAV_FLOW_FIX' not in s:
-    s = s.replace('\n  </style>', mobile_css + '\n  </style>', 1)
+    s = s.replace('\n  </style>', css + '\n  </style>', 1)
+elif 'FIXED_CONTACT_BAR' not in s:
+    s = s.replace('\n  </style>', '\n' + css + '\n  </style>', 1)
+
 p.write_text(s, encoding='utf-8')
