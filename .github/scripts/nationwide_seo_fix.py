@@ -32,17 +32,19 @@ s = s.replace(
 )
 
 process_html = '''      <div class="process flow-process" aria-label="상담부터 작업까지 진행 절차">
-        <div class="flow-step"><span>01</span><b>사진·영상 접수</b></div>
+        <div class="flow-step"><span>01</span><b>문의 상담</b></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-step"><span>02</span><b>현장 상태 확인</b></div>
+        <div class="flow-step"><span>02</span><b>사진·영상 접수</b></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-step"><span>03</span><b>예상 견적·예약금 안내</b></div>
+        <div class="flow-step"><span>03</span><b>현장 상태 확인</b></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-step key"><span>04</span><b>예약금 입금 후 예약 확정</b></div>
+        <div class="flow-step"><span>04</span><b>예상 견적·예약금 안내</b></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-step"><span>05</span><b>안내사항 발송 후 작업 진행</b></div>
+        <div class="flow-step key"><span>05</span><b>예약금 입금 후 예약 확정</b></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-step"><span>06</span><b>작업 완료 후 확인</b></div>
+        <div class="flow-step"><span>06</span><b>안내사항 발송 후 작업 진행</b></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span>07</span><b>작업 완료 후 확인</b></div>
       </div>'''
 s = re.sub(r'      <div class="process(?: flow-process)?"[^>]*>.*?\n      </div>', process_html, s, count=1, flags=re.S)
 
@@ -50,14 +52,15 @@ process_css = '''
     /* PROCESS_FLOW_SECTION */
     .flow-process{display:flex;align-items:center;justify-content:center;gap:12px;margin:34px auto 10px;flex-wrap:nowrap;overflow-x:auto;padding:10px 4px 18px;scrollbar-width:none}
     .flow-process::-webkit-scrollbar{display:none}
-    .flow-step{flex:0 0 118px;width:118px;height:118px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 10px 26px rgba(15,23,42,.08);border:1px solid #e2e8f0;padding:13px;color:#0f172a}
-    .flow-step span{display:block;font-size:12px;font-weight:950;color:#dc2626;margin-bottom:6px;letter-spacing:.03em}
-    .flow-step b{display:block;font-size:13px;line-height:1.32;font-weight:950;word-break:keep-all}
+    .flow-step{flex:0 0 108px;width:108px;height:108px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 10px 26px rgba(15,23,42,.08);border:1px solid #e2e8f0;padding:12px;color:#0f172a}
+    .flow-step span{display:block;font-size:11px;font-weight:950;color:#dc2626;margin-bottom:5px;letter-spacing:.03em}
+    .flow-step b{display:block;font-size:12.2px;line-height:1.3;font-weight:950;word-break:keep-all}
     .flow-step.key{background:#0f172a;color:#fff;border-color:#0f172a;box-shadow:0 14px 32px rgba(15,23,42,.22)}
     .flow-step.key span{color:#fca5a5}
-    .flow-arrow{flex:0 0 auto;color:#94a3b8;font-size:24px;font-weight:900}
-    @media(max-width:760px){.flow-process{justify-content:flex-start;gap:9px;margin-top:28px;padding-bottom:16px}.flow-step{flex-basis:96px;width:96px;height:96px;padding:10px}.flow-step b{font-size:11.5px}.flow-step span{font-size:11px;margin-bottom:4px}.flow-arrow{font-size:18px}}
+    .flow-arrow{flex:0 0 auto;color:#94a3b8;font-size:22px;font-weight:900}
+    @media(max-width:760px){.flow-process{justify-content:flex-start;gap:9px;margin-top:28px;padding-bottom:16px}.flow-step{flex-basis:92px;width:92px;height:92px;padding:9px}.flow-step b{font-size:11px}.flow-step span{font-size:10.5px;margin-bottom:4px}.flow-arrow{font-size:18px}}
 '''
+s = re.sub(r'\n\s*/\* PROCESS_FLOW_SECTION \*/.*?(?=\n\s*/\* SERVICE_AREA_SECTION \*/)', process_css, s, count=1, flags=re.S)
 if 'PROCESS_FLOW_SECTION' not in s:
     s = s.replace('\n    /* SERVICE_AREA_SECTION */', process_css + '\n    /* SERVICE_AREA_SECTION */', 1)
 
