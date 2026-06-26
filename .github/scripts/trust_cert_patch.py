@@ -53,16 +53,18 @@ cleanup_css = r'''
 if '/* CERT_TRUST_CLEANUP */' not in s:
     s = s.replace('</style>', cleanup_css + '\n</style>', 1)
 
-partner_css = r'''
+slider_css = r'''
 
-    /* PARTNER_SYSTEM_BAR */
-    .partner-system{margin:18px auto 24px;padding:18px 0;border-top:1px solid #cbd5e1;border-bottom:1px solid #e2e8f0;text-align:center;max-width:850px;color:#0f172a}
-    .partner-system b{display:block;font-size:17px;line-height:1.55;margin-bottom:8px;color:#0f172a}
-    .partner-system p{margin:0;color:#475569;line-height:1.75;font-size:15px;font-weight:750}
-    @media(max-width:760px){.partner-system{margin:16px auto 22px;padding:16px 0}.partner-system b{font-size:15.5px}.partner-system p{font-size:14.5px}}
+    /* CERT_TRUST_SLIDER */
+    .cert-marquee{display:block;margin:16px auto 0;max-width:520px;overflow:hidden;position:relative;padding:4px 0 8px;mask-image:linear-gradient(to right,transparent,#000 12%,#000 88%,transparent);-webkit-mask-image:linear-gradient(to right,transparent,#000 12%,#000 88%,transparent)}
+    .cert-marquee-track{display:flex;gap:10px;width:max-content;animation:certSlide 42s linear infinite}
+    .cert-marquee img{width:70px;height:88px;object-fit:cover;background:#fff;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(15,23,42,.06);opacity:.86}
+    .cert-marquee:hover .cert-marquee-track{animation-play-state:paused}
+    @keyframes certSlide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    @media(max-width:760px){.cert-marquee{max-width:100%;margin-top:14px}.cert-marquee img{width:62px;height:78px}.cert-marquee-track{gap:8px;animation-duration:38s}}
 '''
-if '/* PARTNER_SYSTEM_BAR */' not in s:
-    s = s.replace('</style>', partner_css + '\n</style>', 1)
+if '/* CERT_TRUST_SLIDER */' not in s:
+    s = s.replace('</style>', slider_css + '\n</style>', 1)
 
 html = r'''
 
@@ -104,6 +106,27 @@ html = r'''
 anchor = '<div class="about-ending">깨끗한 공간,<br>새로운 시작을 선물합니다.</div>'
 if 'aria-label="여성기업 확인 및 관련 자격 안내"' not in s and anchor in s:
     s = s.replace(anchor, anchor + html, 1)
+
+marquee = '''
+            <div class="cert-marquee" aria-hidden="true">
+              <div class="cert-marquee-track">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-clean.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-pest.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-estate.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-clean.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-pest.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-estate.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-clean.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-pest.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/park-estate.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-clean.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-pest.jpg" alt="">
+                <img decoding="async" loading="lazy" src="images/certificates/certificates/kim-estate.jpg" alt="">
+              </div>
+            </div>'''
+people_anchor = '<div class="cert-trust-people">대표 박정화 <span>|</span> 총괄대표 김수현</div>'
+if 'class="cert-marquee"' not in s and people_anchor in s:
+    s = s.replace(people_anchor, people_anchor + marquee, 1)
 
 old_partner_sub = '<p class="sub">대한청소만세의 현장 기준을 함께 배워갈 지역 파트너를 기다립니다.</p>'
 new_partner_sub = '<p class="sub">체계적으로 함께할 지역 파트너를 찾습니다.</p>'
