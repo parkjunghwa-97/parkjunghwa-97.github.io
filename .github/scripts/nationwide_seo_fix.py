@@ -9,9 +9,9 @@ s = s.replace('<button class="nav-btn" onclick="location.href=\'partner.html\'">
 if "showPage('partner')" not in s:
     s = s.replace(old, new, 1)
 
-hero_html = '''<div class="hero-main">말하기 어려운 현장도,<br>먼저 괜찮습니다.</div>
+hero_html = '''<div class="hero-main">말하기 어려운 현장도,<br>작업 전부터 정확하게 안내합니다.</div>
 
-      <div class="hero-sub">낮은 견적보다 중요한 건<br>작업 전 정확한 안내입니다.<br><br>서울·경기·인천 입주청소 · 이사청소<br>전국 특수청소 · 유품정리 · 고독사청소</div>
+      <div class="hero-sub">낮은 견적보다 중요한 건<br>고객이 불안하지 않은 과정입니다.<br><br>서울·경기·인천 입주청소 · 이사청소<br>전국 특수청소 · 유품정리 · 고독사청소</div>
 
       <div class="hero-cta">
         <button class="hero-btn" onclick="showPage('contact')">내 상황 상담받기</button>
@@ -46,6 +46,7 @@ for a,b in repls.items():
 fixes = {
     '작업 범위는 상담 기준으로 진행돼요 내': '작업 범위 내',
     '작업 범위는 상담 기준으로 진행돼요에 대한': '작업 범위에 대한',
+    '작업 범위는 상담 기준으로 진행돼요와': '작업 범위와',
     '예약금 환불은 이렇게 안내드려요 적용': '예약금 환불 기준 적용',
     '비대면 작업 안내 시': '비대면 작업 시',
     '비대면 작업 안내 완료 후에는': '비대면 작업 완료 후에는',
