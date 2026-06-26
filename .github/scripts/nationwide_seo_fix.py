@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 p = Path('index.html')
 s = p.read_text(encoding='utf-8')
@@ -29,6 +30,68 @@ s = s.replace(
     '@media(max-width:430px){.review-shot img{height:390px}}',
     '@media(max-width:430px){.review-shot img{width:250px;height:auto;max-height:390px}}'
 )
+
+area_html = '''
+
+      <div class="service-area" aria-label="서비스 가능 지역 안내">
+        <div class="area-kicker">서비스 가능 지역 안내</div>
+        <h3>지역과 현장 상태를 확인한 뒤 안내드립니다</h3>
+        <p class="area-lead">대한청소만세는 서울·경기·인천 등 수도권을 중심으로 입주청소와 이사청소를 상담하고 있습니다.</p>
+
+        <div class="area-split">
+          <div class="area-box">
+            <b>입주청소 · 이사청소 가능 지역</b>
+            <p>서울 / 경기 / 인천</p>
+          </div>
+          <div class="area-box strong">
+            <b>전국 출장 상담 가능 서비스</b>
+            <p>특수청소 / 고독사청소 / 유품정리 / 쓰레기집 청소 / 폐기물 처리 / 비둘기 퇴치</p>
+          </div>
+        </div>
+
+        <div class="area-region">
+          <b>주요 상담 지역</b>
+          <p>서울, 인천, 부천, 부평, 송도, 청라, 검단, 계양, 수원, 용인, 성남, 고양, 김포, 파주, 안산, 시흥, 화성, 평택, 대전, 세종, 충청, 강원, 부산, 대구, 울산, 광주, 전라, 경상 지역</p>
+        </div>
+
+        <p class="area-note">지역별 가능 여부는 현장 상태, 일정, 작업 범위에 따라 달라질 수 있습니다.<br>사진이나 영상을 보내주시면 출장 가능 여부와 예상 견적을 먼저 안내드립니다.</p>
+      </div>'''
+
+s = re.sub(r'\n\s*<div class="service-area" aria-label="서비스 가능 지역 안내">.*?</div>\s*(?=\n\s*</div>\s*</section>\s*\n\s*<section id="portfolio")', '\n', s, count=1, flags=re.S)
+if 'aria-label="서비스 가능 지역 안내"' not in s:
+    s = s.replace('''      <div class="process">
+        <div class="step">현장 사진 또는 영상 전달</div>
+        <div class="step">오염도와 작업 범위 확인</div>
+        <div class="step">예상 견적 및 일정 안내</div>
+        <div class="step">예약 확정 후 작업 진행</div>
+        <div class="step">작업 완료 후 확인</div>
+      </div>''', '''      <div class="process">
+        <div class="step">현장 사진 또는 영상 전달</div>
+        <div class="step">오염도와 작업 범위 확인</div>
+        <div class="step">예상 견적 및 일정 안내</div>
+        <div class="step">예약 확정 후 작업 진행</div>
+        <div class="step">작업 완료 후 확인</div>
+      </div>''' + area_html, 1)
+
+area_css = '''
+    /* SERVICE_AREA_SECTION */
+    .service-area{margin:34px auto 0;max-width:980px;text-align:left;background:linear-gradient(180deg,#ffffff,#f8fafc);border:1px solid rgba(226,232,240,.95);border-radius:30px;padding:30px;box-shadow:0 12px 34px rgba(15,23,42,.08)}
+    .area-kicker{font-size:13px;font-weight:950;color:#dc2626;letter-spacing:.02em;margin-bottom:8px}
+    .service-area h3{margin:0 0 12px;font-size:28px;line-height:1.28;color:#0f172a}
+    .area-lead{margin:0 0 20px;color:#475569;line-height:1.7;font-size:16px}
+    .area-split{display:grid;grid-template-columns:1fr 1.4fr;gap:14px;margin:18px 0}
+    .area-box{background:#fff;border-radius:22px;padding:20px;border:1px solid #e2e8f0;box-shadow:0 8px 20px rgba(15,23,42,.05)}
+    .area-box.strong{background:#0f172a;color:#fff;border-color:#0f172a}
+    .area-box b{display:block;font-size:16px;margin-bottom:10px;color:inherit}
+    .area-box p{margin:0;color:inherit;opacity:.88;line-height:1.7;font-weight:800}
+    .area-region{margin-top:16px;background:#f1f5f9;border-radius:22px;padding:20px;border:1px solid #e2e8f0}
+    .area-region b{display:block;margin-bottom:10px;color:#0f172a;font-size:16px}
+    .area-region p{margin:0;color:#475569;line-height:1.9;font-size:15px}
+    .area-note{margin:18px 0 0;padding-left:16px;border-left:4px solid #dc2626;color:#334155;line-height:1.75;font-weight:800}
+    @media(max-width:760px){.service-area{padding:22px;border-radius:24px}.service-area h3{font-size:23px}.area-split{grid-template-columns:1fr}.area-region p{font-size:14.5px}.area-note{font-size:14.5px}}
+'''
+if 'SERVICE_AREA_SECTION' not in s:
+    s = s.replace('\n    /* MOBILE_NAV_FLOW_FIX */', area_css + '\n    /* MOBILE_NAV_FLOW_FIX */', 1)
 
 circle_bar = '''    .fixed-contact-bar{position:fixed;right:20px;bottom:92px;z-index:999;display:flex;flex-direction:column;gap:10px;background:transparent;padding:0;border-radius:0;box-shadow:none;width:auto}
     .fixed-contact-bar a{display:flex;align-items:center;justify-content:center;text-align:center;width:76px;height:76px;border-radius:50%;padding:0;background:#fff;color:#0f172a;font-weight:950;font-size:13px;line-height:1.22;text-decoration:none;box-shadow:0 10px 24px rgba(0,0,0,.18);border:1px solid rgba(15,23,42,.16);word-spacing:999px}
