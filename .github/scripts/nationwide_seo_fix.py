@@ -12,6 +12,20 @@ SERVICE_COPY = '''서울·경기·인천 등 수도권 입주청소 · 이사청
 특수청소 · 유품정리 · 고독사청소 · 쓰레기집 청소 · 폐기물 처리 · 비둘기 퇴치<br>전국 출장 상담 가능.
 
 사진 상담으로 현장 상태를 먼저 확인하고,<br>작업 범위와 예상 견적을 안내해드립니다.'''
+TRUST_STYLE = '''
+    .trust-box{margin:22px 0 28px;padding:26px;border-radius:26px;background:#0f172a;color:#fff;box-shadow:0 12px 30px rgba(15,23,42,.18);line-height:1.75;text-align:left}
+    .trust-box b{display:block;font-size:23px;line-height:1.45;margin-bottom:14px;color:#fff}
+    .trust-box p{margin:0;color:#e5e7eb;font-size:16px;line-height:1.8}
+    .trust-box .trust-note{margin-top:12px;color:#fff;font-weight:900}
+    @media(max-width:760px){.trust-box{padding:22px;border-radius:22px}.trust-box b{font-size:20px}.trust-box p{font-size:15px}}
+'''
+TRUST_BOX = '''<div class="trust-box">
+        <b>낮은 견적보다 중요한 건,<br>작업 전 정확한 안내입니다.</b>
+        <p>대한청소만세는 현장 상황에 따라 달라질 수 있는 부분과<br>추가비용 발생 가능성을 작업 전 먼저 설명합니다.</p>
+        <p class="trust-note">추가 작업은 사전 안내 후 진행합니다.</p>
+      </div>
+
+      '''
 DEPOSIT_STYLE = '''
     .deposit-box{margin:0 0 20px;padding:18px;border-radius:20px;background:#f8fafc;border:1px solid #e2e8f0;line-height:1.7}
     .deposit-box b{display:block;margin-bottom:8px;font-size:17px;color:#0f172a}
@@ -43,8 +57,12 @@ s = re.sub(r'<meta property="og:description" content="[^"]*">', f'<meta property
 s = re.sub(r'<meta name="twitter:title" content="[^"]*">', f'<meta name="twitter:title" content="{TITLE}">', s, count=1)
 s = re.sub(r'<meta name="twitter:description" content="[^"]*">', f'<meta name="twitter:description" content="{DESCRIPTION}">', s, count=1)
 
-# Visible service copy
+# Visible service copy and trust message
 s = re.sub(r'(<section id="service" class="page">.*?<h2>서비스 안내</h2>\s*)<p class="sub">.*?</p>', r'\1<p class="sub">' + SERVICE_COPY + r'</p>', s, count=1, flags=re.S)
+s = re.sub(r'\s*<div class="trust-box">.*?</div>\s*', '\n', s, count=0, flags=re.S)
+s = re.sub(r'(<section id="service" class="page">.*?<p class="sub">.*?</p>\s*)', r'\1' + TRUST_BOX, s, count=1, flags=re.S)
+if '.trust-box{' not in s:
+    s = s.replace('\n  </style>', TRUST_STYLE + '\n  </style>', 1)
 
 # Reservation deposit guide UI
 if '.deposit-box{' not in s:
