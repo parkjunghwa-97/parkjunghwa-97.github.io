@@ -18,7 +18,12 @@ s = re.sub(r'\s*<div class="deposit-box">.*?</div>\s*', '\n', s, flags=re.S)
 # 잘못 빠져나온 후기 텍스트 영역 제거
 s = re.sub(r'\s*<div class="review-text-section".*?</div>\s*', '\n', s, flags=re.S)
 
-# 푸터: 지역 박스에는 지역만, 사업장은 회사정보에 표시
+# 작업사례 섹션 뒤에 남은 잘못된 div 닫힘 정리
+s = s.replace('  </section></div>\n</div>\n<section id="journal"', '  </section>\n<section id="journal"')
+s = s.replace('  </section></div>\n<section id="journal"', '  </section>\n<section id="journal"')
+s = s.replace('  </section>\n</div>\n<section id="journal"', '  </section>\n<section id="journal"')
+
+# 푸터: 지역 박스에는 지역만, 사업장은 회사정보의 사업자등록번호 아래 표시
 footer_local = '<div class="footer-local"><b>주요 서비스 지역</b><p>서울 · 경기 · 인천 / 부평 · 부천 · 송도 · 청라 · 검단 · 계양 · 수원 · 용인 · 성남 · 고양 · 김포 · 파주 · 안산 · 시흥 · 화성 · 평택</p><p>전국 출장 상담 가능 서비스: 특수청소 · 유품정리 · 정리 청소 · 폐기물 처리 등</p></div>'
 s = re.sub(r'\s*<div class="footer-local".*?</div>\s*', '\n', s, flags=re.S)
 s = s.replace('<div class="company-info">', footer_local + '\n<div class="company-info">', 1)
