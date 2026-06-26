@@ -89,7 +89,16 @@
       }
     ]
   }
-  </script>
+  
+    window.addEventListener('popstate', function(){
+      const id=(location.hash||'#home').replace('#','');
+      if(document.getElementById(id)){showPage(id,true);}
+    });
+    document.addEventListener('DOMContentLoaded', function(){
+      const id=(location.hash||'').replace('#','');
+      if(id && document.getElementById(id)){showPage(id,true);}
+    });
+</script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
   <style>
@@ -1178,7 +1187,7 @@
     <a class="kakao" href="https://pf.kakao.com/_lxhwGX" target="_blank">카톡 상담</a>
   </div>
 <script>
-    function showPage(id){
+    function showPage(id, fromHistory){
       document.querySelectorAll('.fly-about-text').forEach(function(el){el.remove()});
       document.querySelectorAll('.page').forEach(function(page){
         page.classList.remove('active');
@@ -1204,6 +1213,7 @@
         }
       });
 
+      if(!fromHistory && window.location.hash !== '#'+id){history.pushState({page:id},'', '#'+id);}
       window.scrollTo({top:0,behavior:'auto'});
     }
 
