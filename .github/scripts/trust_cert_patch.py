@@ -132,6 +132,92 @@ schema = {
 jsonld = '  <!-- SCHEMA_ORG_JSONLD -->\n  <script type="application/ld+json">\n' + json.dumps(schema, ensure_ascii=False, indent=2) + '\n</script>'
 s = re.sub(r'\s*<!-- SCHEMA_ORG_JSONLD -->\s*<script type="application/ld\+json">.*?</script>', '\n' + jsonld, s, count=1, flags=re.S)
 
+# Add cost guide navigation and section.
+if "showPage('price')" not in s:
+    s = s.replace(
+        "      <button class=\"nav-btn\" onclick=\"showPage('service')\">서비스안내</button>\n      <button class=\"nav-btn\" onclick=\"showPage('portfolio')\">작업사례</button>",
+        "      <button class=\"nav-btn\" onclick=\"showPage('service')\">서비스안내</button>\n      <button class=\"nav-btn\" onclick=\"showPage('price')\">비용안내</button>\n      <button class=\"nav-btn\" onclick=\"showPage('portfolio')\">작업사례</button>"
+    )
+
+price_css = '''
+
+    /* PRICE_GUIDE_SECTION */
+    .price-page{background:#f8fafc}
+    .price-lead{max-width:760px}
+    .price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:24px}
+    .price-card{background:#fff;border:1px solid #e2e8f0;border-radius:22px;padding:22px;box-shadow:0 8px 24px rgba(15,23,42,.08)}
+    .price-card h3{margin:0 0 14px;font-size:20px;color:#0f172a;letter-spacing:-.03em}
+    .price-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid #eef2f7;color:#334155;font-size:15px;line-height:1.45}
+    .price-row:last-child{border-bottom:0}
+    .price-row span:last-child{font-weight:900;color:#0f172a;white-space:nowrap}
+    .price-note{margin-top:24px;background:#0f172a;color:#fff;border-radius:24px;padding:24px;line-height:1.8;font-weight:750}
+    .price-note p{margin:0 0 8px}
+    .price-note p:last-child{margin-bottom:0}
+    .price-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+    .price-cta button,.price-cta a{border:0;border-radius:999px;padding:14px 20px;background:#051231;color:#fff;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(15,23,42,.18)}
+    .price-cta a{display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#0f172a;border:1px solid #cbd5e1}
+    @media(max-width:760px){.nav-menu{grid-template-columns:repeat(3,1fr)}.price-card{border-radius:18px;padding:18px}.price-row{font-size:14.5px}.price-note{border-radius:20px;padding:20px}.price-cta{display:grid}.price-cta button,.price-cta a{width:100%}}
+'''
+if '/* PRICE_GUIDE_SECTION */' not in s:
+    s = s.replace('</style>', price_css + '\n</style>', 1)
+
+price_section = '''
+
+  <section id="price" class="page price-page">
+    <div class="page-inner">
+      <h2>비용안내</h2>
+      <p class="sub price-lead">아래 금액은 상담 전 기준을 잡기 위한 시작가입니다. 실제 비용은 평수, 오염도, 짐 유무, 폐기물 양, 추가 작업 여부에 따라 달라질 수 있습니다.</p>
+
+      <div class="price-grid">
+        <div class="price-card">
+          <h3>입주 · 이사청소</h3>
+          <div class="price-row"><span>원룸</span><span>180,000원~</span></div>
+          <div class="price-row"><span>1.5룸</span><span>220,000원~</span></div>
+          <div class="price-row"><span>투룸</span><span>240,000원~</span></div>
+          <div class="price-row"><span>쓰리룸</span><span>280,000원~</span></div>
+          <div class="price-row"><span>26평 이상</span><span>평당 10,000원~</span></div>
+        </div>
+
+        <div class="price-card">
+          <h3>쓰레기집 청소</h3>
+          <div class="price-row"><span>원룸 1겹</span><span>500,000원~</span></div>
+          <div class="price-row"><span>원룸 디테일</span><span>700,000원~</span></div>
+          <div class="price-row"><span>투룸 1겹</span><span>700,000원~</span></div>
+          <div class="price-row"><span>투룸 디테일</span><span>900,000원~</span></div>
+          <div class="price-row"><span>쓰리룸 이상</span><span>방문견적</span></div>
+        </div>
+
+        <div class="price-card">
+          <h3>비둘기 퇴치</h3>
+          <div class="price-row"><span>분변 제거만</span><span>150,000원~</span></div>
+          <div class="price-row"><span>둥지·알·새끼·분변 제거<br>유입경로 차단막 설치 포함</span><span>250,000원~</span></div>
+          <div class="price-row"><span>스카이 장비 필요 시</span><span>별도 안내</span></div>
+        </div>
+
+        <div class="price-card">
+          <h3>고독사 특수청소</h3>
+          <div class="price-row"><span>고인 발견 장소 처리</span><span>1,500,000원~</span></div>
+          <div class="price-row"><span>추가 공간 처리</span><span>2,000,000원~ 협의</span></div>
+          <div class="price-row"><span>오염 범위·악취·폐기물</span><span>확인 후 안내</span></div>
+        </div>
+      </div>
+
+      <div class="price-note">
+        <p>※ 현장 상황 및 오염도에 따라 비용이 변동될 수 있습니다.</p>
+        <p>※ 추가 작업 발생 시 사전 안내 후 진행됩니다.</p>
+        <p>※ 사진이나 영상을 보내주시면 예상 견적 안내가 가능합니다.</p>
+      </div>
+
+      <div class="price-cta">
+        <button type="button" onclick="showPage('contact')">내 현장 견적 문의하기</button>
+        <a href="https://pf.kakao.com/_lxhwGX" target="_blank">카카오톡으로 사진 보내기</a>
+      </div>
+    </div>
+  </section>
+'''
+if 'id="price"' not in s:
+    s = s.replace('\n  <section id="portfolio" class="page">', price_section + '\n  <section id="portfolio" class="page">', 1)
+
 # Keep slider moving while draggable.
 s = s.replace("if(track){track.style.animation='none';}", "if(track){track.style.animationPlayState='running';}")
 s = s.replace("document.querySelectorAll('.case-row,.cert-marquee').forEach(makeSlider);", "document.querySelectorAll('.case-row,.review-marquee,.cert-marquee').forEach(makeSlider);")
