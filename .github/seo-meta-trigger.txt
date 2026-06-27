@@ -1,2 +1,0 @@
-triggered-at: 2026-06-27T11:48:00+09:00
-update: seo-meta-description
