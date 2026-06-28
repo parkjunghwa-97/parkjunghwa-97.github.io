@@ -1,1 +1,1 @@
-run text review patch 2026-06-28
+run text review patch 2026-06-28 second trigger
