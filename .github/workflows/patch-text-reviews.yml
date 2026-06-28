@@ -1,6 +1,7 @@
 name: Patch text reviews
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - .github/text-review-trigger.txt
@@ -39,8 +40,8 @@ jobs:
           html = r'''
 
 <section class="review-text-section" aria-label="텍스트 고객 후기">
-  <h3>후기로 보는 작업 안내</h3>
-  <p class="review-text-lead">사진 후기와 함께 실제 상담에서 자주 남겨주신 짧은 후기를 정리했습니다.</p>
+  <h3>짧은 고객 후기</h3>
+  <p class="review-text-lead">사진 후기 아래에 실제 후기 문구를 함께 정리했습니다.</p>
   <div class="review-text-scroll" aria-label="고객 후기 텍스트 슬라이드">
     <article class="review-text-card">
       <b>인천 입주청소 고객 후기</b>
@@ -111,6 +112,9 @@ jobs:
 
           path.write_text(text, encoding='utf-8')
           PY
+      - name: Remove temporary patch files
+        run: |
+          git rm --ignore-unmatch .github/workflows/patch-text-reviews.yml .github/text-review-trigger.txt
       - name: Commit patch
         run: |
           if git diff --quiet; then
