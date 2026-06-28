@@ -225,30 +225,6 @@
   ]
 }
 
-
-    /* REVIEW_TEXT_DRAG */
-    (function(){
-      function initReviewTextDrag(){
-        document.querySelectorAll('.review-text-scroll').forEach(function(el){
-          if(el.dataset.dragReady){return;}
-          el.dataset.dragReady='1';
-          var down=false,startX=0,startScroll=0;
-          el.addEventListener('pointerdown',function(e){
-            down=true;startX=e.clientX;startScroll=el.scrollLeft;el.classList.add('is-dragging');
-            try{el.setPointerCapture(e.pointerId);}catch(err){}
-          });
-          el.addEventListener('pointermove',function(e){
-            if(!down){return;}
-            el.scrollLeft=startScroll-(e.clientX-startX);
-          });
-          function stop(){down=false;el.classList.remove('is-dragging');}
-          el.addEventListener('pointerup',stop);
-          el.addEventListener('pointercancel',stop);
-          el.addEventListener('mouseleave',function(){if(down){stop();}});
-        });
-      }
-      if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',initReviewTextDrag);}else{initReviewTextDrag();}
-    })();
 </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
@@ -1894,6 +1870,31 @@
         }
       },true);
     })();
+</script>
+<script>
+/* REVIEW_TEXT_DRAG */
+(function(){
+  function initReviewTextDrag(){
+    document.querySelectorAll('.review-text-scroll').forEach(function(el){
+      if(el.dataset.dragReady){return;}
+      el.dataset.dragReady='1';
+      var down=false,startX=0,startScroll=0;
+      el.addEventListener('pointerdown',function(e){
+        down=true;startX=e.clientX;startScroll=el.scrollLeft;el.classList.add('is-dragging');
+        try{el.setPointerCapture(e.pointerId);}catch(err){}
+      });
+      el.addEventListener('pointermove',function(e){
+        if(!down){return;}
+        el.scrollLeft=startScroll-(e.clientX-startX);
+      });
+      function stop(){down=false;el.classList.remove('is-dragging');}
+      el.addEventListener('pointerup',stop);
+      el.addEventListener('pointercancel',stop);
+      el.addEventListener('mouseleave',function(){if(down){stop();}});
+    });
+  }
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',initReviewTextDrag);}else{initReviewTextDrag();}
+})();
 </script>
 </body>
 </html>
