@@ -26,7 +26,8 @@ jobs:
               s,
               count=1
           )
-          s = s.replace('입주·이사청소도 보기</button>', '서비스 전체 보기</button>')
+          s = s.replace('입주·이사청소도 보기</button>', '입주·이사청소 보기</button>')
+          s = s.replace('서비스 전체 보기</button>', '입주·이사청소 보기</button>')
           p.write_text(s, encoding='utf-8')
           PY
       - name: Commit changes
