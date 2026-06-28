@@ -271,13 +271,13 @@
       background:
         linear-gradient(rgba(15,23,42,.35),rgba(15,23,42,.35)),
         url('hero.jpg') center center/cover no-repeat;
-      transform:scale(1.08);
-      animation:heroZoom 7s ease forwards;
-      animation-delay:.15s;
+      transform:scale(1.12);
+      animation:none;
       z-index:0;
     }
 
     .hero.active{display:flex}
+    .hero.active::before{animation:heroZoom 7s ease forwards .15s}
 
     .hero-inner{
       max-width:920px;
@@ -324,6 +324,7 @@
 
     @keyframes heroTextIn{to{opacity:1;transform:translateY(0)}}
     @keyframes heroZoom{to{transform:scale(1)}}
+    @keyframes heroZoomMobile{to{transform:scale(1.03)}}
 
     h2{font-size:34px;margin:0 0 14px}
     .hero p{font-size:19px;line-height:1.7;color:#f1f5f9;text-shadow:0 3px 14px rgba(0,0,0,.35)}
@@ -576,6 +577,8 @@
       .page,.hero{padding:195px 34px 54px;align-items:flex-start}
       .page.active{align-items:flex-start}
       .hero-inner{transform:translateY(70px)}
+      .hero::before{transform:scale(1.16)}
+      .hero.active::before{animation:heroZoomMobile 8s ease forwards .15s}
       h2{font-size:30px}
       .hero p{font-size:16px}
       .intro-logo{width:260px}
