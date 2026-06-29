@@ -1,7 +1,12 @@
-name: Patch insurance support homepage
+name: 보험서류 홈피 반영
 
 on:
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: '보험 서류 안내 문구를 홈페이지에 반영합니다'
+        required: false
+        default: 'yes'
 
 permissions:
   contents: write
