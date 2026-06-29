@@ -2,10 +2,6 @@ name: Patch insurance support homepage
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'patch-trigger-home-insurance.txt'
 
 permissions:
   contents: write
