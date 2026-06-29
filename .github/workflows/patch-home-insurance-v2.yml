@@ -1,6 +1,7 @@
 name: Patch insurance support homepage
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
