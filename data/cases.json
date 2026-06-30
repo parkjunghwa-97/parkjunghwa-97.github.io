@@ -1,0 +1,22 @@
+[
+  {
+    "id": "case-001",
+    "title": "강서구 원룸 특수청소",
+    "service": "특수청소",
+    "region": "서울 강서구",
+    "description": "생활 폐기물 정리와 바닥 살균을 함께 진행한 작업사례입니다.",
+    "photos": [
+      "images/reviews/review-02.jpg"
+    ],
+    "createdAt": "2026-07-01"
+  },
+  {
+    "id": "case-002",
+    "title": "남양주 누수복구 현장",
+    "service": "누수복구",
+    "region": "경기 남양주",
+    "description": "누수 이후 오염 구역 정리와 건조 상담을 진행한 샘플 작업사례입니다.",
+    "photos": [],
+    "createdAt": "2026-07-01"
+  }
+]

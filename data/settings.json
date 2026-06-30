@@ -1,0 +1,12 @@
+{
+  "cmsVersion": "1.5",
+  "initialPin": "231204",
+  "dataMode": "json-ready",
+  "customerSite": "https://xn--vk1by2k4ygtjy88bcjm.kr/",
+  "adminPath": "/cms/",
+  "futureAdminDomain": "cms.xn--vk1by2k4ygtjy88bcjm.kr",
+  "lockPolicy": {
+    "maxAttempts": 5,
+    "lockMinutes": 10
+  }
+}
