@@ -6,7 +6,7 @@
   <title>대한청소만세 | 특수청소 쓰레기집청소 유품정리 비둘기퇴치</title>
   <!-- SEO_OPTIMIZED_BY_CHATGPT -->
   <meta name="description" content="특수청소 중심 청소업체. 쓰레기집 청소, 유품정리, 비둘기 배설물 청소, 악취 제거, 폐기물 처리, 입주·이사청소 상담.">
-  <meta name="keywords" content="인천 입주청소, 부평 입주청소, 인천 이사청소, 부평 이사청소, 인천 청소업체, 부평 청소업체, 인천 특수청소, 인천 유품정리, 인천 고독사청소, 인천 쓰레기집청소, 인천 비둘기퇴치, 인천 폐기물 처리, 서울 입주청소, 경기 입주청소, 기프트클린, 대한청소만세, 기프트클린 대한청소만세">
+  <meta name="keywords" content="인천 입주청소, 부평 입주청소, 인천 이사청소, 부평 이사청소, 인천 청소업체, 부평 청소업체, 인천 특수청소, 인천 유품정리, 인천 고독사청소, 인천 쓰레기집청소, 인천 비둘기퇴치, 인천 폐기물 처리, 서울 입주청소, 경기 입주청소, 기프트클린, 대한청소만세, 기프트클린 대한청소만세, 화재복구, 누수복구, 보험청구, 보험서류, 보험견적서">
   <meta name="author" content="기프트클린 대한청소만세">
   <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
   <meta name="naver-site-verification" content="eb055f6619e9dcec5a073ecccf6258ef55fd9688">
@@ -382,6 +382,10 @@
     .card{background:white;border-radius:22px;padding:24px;box-shadow:0 8px 24px rgba(15,23,42,.08)}
     .card b{display:block;font-size:19px;margin-bottom:8px}
     .card p{margin:0;color:#64748b;line-height:1.6}
+    .insurance-card{border:1px solid rgba(226,232,240,.95)}
+    .insurance-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;margin:16px 0 0;padding:0;list-style:none;color:#334155;font-size:14px;font-weight:800;line-height:1.45}
+    .insurance-note{margin-top:16px!important;color:#64748b!important;font-size:13px;line-height:1.6!important}
+    @media(max-width:760px){.insurance-list{grid-template-columns:1fr}.insurance-card{padding:20px}}
     .process{display:grid;gap:12px;margin-top:32px}
     .step{background:white;border-left:5px solid #dc2626;border-radius:16px;padding:18px 20px;box-shadow:0 6px 18px rgba(15,23,42,.06)}
 
@@ -648,7 +652,8 @@
     .hero-btn{border:0;border-radius:999px;padding:14px 20px;font-size:15px;font-weight:950;cursor:pointer;background:#fff;color:#0f172a;box-shadow:0 10px 26px rgba(0,0,0,.24)}
     .hero-btn.secondary{background:rgba(15,23,42,.72);color:#fff;border:1px solid rgba(255,255,255,.45)}
     .hero-proof{margin-top:20px;font-size:15px;font-weight:800;line-height:1.6;color:rgba(255,255,255,.88);text-shadow:0 3px 14px rgba(0,0,0,.38);opacity:0;transform:translateY(24px);animation:heroTextIn 1s ease forwards;animation-delay:2.15s}
-    @media(max-width:760px){.hero .hero-inner{transform:translateY(42px)}.hero-main{font-size:28px;line-height:1.34}.hero-sub{font-size:15.5px;margin-top:16px}.hero-cta{margin-top:22px;gap:9px}.hero-btn{padding:12px 16px;font-size:14px}.hero-proof{font-size:13.5px}}
+    .hero-insurance-badge{display:inline-flex;align-items:center;justify-content:center;margin-top:16px;padding:11px 18px;border-radius:999px;background:rgba(255,255,255,.92);color:#0f172a;font-size:14px;font-weight:950;box-shadow:0 10px 26px rgba(0,0,0,.22);opacity:0;transform:translateY(22px);animation:heroTextIn 1s ease forwards;animation-delay:2.35s}
+    @media(max-width:760px){.hero .hero-inner{transform:translateY(42px)}.hero-main{font-size:28px;line-height:1.34}.hero-sub{font-size:15.5px;margin-top:16px}.hero-cta{margin-top:22px;gap:9px}.hero-btn{padding:12px 16px;font-size:14px}.hero-proof{font-size:13.5px}.hero-insurance-badge{font-size:13px;padding:10px 14px;margin-top:14px}}
     /* PROCESS_FLOW_SECTION */
     .flow-process{display:flex;align-items:center;justify-content:center;gap:12px;margin:34px auto 10px;flex-wrap:nowrap;overflow-x:auto;padding:10px 4px 18px;scrollbar-width:none}
     .flow-process::-webkit-scrollbar{display:none}
@@ -1157,6 +1162,7 @@
       </div>
 
       <div class="hero-proof">사진과 현장 상태를 확인한 뒤 작업 범위와 추가 비용 가능성을 먼저 안내합니다.</div>
+      <div class="hero-insurance-badge">🧾 보험 제출용 서류 발급 가능</div>
 
       <div class="social-icons">
         <a href="tel:010-4122-9207" title="전화"><i class="fa-solid fa-phone"></i></a>
@@ -1256,6 +1262,19 @@
         <div class="card"><b>🕊 비둘기 퇴치</b><p>비둘기 배설물, 둥지, 유입 경로, 차단 가능 범위를 함께 확인합니다.</p></div>
         <div class="card"><b>🚛 폐기물 처리</b><p>현장 폐기물 종류와 양에 따라 수거와 정리 범위를 안내합니다.</p></div>
         <div class="card"><b>🔥 화재·그을음 오염 상담</b><p>그을음, 냄새, 오염 범위를 확인해 가능한 청소 범위를 안내합니다.</p></div>
+        <div class="card insurance-card">
+          <b>🧾 보험 제출 서류 지원</b>
+          <p>화재복구, 누수복구 등 보험 접수가 필요한 현장은 상담 시 필요한 서류 발급 가능 여부를 함께 안내합니다.</p>
+          <ul class="insurance-list">
+            <li>✔ 보험용 견적서</li>
+            <li>✔ 작업확인서</li>
+            <li>✔ 작업 전·후 사진</li>
+            <li>✔ 거래명세서</li>
+            <li>✔ 현금영수증</li>
+            <li>✔ 세금계산서(필요 시 상담)</li>
+          </ul>
+          <p class="insurance-note">※ 보험금 지급 여부는 보험사의 심사 및 가입 약관에 따라 달라질 수 있습니다.</p>
+        </div>
         <div class="card"><b>🏠 입주 · 이사청소</b><p>새 공간이나 이사 후 공간도 평수와 오염도에 따라 상담합니다.</p></div>
         <div class="card"><b>🏢 사무실 · 상가청소</b><p>업무공간과 영업공간의 상태에 맞춰 청소 범위를 안내합니다.</p></div>
       </div>
