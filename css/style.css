@@ -200,6 +200,68 @@
       display:block;
     }
 
+    .case-json-card{
+      width:280px;
+      height:auto;
+      min-height:390px;
+      display:grid;
+      align-content:start;
+      justify-content:stretch;
+      gap:8px;
+      padding:12px;
+      background:#fff;
+      text-align:left;
+    }
+
+    .case-json-image{
+      display:grid;
+      gap:5px;
+    }
+
+    .case-json-image span,
+    .case-json-service,
+    .case-json-region{
+      display:inline-block;
+      color:#334155;
+      background:#f1f5f9;
+      border-radius:999px;
+      padding:5px 8px;
+      font-size:12px;
+      font-weight:900;
+      line-height:1.25;
+      justify-self:start;
+    }
+
+    .case-json-image img{
+      width:100%;
+      height:86px;
+      object-fit:cover;
+      border-radius:14px;
+      background:#e2e8f0;
+    }
+
+    .case-json-arrow{
+      color:#94a3b8;
+      font-weight:900;
+      text-align:center;
+      line-height:1;
+    }
+
+    .case-json-card b{
+      display:block;
+      color:#0f172a;
+      font-size:16px;
+      line-height:1.35;
+    }
+
+    .case-json-card p{
+      margin:0;
+      color:#475569;
+      font-size:13px;
+      font-weight:800;
+      line-height:1.55;
+    }
+
     @keyframes caseMove{
       from{transform:translateX(0)}
       to{transform:translateX(-50%)}
@@ -641,3 +703,4 @@
 /* SPECIAL_CLEANING_POSITIONING */
 .hero-main{margin:0 auto 24px;letter-spacing:-.04em}
 .service-special-note{font-weight:900;color:#0f172a}
+@media(max-width:760px){.case-json-card{width:82vw!important;max-width:340px!important;height:auto!important;min-height:380px!important}.case-json-image img{height:92px!important}}
