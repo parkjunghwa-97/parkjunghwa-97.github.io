@@ -340,3 +340,102 @@
   }
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',initReviewTextDrag);}else{initReviewTextDrag();}
 })();
+
+/* REVIEW_JSON_INTEGRATION */
+(function(){
+  var REVIEW_LIMIT=12;
+  var REVIEW_ENDPOINT='/data/reviews.json';
+
+  function onReady(fn){
+    if(document.readyState==='loading'){
+      document.addEventListener('DOMContentLoaded',fn);
+    }else{
+      fn();
+    }
+  }
+
+  function cleanText(value){
+    return typeof value === 'string' ? value.trim() : '';
+  }
+
+  function cleanRating(value){
+    var rating=Number(value || 5);
+    if(!isFinite(rating)){rating=5;}
+    return Math.max(1,Math.min(5,Math.round(rating)));
+  }
+
+  function normalizeReview(item){
+    return {
+      service: cleanText(item && item.service),
+      region: cleanText(item && item.region),
+      title: cleanText(item && item.title),
+      rating: cleanRating(item && item.rating),
+      content: cleanText(item && item.content),
+      source: cleanText(item && item.source),
+      date: cleanText(item && item.date)
+    };
+  }
+
+  function isUsableReview(review){
+    return review.title && review.content && review.service && review.region;
+  }
+
+  function createReviewCard(review){
+    var article=document.createElement('article');
+    article.className='review-text-card';
+    article.setAttribute('data-review-source','json');
+
+    var title=document.createElement('b');
+    title.textContent=review.title;
+    article.appendChild(title);
+
+    var meta=document.createElement('span');
+    meta.textContent=review.service + ' · ' + review.region + ' · ★ ' + review.rating;
+    article.appendChild(meta);
+
+    var content=document.createElement('p');
+    content.textContent='“' + review.content + '”';
+    article.appendChild(content);
+
+    if(review.source || review.date){
+      var source=document.createElement('small');
+      source.textContent=[review.source,review.date].filter(Boolean).join(' · ');
+      article.appendChild(source);
+    }
+
+    return article;
+  }
+
+  function renderReviews(target,reviews){
+    var fragment=document.createDocumentFragment();
+    reviews.slice(0,REVIEW_LIMIT).forEach(function(review){
+      fragment.appendChild(createReviewCard(review));
+    });
+    if(!fragment.childNodes.length){return;}
+    target.innerHTML='';
+    target.appendChild(fragment);
+    target.setAttribute('data-reviews-source','json');
+  }
+
+  function initReviewsJson(){
+    var target=document.querySelector('[data-reviews-json-target="true"]');
+    if(!target || !window.fetch){return;}
+
+    window.fetch(REVIEW_ENDPOINT,{cache:'no-store'})
+      .then(function(response){
+        if(!response.ok){throw new Error('reviews json failed');}
+        return response.json();
+      })
+      .then(function(data){
+        var reviews=Array.isArray(data) ? data.map(normalizeReview).filter(isUsableReview) : [];
+        if(reviews.length){
+          renderReviews(target,reviews);
+        }
+      })
+      .catch(function(){
+        target.setAttribute('data-reviews-source','fallback');
+      });
+  }
+
+  onReady(initReviewsJson);
+})();
