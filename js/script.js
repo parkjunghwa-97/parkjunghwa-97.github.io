@@ -236,6 +236,141 @@
       if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
     })();
 
+    /* CASES_JSON_INTEGRATION */
+    (function(){
+      var CASE_LIMIT=12;
+      var CASE_ENDPOINT='/data/cases.json';
+
+      function onReady(fn){
+        if(document.readyState==='loading'){
+          document.addEventListener('DOMContentLoaded',fn);
+        }else{
+          fn();
+        }
+      }
+
+      function cleanText(value){
+        return typeof value === 'string' ? value.trim() : '';
+      }
+
+      function cleanBool(value){
+        return value === true || value === 'true';
+      }
+
+      function normalizeCase(item){
+        return {
+          id: cleanText(item && item.id),
+          service: cleanText(item && item.service),
+          region: cleanText(item && item.region),
+          title: cleanText(item && item.title),
+          description: cleanText(item && item.description),
+          beforeImage: cleanText(item && item.beforeImage),
+          afterImage: cleanText(item && item.afterImage),
+          date: cleanText(item && item.date),
+          featured: cleanBool(item && item.featured)
+        };
+      }
+
+      function isUsableCase(item){
+        return item.service && item.region && item.title && item.description;
+      }
+
+      function imageSrc(src){
+        if(!src || src.indexOf('data:') === 0 || src.indexOf('http') === 0 || src.indexOf('/') === 0 || src.indexOf('../') === 0){
+          return src;
+        }
+        return src;
+      }
+
+      function appendCaseImage(parent,label,src,title){
+        var wrap=document.createElement('div');
+        wrap.className='case-json-image';
+
+        var labelEl=document.createElement('span');
+        labelEl.textContent=label;
+        wrap.appendChild(labelEl);
+
+        if(src){
+          var img=document.createElement('img');
+          img.src=imageSrc(src);
+          img.alt=label + ' ' + title;
+          img.loading='lazy';
+          img.decoding='async';
+          wrap.appendChild(img);
+        }
+
+        parent.appendChild(wrap);
+      }
+
+      function createCaseCard(item){
+        var article=document.createElement('article');
+        article.className='case-mini case-json-card';
+        article.setAttribute('data-case-id',item.id || '');
+
+        appendCaseImage(article,'Before',item.beforeImage,item.title);
+
+        var arrow=document.createElement('div');
+        arrow.className='case-json-arrow';
+        arrow.textContent='↓';
+        article.appendChild(arrow);
+
+        appendCaseImage(article,'After',item.afterImage,item.title);
+
+        var service=document.createElement('span');
+        service.className='case-json-service';
+        service.textContent=item.service;
+        article.appendChild(service);
+
+        var region=document.createElement('span');
+        region.className='case-json-region';
+        region.textContent=item.region;
+        article.appendChild(region);
+
+        var title=document.createElement('b');
+        title.textContent=item.title;
+        article.appendChild(title);
+
+        var description=document.createElement('p');
+        description.textContent=item.description;
+        article.appendChild(description);
+
+        return article;
+      }
+
+      function renderCases(target,items){
+        var fragment=document.createDocumentFragment();
+        items.slice(0,CASE_LIMIT).forEach(function(item){
+          fragment.appendChild(createCaseCard(item));
+        });
+        if(!fragment.childNodes.length){return;}
+        target.innerHTML='';
+        target.appendChild(fragment);
+        target.setAttribute('data-cases-source','json');
+      }
+
+      function initCasesJson(){
+        var target=document.querySelector('[data-cases-json-target="true"]');
+        if(!target || !window.fetch){return;}
+
+        window.fetch(CASE_ENDPOINT,{cache:'no-store'})
+          .then(function(response){
+            if(!response.ok){throw new Error('cases json failed');}
+            return response.json();
+          })
+          .then(function(data){
+            var cases=Array.isArray(data) ? data.map(normalizeCase).filter(isUsableCase) : [];
+            if(cases.length){
+              renderCases(target,cases);
+            }
+          })
+          .catch(function(){
+            target.setAttribute('data-cases-source','fallback');
+          });
+      }
+
+      onReady(initCasesJson);
+    })();
+
 
     /* SLIDER_IMAGE_PRELOAD */
     (function(){
@@ -244,6 +379,7 @@
         var imgs=root.querySelectorAll('.review-marquee img,.cert-marquee img,.case-row img');
         imgs.forEach(function(img,idx){
           try{
+            if(img.closest('.case-json-card')){return;}
             img.loading='eager';
             img.decoding='async';
             if(idx<4){img.fetchPriority='high';}
