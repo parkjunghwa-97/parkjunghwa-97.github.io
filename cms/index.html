@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>대한청소만세 CMS V1.5</title>
+  <title>대한청소만세 CMS V1.6</title>
   <link rel="stylesheet" href="./css/cms.css">
 </head>
 <body>
   <main class="cms-shell">
     <section class="login-view" id="loginView">
       <div class="login-panel">
-        <p class="eyebrow">Daehan Cleaning CMS V1.5</p>
+        <p class="eyebrow">Daehan Cleaning CMS V1.6</p>
         <h1>관리자 로그인</h1>
         <form id="loginForm" class="login-form">
           <label for="pinInput">6자리 PIN</label>
@@ -24,7 +24,7 @@
     <section class="app-view is-hidden" id="appView">
       <aside class="sidebar">
         <div class="brand-block">
-          <span class="brand-kicker">CMS V1.5</span>
+          <span class="brand-kicker">CMS V1.6</span>
           <strong>대한청소만세</strong>
         </div>
         <nav class="cms-menu" aria-label="관리자 메뉴">
@@ -57,213 +57,90 @@
             <h3>고객 홈페이지 미리보기</h3>
             <button class="secondary-btn" type="button" id="closePreviewButton">관리 화면으로 돌아가기</button>
           </div>
-          <iframe title="고객 홈페이지 미리보기" src="../index.html"></iframe>
+          <iframe title="고객 홈페이지 미리보기" data-src="../index.html"></iframe>
         </section>
 
-        <section class="screen active" id="screen-cases">
-          <div class="form-grid">
-            <div class="form-card">
-              <h3>작업사례 등록</h3>
-              <form data-form="cases">
-                <label>사진 드래그 업로드
-                  <input type="file" name="photos" accept="image/*" multiple>
-                </label>
-                <label>서비스 선택
-                  <select name="service">
-                    <option>특수청소</option>
-                    <option>쓰레기집청소</option>
-                    <option>유품정리</option>
-                    <option>화재복구</option>
-                    <option>누수복구</option>
-                  </select>
-                </label>
-                <label>지역 입력
-                  <input name="region" type="text" placeholder="예: 서울 강서구">
-                </label>
-                <label>제목 입력
-                  <input name="title" type="text" placeholder="예: 강서구 원룸 특수청소">
-                </label>
-                <label>설명 입력
-                  <textarea name="description" rows="5" placeholder="작업 전 상황과 처리 내용을 입력"></textarea>
-                </label>
-                <button type="submit">저장</button>
-              </form>
-            </div>
-            <div class="list-card">
-              <h3>샘플 작업사례</h3>
-              <div class="item-list" id="casesList"></div>
-            </div>
+        <section class="screen active" id="screen-cases" data-type="cases">
+          <div class="screen-toolbar">
+            <p>작업사례는 사진 미리보기와 함께 임시 저장됩니다. 실제 파일 업로드는 V2에서 연결합니다.</p>
+            <button type="button" data-action="new" data-type="cases">작업사례 추가</button>
           </div>
+          <div class="editor-panel is-hidden" id="casesEditor"></div>
+          <div class="item-list" id="casesList"></div>
         </section>
 
-        <section class="screen" id="screen-reviews">
-          <div class="form-grid">
-            <div class="form-card">
-              <h3>고객후기 등록</h3>
-              <form data-form="reviews">
-                <label>후기 복붙
-                  <textarea name="content" rows="6" placeholder="고객 후기 내용을 붙여넣기"></textarea>
-                </label>
-                <label>서비스 선택
-                  <select name="service">
-                    <option>특수청소</option>
-                    <option>쓰레기집청소</option>
-                    <option>유품정리</option>
-                    <option>화재복구</option>
-                    <option>누수복구</option>
-                  </select>
-                </label>
-                <label>별점 선택
-                  <select name="rating">
-                    <option value="5">5점</option>
-                    <option value="4">4점</option>
-                    <option value="3">3점</option>
-                    <option value="2">2점</option>
-                    <option value="1">1점</option>
-                  </select>
-                </label>
-                <button type="submit">저장</button>
-              </form>
-            </div>
-            <div class="list-card">
-              <h3>샘플 고객후기</h3>
-              <div class="item-list" id="reviewsList"></div>
-            </div>
+        <section class="screen" id="screen-reviews" data-type="reviews">
+          <div class="screen-toolbar">
+            <p>고객후기를 붙여넣고 서비스와 별점을 선택해 저장합니다.</p>
+            <button type="button" data-action="new" data-type="reviews">후기 추가</button>
           </div>
+          <div class="editor-panel is-hidden" id="reviewsEditor"></div>
+          <div class="item-list" id="reviewsList"></div>
         </section>
 
-        <section class="screen" id="screen-journal">
-          <div class="form-grid">
-            <div class="form-card">
-              <h3>현장기록 등록</h3>
-              <form data-form="journal">
-                <label>현장명
-                  <input name="title" type="text" placeholder="예: 인천 부평구 주거 청소 기록">
-                </label>
-                <label>지역
-                  <input name="region" type="text" placeholder="예: 인천 부평구">
-                </label>
-                <label>기록 내용
-                  <textarea name="content" rows="6" placeholder="현장 상황과 작업 메모를 입력"></textarea>
-                </label>
-                <button type="submit">저장</button>
-              </form>
-            </div>
-            <div class="list-card">
-              <h3>샘플 현장기록</h3>
-              <div class="item-list" id="journalList"></div>
-            </div>
+        <section class="screen" id="screen-journal" data-type="journal">
+          <div class="screen-toolbar">
+            <p>현장기록은 추후 고객 홈페이지 기록형 콘텐츠로 연결할 수 있게 준비합니다.</p>
+            <button type="button" data-action="new" data-type="journal">현장기록 추가</button>
           </div>
+          <div class="editor-panel is-hidden" id="journalEditor"></div>
+          <div class="item-list" id="journalList"></div>
         </section>
 
-        <section class="screen" id="screen-prices">
-          <div class="form-grid">
-            <div class="form-card">
-              <h3>비용안내 수정</h3>
-              <form data-form="prices">
-                <label>서비스명
-                  <input name="service" type="text" placeholder="예: 특수청소">
-                </label>
-                <label>가격 문구
-                  <input name="priceText" type="text" placeholder="예: 현장 확인 후 견적">
-                </label>
-                <label>안내 문구
-                  <textarea name="description" rows="5" placeholder="가격 산정 기준과 안내 문구를 입력"></textarea>
-                </label>
-                <button type="submit">저장</button>
-              </form>
-            </div>
-            <div class="list-card">
-              <h3>샘플 비용안내</h3>
-              <div class="item-list" id="pricesList"></div>
-            </div>
+        <section class="screen" id="screen-prices" data-type="prices">
+          <div class="screen-toolbar">
+            <p>서비스별 가격 문구와 안내 문구를 수정해 localStorage에 저장합니다.</p>
+            <button type="button" data-action="new" data-type="prices">가격 항목 추가</button>
           </div>
+          <div class="editor-panel is-hidden" id="pricesEditor"></div>
+          <div class="item-list" id="pricesList"></div>
         </section>
 
-        <section class="screen" id="screen-faqs">
-          <div class="form-grid">
-            <div class="form-card">
-              <h3>FAQ 추가</h3>
-              <form data-form="faqs">
-                <label>질문
-                  <input name="question" type="text" placeholder="예: 당일 상담이 가능한가요?">
-                </label>
-                <label>답변
-                  <textarea name="answer" rows="6" placeholder="답변 내용을 입력"></textarea>
-                </label>
-                <button type="submit">저장</button>
-              </form>
-            </div>
-            <div class="list-card">
-              <h3>샘플 FAQ</h3>
-              <div class="item-list" id="faqsList"></div>
-            </div>
+        <section class="screen" id="screen-faqs" data-type="faqs">
+          <div class="screen-toolbar">
+            <p>FAQ 질문과 답변을 추가, 수정, 삭제할 수 있습니다.</p>
+            <button type="button" data-action="new" data-type="faqs">질문 추가</button>
           </div>
+          <div class="editor-panel is-hidden" id="faqsEditor"></div>
+          <div class="item-list" id="faqsList"></div>
         </section>
 
-        <section class="screen" id="screen-notices">
-          <div class="form-grid">
-            <div class="form-card">
-              <h3>공지 등록</h3>
-              <form data-form="notices">
-                <label>제목
-                  <input name="title" type="text" placeholder="예: 여름철 긴급 복구 상담 안내">
-                </label>
-                <label>내용
-                  <textarea name="content" rows="5" placeholder="공지 내용을 입력"></textarea>
-                </label>
-                <label>시작일
-                  <input name="startDate" type="date">
-                </label>
-                <label>종료일
-                  <input name="endDate" type="date">
-                </label>
-                <label class="checkbox-row">
-                  <input name="published" type="checkbox" checked>
-                  게시 여부
-                </label>
-                <button type="submit">저장</button>
-              </form>
-            </div>
-            <div class="list-card">
-              <h3>샘플 공지</h3>
-              <div class="item-list" id="noticesList"></div>
-            </div>
+        <section class="screen" id="screen-notices" data-type="notices">
+          <div class="screen-toolbar">
+            <p>현재 고객 홈페이지에는 공지 섹션이 없으며, 향후 팝업/상단 배너용 준비 기능입니다.</p>
+            <button type="button" data-action="new" data-type="notices">공지 추가</button>
           </div>
+          <div class="editor-panel is-hidden" id="noticesEditor"></div>
+          <div class="item-list" id="noticesList"></div>
         </section>
 
-        <section class="screen" id="screen-banner">
-          <div class="form-grid">
-            <div class="form-card">
-              <h3>메인배너 수정</h3>
-              <form data-form="banner">
-                <label>배너 제목
-                  <input name="title" type="text" placeholder="예: 대한청소만세">
-                </label>
-                <label>배너 문구
-                  <textarea name="message" rows="5" placeholder="메인 화면에 표시할 안내 문구"></textarea>
-                </label>
-                <label>배경 이미지 경로
-                  <input name="image" type="text" placeholder="예: /hero.jpg">
-                </label>
-                <button type="submit">저장</button>
-              </form>
-            </div>
-            <div class="list-card">
-              <h3>샘플 메인배너</h3>
-              <div class="item-list" id="bannerList"></div>
-            </div>
+        <section class="screen" id="screen-banner" data-type="banner">
+          <div class="screen-toolbar">
+            <p>메인배너 데이터는 V2에서 고객 홈페이지 JSON 연동 시 반영합니다.</p>
+            <button type="button" data-action="new" data-type="banner">배너 추가</button>
           </div>
+          <div class="editor-panel is-hidden" id="bannerEditor"></div>
+          <div class="item-list" id="bannerList"></div>
         </section>
 
-        <section class="screen" id="screen-settings">
+        <section class="screen" id="screen-settings" data-type="settings">
           <div class="settings-grid">
             <article class="list-card">
-              <h3>CMS 설정</h3>
+              <div class="section-heading">
+                <h3>CMS 설정</h3>
+                <span>localStorage 기반 임시 저장</span>
+              </div>
+              <div class="settings-actions">
+                <button type="button" id="resetDataButton">샘플 데이터로 초기화</button>
+                <button class="secondary-btn" type="button" id="exportDataButton">JSON 내보내기</button>
+              </div>
               <div class="item-list" id="settingsList"></div>
             </article>
             <article class="list-card">
-              <h3>데이터 파일</h3>
+              <div class="section-heading">
+                <h3>데이터 파일</h3>
+                <span>V2 연동 예정</span>
+              </div>
               <ul class="file-list">
                 <li>data/cases.json</li>
                 <li>data/reviews.json</li>

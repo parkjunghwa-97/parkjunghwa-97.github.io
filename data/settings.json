@@ -1,10 +1,11 @@
 {
-  "cmsVersion": "1.5",
+  "cmsVersion": "1.6",
   "initialPin": "231204",
-  "dataMode": "json-ready",
+  "dataMode": "localStorage",
   "customerSite": "https://xn--vk1by2k4ygtjy88bcjm.kr/",
   "adminPath": "/cms/",
   "futureAdminDomain": "cms.xn--vk1by2k4ygtjy88bcjm.kr",
+  "nextStep": "V2 GitHub 자동 커밋/배포 및 고객 홈페이지 JSON 연동",
   "lockPolicy": {
     "maxAttempts": 5,
     "lockMinutes": 10
