@@ -276,10 +276,12 @@
       }
 
       function imageSrc(src){
-        if(!src || src.indexOf('data:') === 0 || src.indexOf('http') === 0 || src.indexOf('/') === 0 || src.indexOf('../') === 0){
-          return src;
+        var value=cleanText(src);
+        if(!value){return '';}
+        if(value.indexOf('data:') === 0 || /^https?:\/\//i.test(value) || value.indexOf('/') === 0 || value.indexOf('../') === 0){
+          return value;
         }
-        return src;
+        return '/' + value.replace(/^\.\/+/, '');
       }
 
       function appendCaseImage(parent,label,src,title){
