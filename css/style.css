@@ -671,13 +671,18 @@
     .price-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid #eef2f7;color:#334155;font-size:15px;line-height:1.45}
     .price-row:last-child{border-bottom:0}
     .price-row span:last-child{font-weight:900;color:#0f172a;white-space:nowrap}
+    .price-json-row{align-items:flex-start}
+    .price-json-copy{display:grid;gap:5px;min-width:0}
+    .price-json-title{font-weight:850;color:#334155}
+    .price-json-copy small{display:block;color:#64748b;font-size:12px;line-height:1.45;font-weight:750}
+    .price-json-amount{font-weight:900;color:#0f172a;white-space:nowrap}
     .price-note{margin-top:24px;background:#0f172a;color:#fff;border-radius:24px;padding:24px;line-height:1.8;font-weight:750}
     .price-note p{margin:0 0 8px}
     .price-note p:last-child{margin-bottom:0}
     .price-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
     .price-cta button,.price-cta a{border:0;border-radius:999px;padding:14px 20px;background:#051231;color:#fff;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(15,23,42,.18)}
     .price-cta a{display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#0f172a;border:1px solid #cbd5e1}
-    @media(max-width:760px){.nav-menu{grid-template-columns:repeat(3,1fr)}.price-card{border-radius:18px;padding:18px}.price-row{font-size:14.5px}.price-note{border-radius:20px;padding:20px}.price-cta{display:grid}.price-cta button,.price-cta a{width:100%}}
+    @media(max-width:760px){.nav-menu{grid-template-columns:repeat(3,1fr)}.price-card{border-radius:18px;padding:18px}.price-row{font-size:14.5px}.price-json-row{gap:10px}.price-json-copy small{font-size:11.5px}.price-note{border-radius:20px;padding:20px}.price-cta{display:grid}.price-cta button,.price-cta a{width:100%}}
 
 /* REVIEW_TEXT_SWIPE */
 .review-text-section{margin:34px auto 0;max-width:1100px;text-align:left}

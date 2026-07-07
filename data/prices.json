@@ -1,14 +1,137 @@
 [
   {
-    "id": "price-001",
-    "service": "특수청소",
-    "priceText": "현장 확인 후 견적",
-    "description": "오염도, 폐기물 양, 작업 인원, 장비 투입 여부에 따라 안내합니다."
+    "id": "special-cleaning-range",
+    "category": "특수청소 · 유품정리",
+    "title": "오염 범위 · 악취 · 폐기물",
+    "price": "상담 후 안내",
+    "description": "오염 범위, 악취, 폐기물 양에 따라 작업 범위를 확인한 뒤 안내드립니다.",
+    "visible": true,
+    "sort": 1
   },
   {
-    "id": "price-002",
-    "service": "화재복구",
-    "priceText": "상담 후 견적",
-    "description": "그을음 범위, 냄새 제거, 폐기물 처리 범위를 확인한 뒤 안내합니다."
+    "id": "special-death-cleaning",
+    "category": "특수청소 · 유품정리",
+    "title": "고독사 특수청소",
+    "price": "현장 확인 후 안내",
+    "description": "현장 상태와 오염 범위를 확인한 뒤 예상 비용을 안내드립니다.",
+    "visible": true,
+    "sort": 2
+  },
+  {
+    "id": "estate-cleanup-waste",
+    "category": "특수청소 · 유품정리",
+    "title": "유품정리 · 폐기물 처리",
+    "price": "작업 범위 확인 후 안내",
+    "description": "정리 범위와 폐기물 처리 범위를 확인한 뒤 안내드립니다.",
+    "visible": true,
+    "sort": 3
+  },
+  {
+    "id": "trash-house-waste",
+    "category": "쓰레기집 청소",
+    "title": "생활쓰레기 · 폐기물 양",
+    "price": "사진 확인 후 안내",
+    "description": "사진으로 폐기물 양과 현장 상태를 먼저 확인합니다.",
+    "visible": true,
+    "sort": 4
+  },
+  {
+    "id": "trash-house-odor",
+    "category": "쓰레기집 청소",
+    "title": "악취 · 바닥 오염 · 분리배출",
+    "price": "상담 후 안내",
+    "description": "악취, 바닥 오염, 분리배출 필요 여부에 따라 달라질 수 있습니다.",
+    "visible": true,
+    "sort": 5
+  },
+  {
+    "id": "trash-house-large",
+    "category": "쓰레기집 청소",
+    "title": "쓰리룸 이상 또는 대량 폐기물",
+    "price": "방문견적",
+    "description": "공간이 크거나 폐기물이 많은 경우 방문 확인이 필요할 수 있습니다.",
+    "visible": true,
+    "sort": 6
+  },
+  {
+    "id": "pigeon-droppings",
+    "category": "비둘기 퇴치",
+    "title": "분변 제거",
+    "price": "현장 확인 후 안내",
+    "description": "분변 오염 범위와 작업 위치를 확인한 뒤 안내드립니다.",
+    "visible": true,
+    "sort": 7
+  },
+  {
+    "id": "pigeon-nest-check",
+    "category": "비둘기 퇴치",
+    "title": "둥지·알·새끼 확인",
+    "price": "상담 후 안내",
+    "description": "현장 상황과 접근 조건에 따라 작업 범위를 안내드립니다.",
+    "visible": true,
+    "sort": 8
+  },
+  {
+    "id": "pigeon-blocking-equipment",
+    "category": "비둘기 퇴치",
+    "title": "유입경로 차단막 · 스카이 장비",
+    "price": "별도 안내",
+    "description": "차단 작업이나 장비 사용이 필요한 경우 별도 안내드립니다.",
+    "visible": true,
+    "sort": 9
+  },
+  {
+    "id": "move-cleaning-studio",
+    "category": "입주 · 이사청소",
+    "title": "원룸",
+    "price": "사진 확인 후 안내",
+    "description": "사진과 현장 상태를 확인한 뒤 예상 비용을 안내드립니다.",
+    "visible": true,
+    "sort": 10
+  },
+  {
+    "id": "move-cleaning-1-5-room",
+    "category": "입주 · 이사청소",
+    "title": "1.5룸",
+    "price": "사진 확인 후 안내",
+    "description": "사진과 현장 상태를 확인한 뒤 예상 비용을 안내드립니다.",
+    "visible": true,
+    "sort": 11
+  },
+  {
+    "id": "move-cleaning-two-room",
+    "category": "입주 · 이사청소",
+    "title": "투룸",
+    "price": "사진 확인 후 안내",
+    "description": "사진과 현장 상태를 확인한 뒤 예상 비용을 안내드립니다.",
+    "visible": true,
+    "sort": 12
+  },
+  {
+    "id": "move-cleaning-three-room",
+    "category": "입주 · 이사청소",
+    "title": "쓰리룸",
+    "price": "평수 확인 후 안내",
+    "description": "평수와 구조, 오염도에 따라 작업 범위를 확인합니다.",
+    "visible": true,
+    "sort": 13
+  },
+  {
+    "id": "move-cleaning-over-26-pyeong",
+    "category": "입주 · 이사청소",
+    "title": "26평 이상",
+    "price": "평수 확인 후 안내",
+    "description": "평수와 구조, 오염도에 따라 작업 범위를 확인합니다.",
+    "visible": true,
+    "sort": 14
+  },
+  {
+    "id": "move-cleaning-heavy-soil",
+    "category": "입주 · 이사청소",
+    "title": "심한 오염 · 짐 있는 현장",
+    "price": "상담 후 안내",
+    "description": "심한 오염이나 짐이 있는 경우 작업 범위 확인 후 안내드립니다.",
+    "visible": true,
+    "sort": 15
   }
 ]
