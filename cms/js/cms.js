@@ -11,9 +11,11 @@
   const RENDER_CHUNK = 80;
   const SEARCH_RESULT_LIMIT = 40;
   const DRAFT_SAVE_DELAY = 500;
+  const JSON_PREVIEW_LIMIT = 3600;
 
   const serviceOptions = ['특수청소', '쓰레기집청소', '유품정리', '화재복구', '누수복구', '비둘기퇴치', '입주청소'];
   const contentTypes = ['cases', 'reviews', 'prices', 'faq', 'notices', 'banners'];
+  const saveTargetTypes = ['reviews', 'cases', 'prices', 'faq', 'notices', 'banners'];
   const typeConfig = {
     reviews: {
       file: 'reviews.json',
@@ -466,6 +468,9 @@
       }
       if(action === 'json-validate'){
         validateJsonImportText();
+      }
+      if(action === 'json-save-preview'){
+        renderSaveTargetPreview();
       }
     });
 
@@ -1657,6 +1662,90 @@
     }
   }
 
+  function renderSaveTargetPreview(){
+    const container = document.getElementById('jsonSavePreviewResult');
+    if(!container){
+      return;
+    }
+    const startedAt = Date.now();
+    const fragment = document.createDocumentFragment();
+    let totalErrors = 0;
+
+    container.innerHTML = '';
+    saveTargetTypes.forEach(function(type){
+      const config = typeConfig[type];
+      const payload = buildHomepagePayload(type);
+      const validation = validateSaveTarget(type, payload);
+      const jsonText = JSON.stringify(payload, null, 2);
+      const hasErrors = validation.errors.length > 0;
+      totalErrors += validation.errors.length;
+
+      const card = document.createElement('article');
+      card.className = 'save-preview-item';
+      card.classList.toggle('is-blocked', hasErrors);
+
+      const head = document.createElement('div');
+      head.className = 'save-preview-head';
+      const title = document.createElement('strong');
+      title.textContent = config.file;
+      const badge = document.createElement('span');
+      badge.textContent = hasErrors ? '저장 불가' : '저장 가능';
+      head.appendChild(title);
+      head.appendChild(badge);
+      card.appendChild(head);
+
+      const path = document.createElement('code');
+      path.className = 'save-preview-path';
+      path.textContent = 'data/' + config.file;
+      card.appendChild(path);
+
+      const summary = document.createElement('p');
+      summary.className = 'save-preview-summary';
+      summary.textContent = config.file + ': ' + payload.length + '개 / 오류 ' + validation.errors.length + '개 / ' + (hasErrors ? '저장 불가' : '저장 가능');
+      card.appendChild(summary);
+
+      if(validation.errors.length){
+        const errorList = document.createElement('ul');
+        errorList.className = 'save-preview-errors';
+        validation.errors.slice(0, 6).forEach(function(error){
+          const item = document.createElement('li');
+          item.textContent = error;
+          errorList.appendChild(item);
+        });
+        if(validation.errors.length > 6){
+          const more = document.createElement('li');
+          more.textContent = '외 ' + (validation.errors.length - 6) + '개 오류';
+          errorList.appendChild(more);
+        }
+        card.appendChild(errorList);
+      }
+
+      const details = document.createElement('details');
+      const detailsTitle = document.createElement('summary');
+      detailsTitle.textContent = 'JSON 내용 미리보기';
+      const preview = document.createElement('pre');
+      preview.textContent = formatJsonPreview(jsonText);
+      details.appendChild(detailsTitle);
+      details.appendChild(preview);
+      card.appendChild(details);
+
+      fragment.appendChild(card);
+    });
+
+    container.appendChild(fragment);
+    const elapsed = Date.now() - startedAt;
+    setStatus(totalErrors ? '저장 준비 오류 확인됨' : '저장 대상 미리보기 완료');
+    showToast(totalErrors ? '저장 불가 항목을 확인하세요' : '저장 대상 미리보기 완료');
+    container.dataset.previewMs = String(elapsed);
+  }
+
+  function formatJsonPreview(jsonText){
+    if(jsonText.length <= JSON_PREVIEW_LIMIT){
+      return jsonText;
+    }
+    return jsonText.slice(0, JSON_PREVIEW_LIMIT) + '\n... ' + (jsonText.length - JSON_PREVIEW_LIMIT) + '자 생략';
+  }
+
   function exportJsonType(type){
     if(type === 'backup'){
       exportJson();
@@ -1667,7 +1756,7 @@
       return;
     }
     const payload = buildHomepagePayload(type);
-    const validation = validateTypeItems(type, payload);
+    const validation = validateSaveTarget(type, payload);
     const result = document.getElementById('jsonValidationResult');
     showValidationResult(result, validation, typeConfig[type].file + ' 검증');
     if(validation.errors.length){
@@ -1685,7 +1774,7 @@
     const combined = { errors: [], warnings: [] };
     contentTypes.forEach(function(type){
       payload[type] = buildHomepagePayload(type);
-      const validation = validateTypeItems(type, payload[type]);
+      const validation = validateSaveTarget(type, payload[type]);
       combined.errors = combined.errors.concat(validation.errors);
       combined.warnings = combined.warnings.concat(validation.warnings);
     });
@@ -1711,6 +1800,31 @@
       });
       return clean;
     });
+  }
+
+  function validateSaveTarget(type, payload){
+    const validation = validateTypeItems(type, payload);
+    if(type === 'cases'){
+      validation.errors = collectCaseImageFieldErrors(cmsData[type] || []).concat(validation.errors);
+    }
+    return validation;
+  }
+
+  function collectCaseImageFieldErrors(items){
+    const errors = [];
+    if(!Array.isArray(items)){
+      return errors;
+    }
+    items.forEach(function(item, index){
+      if(hasLegacyCaseImageFields(item)){
+        errors.push(typeConfig.cases.file + ' #' + (index + 1) + ': beforeImage/afterImage 필드는 사용할 수 없습니다. image 필드 1개만 사용하세요.');
+      }
+    });
+    return errors;
+  }
+
+  function hasLegacyCaseImageFields(item){
+    return !!item && typeof item === 'object' && !Array.isArray(item) && ('beforeImage' in item || 'afterImage' in item);
   }
 
   function downloadJson(filename, payload){
