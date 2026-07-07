@@ -12,138 +12,199 @@
   const SEARCH_RESULT_LIMIT = 40;
   const DRAFT_SAVE_DELAY = 500;
 
-  const serviceOptions = ['특수청소', '쓰레기집청소', '유품정리', '화재복구', '누수복구'];
+  const serviceOptions = ['특수청소', '쓰레기집청소', '유품정리', '화재복구', '누수복구', '비둘기퇴치', '입주청소'];
+  const contentTypes = ['cases', 'reviews', 'prices', 'faq', 'notices', 'banners'];
+  const typeConfig = {
+    reviews: {
+      file: 'reviews.json',
+      prefix: 'review',
+      label: '고객후기',
+      fields: ['id', 'service', 'region', 'title', 'rating', 'content', 'source', 'date', 'visible', 'sort'],
+      required: ['title', 'content', 'service', 'region']
+    },
+    cases: {
+      file: 'cases.json',
+      prefix: 'case',
+      label: '작업사례',
+      fields: ['id', 'service', 'region', 'title', 'description', 'image', 'date', 'featured', 'visible', 'sort'],
+      required: ['title', 'description', 'service', 'region']
+    },
+    prices: {
+      file: 'prices.json',
+      prefix: 'price',
+      label: '비용안내',
+      fields: ['id', 'category', 'title', 'price', 'description', 'visible', 'sort'],
+      required: ['category', 'title', 'price']
+    },
+    faq: {
+      file: 'faq.json',
+      prefix: 'faq',
+      label: 'FAQ',
+      fields: ['id', 'question', 'answer', 'visible', 'sort'],
+      required: ['question', 'answer']
+    },
+    notices: {
+      file: 'notices.json',
+      prefix: 'notice',
+      label: '공지',
+      fields: ['id', 'title', 'content', 'date', 'visible', 'sort'],
+      required: ['title', 'content']
+    },
+    banners: {
+      file: 'banners.json',
+      prefix: 'banner',
+      label: '메인배너',
+      fields: ['id', 'title', 'description', 'button', 'link', 'visible', 'sort'],
+      required: ['title', 'description']
+    }
+  };
   const fallbackData = {
     cases: [
       {
         id: 'case-001',
-        title: '강서구 원룸 특수청소',
         service: '특수청소',
         region: '서울 강서구',
+        title: '특수청소 작업사례',
         description: '생활 폐기물 정리와 바닥 살균을 함께 진행한 작업사례입니다.',
-        photos: ['../images/reviews/review-02.jpg'],
-        createdAt: '2026-07-01'
+        image: '',
+        date: '2026-07-01',
+        featured: true,
+        visible: true,
+        sort: 1
       },
       {
         id: 'case-002',
-        title: '남양주 누수복구 현장',
         service: '누수복구',
         region: '경기 남양주',
+        title: '누수복구 작업사례',
         description: '누수 이후 오염 구역 정리와 건조 상담을 진행한 샘플 작업사례입니다.',
-        photos: [],
-        createdAt: '2026-07-01'
+        image: '',
+        date: '2026-07-01',
+        featured: false,
+        visible: true,
+        sort: 2
       }
     ],
     reviews: [
       {
         id: 'review-001',
         service: '유품정리',
+        region: '인천',
+        title: '유품정리 고객 후기',
         rating: 5,
         content: '상담부터 정리까지 차분하게 안내해주셔서 큰 도움이 됐습니다.',
-        createdAt: '2026-07-01'
+        source: '고객 상담 후기',
+        date: '2026-07-01',
+        visible: true,
+        sort: 1
       },
       {
         id: 'review-002',
         service: '쓰레기집청소',
+        region: '경기',
+        title: '쓰레기집 청소 고객 후기',
         rating: 5,
         content: '사진으로 진행 상황을 공유해주셔서 믿고 맡길 수 있었습니다.',
-        createdAt: '2026-07-01'
-      }
-    ],
-    journal: [
-      {
-        id: 'journal-001',
-        title: '인천 부평구 주거 청소 기록',
-        region: '인천 부평구',
-        content: '입구 동선 확보 후 폐기물 분류, 반출, 살균 순서로 작업했습니다.',
-        createdAt: '2026-07-01'
+        source: '고객 상담 후기',
+        date: '2026-07-01',
+        visible: true,
+        sort: 2
       }
     ],
     prices: [
       {
         id: 'price-001',
-        service: '특수청소',
-        priceText: '현장 확인 후 견적',
-        description: '오염도, 폐기물 양, 작업 인원, 장비 투입 여부에 따라 안내합니다.'
+        category: '특수청소 · 유품정리',
+        title: '오염 범위 · 악취 · 폐기물',
+        price: '상담 후 안내',
+        description: '오염도, 폐기물 양, 작업 인원, 장비 투입 여부에 따라 안내합니다.',
+        visible: true,
+        sort: 1
       },
       {
         id: 'price-002',
-        service: '화재복구',
-        priceText: '상담 후 견적',
-        description: '그을음 범위, 냄새 제거, 폐기물 처리 범위를 확인한 뒤 안내합니다.'
+        category: '입주청소',
+        title: '원룸 · 1.5룸 · 투룸',
+        price: '사진 확인 후 안내',
+        description: '평수와 오염도, 짐 유무에 따라 안내합니다.',
+        visible: true,
+        sort: 2
       }
     ],
-    faqs: [
+    faq: [
       {
         id: 'faq-001',
         question: '당일 상담이 가능한가요?',
-        answer: '가능한 일정은 현장 위치와 작업 범위를 확인한 뒤 안내합니다.'
+        answer: '가능한 일정은 현장 위치와 작업 범위를 확인한 뒤 안내합니다.',
+        visible: true,
+        sort: 1
       },
       {
         id: 'faq-002',
         question: '보험 제출 서류 상담도 가능한가요?',
-        answer: '화재복구, 누수복구 등 보험 접수가 필요한 현장은 상담 시 서류 발급 가능 여부를 함께 안내합니다.'
+        answer: '화재복구, 누수복구 등 보험 접수가 필요한 현장은 상담 시 서류 발급 가능 여부를 함께 안내합니다.',
+        visible: true,
+        sort: 2
       }
     ],
     notices: [
       {
         id: 'notice-001',
-        title: '여름철 긴급 복구 상담 안내',
-        content: '누수와 악취 관련 상담이 늘어나는 기간에는 사진을 함께 보내주시면 빠르게 확인할 수 있습니다.',
-        startDate: '2026-07-01',
-        endDate: '2026-08-31',
-        published: true
+        title: '상담 안내',
+        content: '전화 또는 카카오톡으로 바로 상담 가능합니다. 현장 사진이나 영상을 보내주시면 예상 견적 안내가 더 빠릅니다.',
+        date: '2026-07-07',
+        visible: true,
+        sort: 1
       }
     ],
-    banner: [
+    banners: [
       {
         id: 'banner-001',
-        title: '대한청소만세',
-        message: '현장 상황에 맞춘 청소와 복구 상담을 안내합니다.',
-        image: '../hero.jpg',
-        published: true
+        title: '사진 없이도 먼저 상담 가능합니다.',
+        description: '현장 상태를 말씀해주시면 가능한 작업 여부부터 안내드립니다.',
+        button: '카카오톡 상담',
+        link: '#contact',
+        visible: true,
+        sort: 1
       }
     ],
     settings: {
-      cmsVersion: '1.6',
+      cmsVersion: '1.7',
       initialPin: '231204',
       dataMode: 'localStorage',
       customerSite: 'https://xn--vk1by2k4ygtjy88bcjm.kr/',
       adminPath: '/cms/',
-      nextStep: 'V2 GitHub 자동 커밋/배포 및 고객 홈페이지 JSON 연동'
+      nextStep: 'V2 GitHub 자동 커밋/배포 연결'
     }
   };
 
   const dataFiles = {
-    cases: '../data/cases.json',
     reviews: '../data/reviews.json',
-    journal: '../data/journal.json',
+    cases: '../data/cases.json',
     prices: '../data/prices.json',
-    faqs: '../data/faqs.json',
+    faq: '../data/faq.json',
     notices: '../data/notices.json',
-    banner: '../data/banners.json',
-    settings: '../data/settings.json'
+    banners: '../data/banners.json'
   };
 
   const titles = {
     cases: '작업사례 관리',
     reviews: '고객후기 관리',
-    journal: '현장기록 관리',
     prices: '비용안내 관리',
-    faqs: 'FAQ 관리',
+    faq: 'FAQ 관리',
     notices: '공지 관리',
-    banner: '메인배너 관리',
+    banners: '메인배너 관리',
+    json: 'JSON 관리',
     settings: '설정'
   };
 
   const editorTitles = {
     cases: '작업사례',
     reviews: '고객후기',
-    journal: '현장기록',
     prices: '비용안내',
-    faqs: 'FAQ',
+    faq: 'FAQ',
     notices: '공지',
-    banner: '메인배너'
+    banners: '메인배너'
   };
 
   let cmsData = {};
@@ -397,6 +458,15 @@
       if(action === 'undo-delete'){
         restoreDeletedItem();
       }
+      if(action === 'json-export'){
+        exportJsonType(button.dataset.jsonType || 'backup');
+      }
+      if(action === 'json-import'){
+        importJsonFromTextarea();
+      }
+      if(action === 'json-validate'){
+        validateJsonImportText();
+      }
     });
 
     document.addEventListener('submit', function(event){
@@ -423,7 +493,7 @@
       });
     });
 
-    document.getElementById('exportDataButton').addEventListener('click', exportJson);
+    document.getElementById('exportDataButton').addEventListener('click', function(){ exportJsonType('backup'); });
   }
 
   function showApp(){
@@ -480,26 +550,89 @@
   }
 
   function normalizeData(data){
-    const normalized = clone(fallbackData);
-    Object.keys(data || {}).forEach(function(key){
-      normalized[key] = data[key];
-    });
-    if(!Array.isArray(normalized.banner)){
-      normalized.banner = normalized.banner ? [normalized.banner] : [];
+    const source = Object.assign({}, data || {});
+    if(!source.faq && source.faqs){
+      source.faq = source.faqs;
     }
-    ['cases', 'reviews', 'journal', 'prices', 'faqs', 'notices', 'banner'].forEach(function(key){
-      if(!Array.isArray(normalized[key])){
-        normalized[key] = [];
+    if(!source.banners && source.banner){
+      source.banners = Array.isArray(source.banner) ? source.banner : [source.banner];
+    }
+
+    const normalized = { settings: Object.assign({}, fallbackData.settings, source.settings || {}, { cmsVersion: '1.7', dataMode: 'localStorage' }) };
+    contentTypes.forEach(function(type){
+      const list = Array.isArray(source[type]) ? source[type] : fallbackData[type];
+      normalized[type] = normalizeTypeItems(type, list);
+    });
+    return normalized;
+  }
+
+  function normalizeTypeItems(type, items){
+    return (Array.isArray(items) ? items : []).map(function(item, index){
+      return normalizeTypeItem(type, item, index);
+    });
+  }
+
+  function normalizeTypeItem(type, item, index){
+    const config = typeConfig[type];
+    const source = item || {};
+    const normalized = {};
+    config.fields.forEach(function(field){
+      if(field === 'id'){
+        normalized.id = cleanText(source.id) || config.prefix + '-' + String((index || 0) + 1).padStart(3, '0');
+      }else if(field === 'rating'){
+        normalized.rating = cleanRating(source.rating);
+      }else if(field === 'visible'){
+        normalized.visible = cleanVisible(source.visible);
+      }else if(field === 'featured'){
+        normalized.featured = cleanFeatured(source.featured);
+      }else if(field === 'sort'){
+        normalized.sort = cleanSort(source.sort, index);
+      }else if(type === 'cases' && field === 'image'){
+        normalized.image = cleanText(source.image);
+      }else if(type === 'prices' && field === 'category'){
+        normalized.category = cleanText(source.category || source.service);
+      }else if(type === 'prices' && field === 'price'){
+        normalized.price = cleanText(source.price || source.priceText);
+      }else if(type === 'notices' && field === 'date'){
+        normalized.date = cleanText(source.date || source.startDate);
+      }else if(type === 'banners' && field === 'description'){
+        normalized.description = cleanText(source.description || source.message);
+      }else{
+        normalized[field] = cleanText(source[field]);
       }
     });
-    normalized.settings = Object.assign({}, fallbackData.settings, normalized.settings || {}, { cmsVersion: '1.6', dataMode: 'localStorage' });
     return normalized;
+  }
+
+  function cleanText(value){
+    return typeof value === 'string' ? value.trim() : value == null ? '' : String(value).trim();
+  }
+
+  function cleanVisible(value){
+    return value !== false && value !== 'false' && value !== 'off';
+  }
+
+  function cleanFeatured(value){
+    return value === true || value === 'true' || value === 'on';
+  }
+
+  function cleanRating(value){
+    const rating = Number(value || 5);
+    if(!Number.isFinite(rating)){
+      return 5;
+    }
+    return Math.max(1, Math.min(5, Math.round(rating)));
+  }
+
+  function cleanSort(value, index){
+    const sort = Number(value || 0);
+    return Number.isFinite(sort) && sort > 0 ? sort : (index || 0) + 1;
   }
 
   function openEditor(type, id){
     const panel = document.getElementById(type + 'Editor');
     const item = id ? getItem(type, id) : null;
-    activePhotoData = type === 'cases' && item && Array.isArray(item.photos) ? item.photos.slice() : [];
+    activePhotoData = [];
     panel.innerHTML = '';
     panel.appendChild(buildEditor(type, item));
     bindDraftAutosave(panel.querySelector('form'), type, id || '');
@@ -519,7 +652,7 @@
   }
 
   function closeAllEditors(){
-    ['cases', 'reviews', 'journal', 'prices', 'faqs', 'notices', 'banner'].forEach(closeEditor);
+    contentTypes.forEach(closeEditor);
   }
 
   function buildEditor(type, item){
@@ -541,7 +674,7 @@
       if(field.kind === 'photos'){
         grid.appendChild(photoField());
       }else{
-        grid.appendChild(inputField(field, item ? item[field.name] : ''));
+        grid.appendChild(inputField(field, item ? item[field.name] : undefined));
       }
     });
     form.appendChild(grid);
@@ -568,45 +701,59 @@
 
   function getFields(type){
     const commonService = { name: 'service', label: '서비스 선택', kind: 'select', options: serviceOptions };
+    const visibleField = { name: 'visible', label: '홈페이지 표시', kind: 'checkbox', default: true, required: false };
+    const sortField = { name: 'sort', label: '정렬 순서', kind: 'number', placeholder: '예: 1', required: false };
     const map = {
       cases: [
-        { name: 'photos', label: '사진', kind: 'photos' },
         commonService,
-        { name: 'region', label: '지역 입력', kind: 'text', placeholder: '예: 서울 강서구' },
-        { name: 'title', label: '제목 입력', kind: 'text', placeholder: '예: 강서구 원룸 특수청소' },
-        { name: 'description', label: '설명 입력', kind: 'textarea', placeholder: '작업 전 상황과 처리 내용을 입력' }
+        { name: 'region', label: '지역', kind: 'text', placeholder: '예: 서울 강서구' },
+        { name: 'title', label: '제목', kind: 'text', placeholder: '예: 특수청소 작업사례' },
+        { name: 'description', label: '설명', kind: 'textarea', placeholder: '작업 상황과 처리 내용을 입력' },
+        { name: 'image', label: '작업 사진 경로', kind: 'text', placeholder: '예: images/cases/sample.jpg', required: false },
+        { name: 'date', label: '작업일', kind: 'date', required: false },
+        { name: 'featured', label: '대표 사례', kind: 'checkbox', default: false, required: false },
+        visibleField,
+        sortField
       ],
       reviews: [
         commonService,
+        { name: 'region', label: '지역', kind: 'text', placeholder: '예: 인천' },
+        { name: 'title', label: '후기 제목', kind: 'text', placeholder: '예: 인천 입주청소 고객 후기' },
         { name: 'rating', label: '별점 선택', kind: 'select', options: ['5', '4', '3', '2', '1'] },
-        { name: 'content', label: '후기 내용 입력', kind: 'textarea', placeholder: '고객 후기 내용을 붙여넣기' }
-      ],
-      journal: [
-        { name: 'title', label: '현장명', kind: 'text', placeholder: '예: 인천 부평구 주거 청소 기록' },
-        { name: 'region', label: '지역', kind: 'text', placeholder: '예: 인천 부평구' },
-        { name: 'content', label: '기록 내용', kind: 'textarea', placeholder: '현장 상황과 작업 메모를 입력' }
+        { name: 'content', label: '후기 내용', kind: 'textarea', placeholder: '고객 후기 내용을 입력' },
+        { name: 'source', label: '출처', kind: 'text', placeholder: '예: 고객 상담 후기', required: false },
+        { name: 'date', label: '후기일', kind: 'date', required: false },
+        visibleField,
+        sortField
       ],
       prices: [
-        { name: 'service', label: '서비스명', kind: 'text', placeholder: '예: 특수청소' },
-        { name: 'priceText', label: '가격 문구', kind: 'text', placeholder: '예: 현장 확인 후 견적' },
-        { name: 'description', label: '안내 문구', kind: 'textarea', placeholder: '가격 산정 기준과 안내 문구를 입력' }
+        { name: 'category', label: '서비스 분류', kind: 'text', placeholder: '예: 입주청소' },
+        { name: 'title', label: '가격 항목', kind: 'text', placeholder: '예: 원룸' },
+        { name: 'price', label: '가격 문구', kind: 'text', placeholder: '예: 180,000~' },
+        { name: 'description', label: '설명', kind: 'textarea', placeholder: '가격 산정 기준과 안내 문구를 입력', required: false },
+        visibleField,
+        sortField
       ],
-      faqs: [
+      faq: [
         { name: 'question', label: '질문', kind: 'text', placeholder: '예: 당일 상담이 가능한가요?' },
-        { name: 'answer', label: '답변', kind: 'textarea', placeholder: '답변 내용을 입력' }
+        { name: 'answer', label: '답변', kind: 'textarea', placeholder: '답변 내용을 입력' },
+        visibleField,
+        sortField
       ],
       notices: [
-        { name: 'title', label: '제목', kind: 'text', placeholder: '예: 여름철 긴급 복구 상담 안내' },
+        { name: 'title', label: '제목', kind: 'text', placeholder: '예: 예약 안내' },
         { name: 'content', label: '내용', kind: 'textarea', placeholder: '공지 내용을 입력' },
-        { name: 'startDate', label: '시작일', kind: 'date' },
-        { name: 'endDate', label: '종료일', kind: 'date' },
-        { name: 'published', label: '게시 여부', kind: 'checkbox' }
+        { name: 'date', label: '게시일', kind: 'date', required: false },
+        visibleField,
+        sortField
       ],
-      banner: [
-        { name: 'title', label: '배너 제목', kind: 'text', placeholder: '예: 대한청소만세' },
-        { name: 'message', label: '배너 문구', kind: 'textarea', placeholder: '메인 화면에 표시할 안내 문구' },
-        { name: 'image', label: '배경 이미지 경로', kind: 'text', placeholder: '예: /hero.jpg' },
-        { name: 'published', label: '게시 여부', kind: 'checkbox' }
+      banners: [
+        { name: 'title', label: '배너 제목', kind: 'text', placeholder: '예: 사진 없이도 먼저 상담 가능합니다.' },
+        { name: 'description', label: '배너 설명', kind: 'textarea', placeholder: '현장 상태를 말씀해주시면 가능한 작업 여부부터 안내드립니다.' },
+        { name: 'button', label: '버튼 문구', kind: 'text', placeholder: '예: 카카오톡 상담', required: false },
+        { name: 'link', label: '버튼 링크', kind: 'text', placeholder: '예: #contact', required: false },
+        visibleField,
+        sortField
       ]
     };
     return map[type] || [];
@@ -614,7 +761,7 @@
 
   function inputField(field, value){
     const label = document.createElement('label');
-    if(field.kind === 'textarea' || field.name === 'content' || field.name === 'description' || field.name === 'answer' || field.name === 'message'){
+    if(field.kind === 'textarea' || field.name === 'content' || field.name === 'description' || field.name === 'answer'){
       label.className = 'full';
     }
 
@@ -623,7 +770,7 @@
       const input = document.createElement('input');
       input.name = field.name;
       input.type = 'checkbox';
-      input.checked = value === true || value === 'on' || value === '';
+      input.checked = value === undefined || value === '' ? field.default === true : value === true || value === 'on' || value === 'true';
       label.appendChild(input);
       label.appendChild(document.createTextNode(field.label));
       return label;
@@ -645,20 +792,24 @@
     }else{
       input = document.createElement('input');
       input.type = field.kind || 'text';
+      if(field.kind === 'number'){
+        input.min = '1';
+        input.step = '1';
+      }
     }
     input.name = field.name;
     if(field.kind === 'select'){
-      if(value){
+      if(value !== undefined && value !== ''){
         input.value = value;
       }
     }else{
-      input.value = value || '';
+      input.value = value == null ? '' : value;
     }
     if(field.placeholder){
       input.placeholder = field.placeholder;
     }
-    if(field.name !== 'image'){
-      input.required = field.kind !== 'date';
+    if(field.required !== false && field.kind !== 'date'){
+      input.required = true;
     }
     label.appendChild(input);
     return label;
@@ -789,21 +940,18 @@
   }
 
   function formToEntry(form, type, id){
-    const values = Object.fromEntries(new FormData(form).entries());
+    const values = formValues(form);
     const existing = id ? getItem(type, id) || {} : {};
-    values.id = id || type + '-' + Date.now();
-    if(type === 'cases'){
-      values.photos = activePhotoData.slice();
-    }
-    if(type === 'reviews'){
-      values.rating = Number(values.rating || 5);
-    }
-    if(type === 'notices' || type === 'banner'){
-      values.published = form.elements.published ? form.elements.published.checked : false;
-    }
-    values.createdAt = existing.createdAt || new Date().toISOString().slice(0, 10);
-    values.updatedAt = new Date().toISOString().slice(0, 10);
-    return Object.assign({}, existing, values);
+    values.id = id || nextItemId(type);
+    const currentIndex = (cmsData[type] || []).findIndex(function(item){ return item.id === id; });
+    const index = currentIndex === -1 ? (cmsData[type] || []).length : currentIndex;
+    const merged = Object.assign({}, existing, values);
+    return normalizeTypeItem(type, merged, index);
+  }
+
+  function nextItemId(type){
+    const config = typeConfig[type] || { prefix: type };
+    return config.prefix + '-' + Date.now();
   }
 
   function deleteItem(type, id){
@@ -848,6 +996,10 @@
       renderSettings();
       return;
     }
+    if(type === 'json'){
+      renderJsonScreen();
+      return;
+    }
     const renderer = getRenderer(type);
     if(renderer){
       renderList(type, renderer);
@@ -862,23 +1014,24 @@
       reviews: function(item){
         return createReviewCard(item);
       },
-      journal: function(item){
-        return createCard('journal', item, item.title, item.content, [item.region]);
-      },
       prices: function(item){
-        return createCard('prices', item, item.service, item.description, [item.priceText]);
+        return createCard('prices', item, item.category + ' · ' + item.title, item.description, [item.price, visibleLabel(item.visible), '정렬 ' + item.sort]);
       },
-      faqs: function(item){
-        return createCard('faqs', item, item.question, item.answer, []);
+      faq: function(item){
+        return createCard('faq', item, item.question, item.answer, [visibleLabel(item.visible), '정렬 ' + item.sort]);
       },
       notices: function(item){
-        return createCard('notices', item, item.title, item.content, [item.startDate, item.endDate, item.published ? '게시' : '미게시']);
+        return createCard('notices', item, item.title, item.content, [item.date, visibleLabel(item.visible), '정렬 ' + item.sort]);
       },
-      banner: function(item){
-        return createCard('banner', item, item.title, item.message, [item.image, item.published ? '게시' : '미게시']);
+      banners: function(item){
+        return createCard('banners', item, item.title, item.description, [item.button, item.link, visibleLabel(item.visible), '정렬 ' + item.sort]);
       }
     };
     return renderers[type] || null;
+  }
+
+  function visibleLabel(value){
+    return value === false ? '숨김' : '표시';
   }
 
   function renderAll(){
@@ -932,12 +1085,12 @@
 
     const media = document.createElement('div');
     media.className = 'case-media';
-    const photo = firstPhoto(item.photos);
-    if(photo.src){
+    const image = normalizeImageSrc(item.image || '');
+    if(image){
       const img = document.createElement('img');
-      img.alt = photo.name || item.title || '작업사례 이미지';
+      img.alt = item.title || '작업사례 이미지';
       img.loading = 'lazy';
-      img.src = photo.src;
+      img.src = image;
       media.appendChild(img);
     }else{
       const empty = document.createElement('span');
@@ -961,7 +1114,7 @@
     const paragraph = document.createElement('p');
     paragraph.textContent = item.description || '내용 없음';
     content.appendChild(paragraph);
-    appendMeta(content, [item.service, item.region, photoCount(item.photos), item.updatedAt || item.createdAt]);
+    appendMeta(content, [item.service, item.region, item.date, item.featured ? '대표' : '', item.image ? '이미지 있음' : '텍스트 카드', visibleLabel(item.visible), '정렬 ' + item.sort]);
     article.appendChild(content);
     return article;
   }
@@ -976,7 +1129,7 @@
     head.className = 'data-item-head';
     const titleWrap = document.createElement('div');
     const strong = document.createElement('strong');
-    strong.textContent = (item.service || '고객') + ' 후기';
+    strong.textContent = item.title || ((item.service || '고객') + ' 후기');
     titleWrap.appendChild(strong);
     head.appendChild(titleWrap);
     head.appendChild(cardActions('reviews', item));
@@ -998,24 +1151,13 @@
     const paragraph = document.createElement('p');
     paragraph.textContent = item.content || '내용 없음';
     content.appendChild(paragraph);
-    appendMeta(content, [item.createdAt, item.updatedAt ? '수정 ' + item.updatedAt : '']);
+    appendMeta(content, [item.service, item.region, item.source, item.date, visibleLabel(item.visible), '정렬 ' + item.sort]);
     article.appendChild(content);
     return article;
   }
 
-  function firstPhoto(photos){
-    const photo = Array.isArray(photos) && photos.length ? photos[0] : '';
-    if(typeof photo === 'string'){
-      return { src: normalizeImageSrc(photo), name: photo };
-    }
-    return {
-      src: photo && photo.src ? normalizeImageSrc(photo.src) : '',
-      name: photo && photo.name ? photo.name : ''
-    };
-  }
-
   function normalizeImageSrc(src){
-    if(!src || src.indexOf('data:') === 0 || src.indexOf('/') === 0 || src.indexOf('../') === 0 || src.indexOf('http') === 0){
+    if(!src || src.indexOf('data:') === 0 || src.indexOf('/') === 0 || src.indexOf('../') === 0 || /^https?:\/\//i.test(src)){
       return src;
     }
     return src.indexOf('images/') === 0 ? '../' + src : src;
@@ -1271,7 +1413,7 @@
       return;
     }
 
-    const types = ['cases', 'reviews', 'journal', 'prices', 'faqs', 'notices', 'banner'];
+    const types = contentTypes;
     const results = [];
     types.forEach(function(type){
       (cmsData[type] || []).forEach(function(item){
@@ -1330,13 +1472,12 @@
 
   function searchableText(type, item){
     const fields = {
-      cases: ['title', 'service', 'region', 'description'],
-      reviews: ['service', 'content', 'rating'],
-      journal: ['title', 'region', 'content'],
-      prices: ['service', 'priceText', 'description'],
-      faqs: ['question', 'answer'],
-      notices: ['title', 'content', 'startDate', 'endDate'],
-      banner: ['title', 'message', 'image']
+      cases: ['title', 'service', 'region', 'description', 'image', 'date'],
+      reviews: ['title', 'service', 'region', 'content', 'source', 'rating', 'date'],
+      prices: ['category', 'title', 'price', 'description'],
+      faq: ['question', 'answer'],
+      notices: ['title', 'content', 'date'],
+      banners: ['title', 'description', 'button', 'link']
     };
     const values = [titles[type] || '', editorTitles[type] || '', resultTitle(type, item)];
     return values.concat((fields[type] || []).map(function(key){
@@ -1346,13 +1487,13 @@
 
   function resultTitle(type, item){
     if(type === 'reviews'){
-      return (item.service || '고객') + ' 후기';
+      return item.title || ((item.service || '고객') + ' 후기');
     }
-    return item.title || item.question || item.service || '제목 없음';
+    return item.title || item.question || item.category || item.service || '제목 없음';
   }
 
   function resultSummary(type, item){
-    const text = item.description || item.content || item.answer || item.message || item.priceText || '';
+    const text = item.description || item.content || item.answer || item.price || item.button || '';
     return String(text).slice(0, 90);
   }
 
@@ -1509,20 +1650,239 @@
     }) || (Array.isArray(photos) && photos.length > 0);
   }
 
+  function renderJsonScreen(){
+    const result = document.getElementById('jsonValidationResult');
+    if(result && !result.textContent){
+      writeJsonResult(result, ['타입별 내보내기 전 필수 필드와 금지 필드를 검증합니다.'], 'neutral');
+    }
+  }
+
+  function exportJsonType(type){
+    if(type === 'backup'){
+      exportJson();
+      return;
+    }
+    if(!typeConfig[type]){
+      setStatus('알 수 없는 JSON 타입입니다');
+      return;
+    }
+    const payload = buildHomepagePayload(type);
+    const validation = validateTypeItems(type, payload);
+    const result = document.getElementById('jsonValidationResult');
+    showValidationResult(result, validation, typeConfig[type].file + ' 검증');
+    if(validation.errors.length){
+      showToast('오류가 있어 내보내기를 중단했습니다');
+      setStatus(typeConfig[type].file + ' 내보내기 실패');
+      return;
+    }
+    downloadJson(typeConfig[type].file, payload);
+    showToast(typeConfig[type].file + ' 내보내기 완료');
+    setStatus(typeConfig[type].file + ' 내보내기 완료');
+  }
+
   function exportJson(){
-    const payload = JSON.stringify(cmsData, null, 2);
-    const blob = new Blob([payload], { type: 'application/json' });
+    const payload = {};
+    const combined = { errors: [], warnings: [] };
+    contentTypes.forEach(function(type){
+      payload[type] = buildHomepagePayload(type);
+      const validation = validateTypeItems(type, payload[type]);
+      combined.errors = combined.errors.concat(validation.errors);
+      combined.warnings = combined.warnings.concat(validation.warnings);
+    });
+    const result = document.getElementById('jsonValidationResult');
+    showValidationResult(result, combined, '전체 백업 검증');
+    if(combined.errors.length){
+      showToast('오류가 있어 백업 내보내기를 중단했습니다');
+      setStatus('전체 백업 JSON 내보내기 실패');
+      return;
+    }
+    downloadJson('daehan-cleaning-cms-backup.json', payload);
+    showToast('전체 백업 JSON 내보내기 완료');
+    setStatus('전체 백업 JSON 내보내기 완료');
+  }
+
+  function buildHomepagePayload(type){
+    return normalizeTypeItems(type, cmsData[type] || []).sort(function(a, b){
+      return a.sort - b.sort;
+    }).map(function(item){
+      const clean = {};
+      typeConfig[type].fields.forEach(function(field){
+        clean[field] = item[field];
+      });
+      return clean;
+    });
+  }
+
+  function downloadJson(filename, payload){
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = 'daehan-cleaning-cms-data.json';
+    anchor.download = filename;
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
     setTimeout(function(){
       URL.revokeObjectURL(url);
     }, 1000);
-    setStatus('JSON 내보내기 완료');
+  }
+
+  function validateJsonImportText(){
+    const parsed = readImportJson();
+    const result = document.getElementById('jsonImportResult');
+    if(parsed.error){
+      writeJsonResult(result, [parsed.error], 'error');
+      setStatus('JSON 검증 실패');
+      return false;
+    }
+    const validation = validateParsedImport(parsed.type, parsed.data);
+    showValidationResult(result, validation, '가져오기 검증');
+    setStatus(validation.errors.length ? 'JSON 검증 실패' : 'JSON 검증 완료');
+    return !validation.errors.length;
+  }
+
+  function importJsonFromTextarea(){
+    const parsed = readImportJson();
+    const result = document.getElementById('jsonImportResult');
+    if(parsed.error){
+      writeJsonResult(result, [parsed.error], 'error');
+      setStatus('JSON 가져오기 실패');
+      return;
+    }
+    const validation = validateParsedImport(parsed.type, parsed.data);
+    if(validation.errors.length){
+      showValidationResult(result, validation, '가져오기 실패');
+      showToast('JSON 오류를 확인해 주세요');
+      setStatus('JSON 가져오기 실패');
+      return;
+    }
+
+    if(parsed.type === 'backup'){
+      contentTypes.forEach(function(type){
+        if(Array.isArray(parsed.data[type])){
+          cmsData[type] = normalizeTypeItems(type, parsed.data[type]);
+        }
+      });
+    }else{
+      cmsData[parsed.type] = normalizeTypeItems(parsed.type, parsed.data);
+    }
+    persistData();
+    visibleCounts = {};
+    renderScreen(activeScreen);
+    renderSearchResults(getSearchQuery());
+    showValidationResult(result, validation, '가져오기 완료');
+    showToast('JSON 가져오기 완료');
+    setStatus('JSON 가져오기 완료');
+  }
+
+  function readImportJson(){
+    const select = document.getElementById('jsonTypeSelect');
+    const textarea = document.getElementById('jsonImportText');
+    const type = select ? select.value : '';
+    const text = textarea ? textarea.value.trim() : '';
+    if(!type){
+      return { error: '데이터 종류를 선택해 주세요.' };
+    }
+    if(!text){
+      return { error: '가져올 JSON 내용을 붙여넣어 주세요.' };
+    }
+    try {
+      return { type: type, data: JSON.parse(text) };
+    } catch(error) {
+      return { error: 'JSON 형식이 올바르지 않습니다: ' + error.message };
+    }
+  }
+
+  function validateParsedImport(type, data){
+    if(type === 'backup'){
+      const combined = { errors: [], warnings: [] };
+      if(!data || typeof data !== 'object' || Array.isArray(data)){
+        combined.errors.push('전체 백업 JSON은 객체 형식이어야 합니다.');
+        return combined;
+      }
+      contentTypes.forEach(function(itemType){
+        if(Array.isArray(data[itemType])){
+          const validation = validateTypeItems(itemType, data[itemType]);
+          combined.errors = combined.errors.concat(validation.errors);
+          combined.warnings = combined.warnings.concat(validation.warnings);
+        }
+      });
+      if(!contentTypes.some(function(itemType){ return Array.isArray(data[itemType]); })){
+        combined.errors.push('백업 JSON에 가져올 데이터 타입이 없습니다.');
+      }
+      return combined;
+    }
+    return validateTypeItems(type, data);
+  }
+
+  function validateTypeItems(type, items){
+    const config = typeConfig[type];
+    const result = { errors: [], warnings: [] };
+    if(!config){
+      result.errors.push('알 수 없는 데이터 타입입니다.');
+      return result;
+    }
+    if(!Array.isArray(items)){
+      result.errors.push(config.file + ' 데이터는 배열이어야 합니다.');
+      return result;
+    }
+    items.forEach(function(item, index){
+      const row = config.file + ' #' + (index + 1);
+      if(!item || typeof item !== 'object' || Array.isArray(item)){
+        result.errors.push(row + ': 객체 형식이어야 합니다.');
+        return;
+      }
+      if(type === 'cases' && ('beforeImage' in item || 'afterImage' in item)){
+        result.errors.push(row + ': beforeImage/afterImage 필드는 사용할 수 없습니다. image 필드 1개만 사용하세요.');
+      }
+      config.required.forEach(function(field){
+        if(!cleanText(item[field])){
+          result.warnings.push(row + ': ' + field + ' 값이 비어 있습니다.');
+        }
+      });
+    });
+    return result;
+  }
+
+  function showValidationResult(container, validation, heading){
+    if(!container){
+      return;
+    }
+    const messages = [];
+    if(heading){
+      messages.push(heading);
+    }
+    if(validation.errors.length){
+      messages.push('오류 ' + validation.errors.length + '개');
+      messages.push.apply(messages, validation.errors);
+    }
+    if(validation.warnings.length){
+      messages.push('경고 ' + validation.warnings.length + '개');
+      messages.push.apply(messages, validation.warnings.slice(0, 12));
+      if(validation.warnings.length > 12){
+        messages.push('외 ' + (validation.warnings.length - 12) + '개 경고');
+      }
+    }
+    if(!validation.errors.length && !validation.warnings.length){
+      messages.push('검증 통과');
+    }
+    writeJsonResult(container, messages, validation.errors.length ? 'error' : 'ok');
+  }
+
+  function writeJsonResult(container, messages, status){
+    if(!container){
+      return;
+    }
+    container.innerHTML = '';
+    container.classList.toggle('is-error', status === 'error');
+    container.classList.toggle('is-ok', status === 'ok');
+    const list = document.createElement('ul');
+    (messages || []).forEach(function(message){
+      const item = document.createElement('li');
+      item.textContent = message;
+      list.appendChild(item);
+    });
+    container.appendChild(list);
   }
 
   function clone(value){

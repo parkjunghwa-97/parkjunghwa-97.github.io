@@ -602,7 +602,8 @@ textarea:focus {
   font-size: 12px;
 }
 
-.settings-grid {
+.settings-grid,
+.json-tools {
   display: grid;
   grid-template-columns: minmax(280px, 1fr) minmax(260px, 420px);
   gap: 20px;
@@ -624,6 +625,60 @@ textarea:focus {
 
 .settings-actions {
   margin-bottom: 16px;
+}
+
+.json-import-form {
+  display: grid;
+  gap: 12px;
+}
+
+.json-import-form textarea {
+  min-height: 280px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.json-export-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.json-result {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  background: #f8fafc;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.json-result:empty {
+  display: none;
+}
+
+.json-result.is-ok {
+  border-color: rgba(15, 118, 110, 0.28);
+  color: var(--brand-strong);
+  background: #ecfdf5;
+}
+
+.json-result.is-error {
+  border-color: rgba(180, 35, 24, 0.28);
+  color: var(--danger);
+  background: #fff1f0;
+}
+
+.json-result ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
 }
 
 .file-list {
@@ -764,6 +819,7 @@ textarea:focus {
   }
 
   .settings-grid,
+  .json-tools,
   .editor-grid {
     grid-template-columns: 1fr;
   }

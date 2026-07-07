@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>대한청소만세 CMS V1.6</title>
+  <title>대한청소만세 CMS V1.7</title>
   <link rel="stylesheet" href="./css/cms.css">
 </head>
 <body>
   <main class="cms-shell">
     <section class="login-view" id="loginView">
       <div class="login-panel">
-        <p class="eyebrow">Daehan Cleaning CMS V1.6</p>
+        <p class="eyebrow">Daehan Cleaning CMS V1.7</p>
         <h1>관리자 로그인</h1>
         <form id="loginForm" class="login-form">
           <label for="pinInput">6자리 PIN</label>
@@ -24,17 +24,17 @@
     <section class="app-view is-hidden" id="appView">
       <aside class="sidebar">
         <div class="brand-block">
-          <span class="brand-kicker">CMS V1.6</span>
+          <span class="brand-kicker">CMS V1.7</span>
           <strong>대한청소만세</strong>
         </div>
         <nav class="cms-menu" aria-label="관리자 메뉴">
           <button class="menu-btn active" type="button" data-screen="cases">작업사례 관리</button>
           <button class="menu-btn" type="button" data-screen="reviews">고객후기 관리</button>
-          <button class="menu-btn" type="button" data-screen="journal">현장기록 관리</button>
           <button class="menu-btn" type="button" data-screen="prices">비용안내 관리</button>
-          <button class="menu-btn" type="button" data-screen="faqs">FAQ 관리</button>
+          <button class="menu-btn" type="button" data-screen="faq">FAQ 관리</button>
           <button class="menu-btn" type="button" data-screen="notices">공지 관리</button>
-          <button class="menu-btn" type="button" data-screen="banner">메인배너 관리</button>
+          <button class="menu-btn" type="button" data-screen="banners">메인배너 관리</button>
+          <button class="menu-btn" type="button" data-screen="json">JSON 관리</button>
           <button class="menu-btn" type="button" data-screen="settings">설정</button>
         </nav>
         <div class="sidebar-actions">
@@ -62,7 +62,7 @@
 
         <section class="screen active" id="screen-cases" data-type="cases">
           <div class="screen-toolbar">
-            <p>작업사례는 사진 미리보기와 함께 임시 저장됩니다. 실제 파일 업로드는 V2에서 연결합니다.</p>
+            <p>작업사례는 image 필드 1개로 홈페이지 data/cases.json 구조에 맞춰 관리합니다.</p>
             <button type="button" data-action="new" data-type="cases">작업사례 추가</button>
           </div>
           <div class="editor-panel is-hidden" id="casesEditor"></div>
@@ -78,49 +78,89 @@
           <div class="item-list" id="reviewsList"></div>
         </section>
 
-        <section class="screen" id="screen-journal" data-type="journal">
-          <div class="screen-toolbar">
-            <p>현장기록은 추후 고객 홈페이지 기록형 콘텐츠로 연결할 수 있게 준비합니다.</p>
-            <button type="button" data-action="new" data-type="journal">현장기록 추가</button>
-          </div>
-          <div class="editor-panel is-hidden" id="journalEditor"></div>
-          <div class="item-list" id="journalList"></div>
-        </section>
-
         <section class="screen" id="screen-prices" data-type="prices">
           <div class="screen-toolbar">
-            <p>서비스별 가격 문구와 안내 문구를 수정해 localStorage에 저장합니다.</p>
+            <p>가격 항목을 홈페이지 data/prices.json 구조에 맞춰 관리합니다.</p>
             <button type="button" data-action="new" data-type="prices">가격 항목 추가</button>
           </div>
           <div class="editor-panel is-hidden" id="pricesEditor"></div>
           <div class="item-list" id="pricesList"></div>
         </section>
 
-        <section class="screen" id="screen-faqs" data-type="faqs">
+        <section class="screen" id="screen-faq" data-type="faq">
           <div class="screen-toolbar">
-            <p>FAQ 질문과 답변을 추가, 수정, 삭제할 수 있습니다.</p>
-            <button type="button" data-action="new" data-type="faqs">질문 추가</button>
+            <p>FAQ 질문과 답변을 홈페이지 data/faq.json 구조로 관리합니다.</p>
+            <button type="button" data-action="new" data-type="faq">질문 추가</button>
           </div>
-          <div class="editor-panel is-hidden" id="faqsEditor"></div>
-          <div class="item-list" id="faqsList"></div>
+          <div class="editor-panel is-hidden" id="faqEditor"></div>
+          <div class="item-list" id="faqList"></div>
         </section>
 
         <section class="screen" id="screen-notices" data-type="notices">
           <div class="screen-toolbar">
-            <p>현재 고객 홈페이지에는 공지 섹션이 없으며, 향후 팝업/상단 배너용 준비 기능입니다.</p>
+            <p>공지 데이터를 홈페이지 data/notices.json 구조로 관리합니다.</p>
             <button type="button" data-action="new" data-type="notices">공지 추가</button>
           </div>
           <div class="editor-panel is-hidden" id="noticesEditor"></div>
           <div class="item-list" id="noticesList"></div>
         </section>
 
-        <section class="screen" id="screen-banner" data-type="banner">
+        <section class="screen" id="screen-banners" data-type="banners">
           <div class="screen-toolbar">
-            <p>메인배너 데이터는 V2에서 고객 홈페이지 JSON 연동 시 반영합니다.</p>
-            <button type="button" data-action="new" data-type="banner">배너 추가</button>
+            <p>메인배너 데이터를 홈페이지 data/banners.json 구조로 관리합니다.</p>
+            <button type="button" data-action="new" data-type="banners">배너 추가</button>
           </div>
-          <div class="editor-panel is-hidden" id="bannerEditor"></div>
-          <div class="item-list" id="bannerList"></div>
+          <div class="editor-panel is-hidden" id="bannersEditor"></div>
+          <div class="item-list" id="bannersList"></div>
+        </section>
+
+        <section class="screen" id="screen-json" data-type="json">
+          <div class="screen-toolbar">
+            <p>/data/*.json 내용을 붙여넣어 CMS localStorage에 반영하고, 홈페이지에서 바로 사용할 JSON을 내보냅니다.</p>
+          </div>
+          <div class="json-tools">
+            <article class="list-card">
+              <div class="section-heading">
+                <h3>JSON 가져오기</h3>
+                <span>텍스트 붙여넣기</span>
+              </div>
+              <div class="json-import-form">
+                <label for="jsonTypeSelect">데이터 종류</label>
+                <select id="jsonTypeSelect">
+                  <option value="reviews">reviews.json</option>
+                  <option value="cases">cases.json</option>
+                  <option value="prices">prices.json</option>
+                  <option value="faq">faq.json</option>
+                  <option value="notices">notices.json</option>
+                  <option value="banners">banners.json</option>
+                  <option value="backup">전체 백업 JSON</option>
+                </select>
+                <label class="full" for="jsonImportText">JSON 내용</label>
+                <textarea id="jsonImportText" rows="14" spellcheck="false" placeholder="/data/*.json 내용을 그대로 붙여넣으세요."></textarea>
+                <div class="settings-actions">
+                  <button type="button" data-action="json-import">가져오기</button>
+                  <button class="secondary-btn" type="button" data-action="json-validate">검증</button>
+                </div>
+                <div class="json-result" id="jsonImportResult" aria-live="polite"></div>
+              </div>
+            </article>
+            <article class="list-card">
+              <div class="section-heading">
+                <h3>JSON 내보내기</h3>
+                <span>홈페이지 data 구조</span>
+              </div>
+              <div class="json-export-grid" id="jsonExportButtons">
+                <button type="button" data-action="json-export" data-json-type="reviews">reviews.json 내보내기</button>
+                <button type="button" data-action="json-export" data-json-type="cases">cases.json 내보내기</button>
+                <button type="button" data-action="json-export" data-json-type="prices">prices.json 내보내기</button>
+                <button type="button" data-action="json-export" data-json-type="faq">faq.json 내보내기</button>
+                <button type="button" data-action="json-export" data-json-type="notices">notices.json 내보내기</button>
+                <button type="button" data-action="json-export" data-json-type="banners">banners.json 내보내기</button>
+                <button class="secondary-btn" type="button" data-action="json-export" data-json-type="backup">전체 백업 JSON</button>
+              </div>
+              <div class="json-result" id="jsonValidationResult" aria-live="polite"></div>
+            </article>
+          </div>
         </section>
 
         <section class="screen" id="screen-settings" data-type="settings">
@@ -132,7 +172,7 @@
               </div>
               <div class="settings-actions">
                 <button type="button" id="resetDataButton">샘플 데이터로 초기화</button>
-                <button class="secondary-btn" type="button" id="exportDataButton">JSON 내보내기</button>
+                <button class="secondary-btn" type="button" id="exportDataButton">전체 백업 JSON</button>
               </div>
               <div class="item-list" id="settingsList"></div>
             </article>
@@ -142,14 +182,12 @@
                 <span>V2 연동 예정</span>
               </div>
               <ul class="file-list">
-                <li>data/cases.json</li>
                 <li>data/reviews.json</li>
-                <li>data/journal.json</li>
+                <li>data/cases.json</li>
                 <li>data/prices.json</li>
-                <li>data/faqs.json</li>
+                <li>data/faq.json</li>
                 <li>data/notices.json</li>
                 <li>data/banners.json</li>
-                <li>data/settings.json</li>
               </ul>
             </article>
           </div>
