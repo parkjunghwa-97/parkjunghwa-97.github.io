@@ -363,6 +363,140 @@
     })();
 
 
+    /* PRICES_JSON_INTEGRATION */
+    (function(){
+      var PRICE_LIMIT=30;
+      var PRICE_ENDPOINT='/data/prices.json';
+
+      function onReady(fn){
+        if(document.readyState==='loading'){
+          document.addEventListener('DOMContentLoaded',fn);
+        }else{
+          fn();
+        }
+      }
+
+      function cleanText(value){
+        return typeof value === 'string' ? value.trim() : '';
+      }
+
+      function cleanVisible(value){
+        return value !== false && value !== 'false';
+      }
+
+      function cleanSort(value){
+        var sort=Number(value || 0);
+        return isFinite(sort) ? sort : 0;
+      }
+
+      function normalizePrice(item){
+        return {
+          id: cleanText(item && item.id),
+          category: cleanText(item && item.category),
+          title: cleanText(item && item.title),
+          price: cleanText(item && item.price),
+          description: cleanText(item && item.description),
+          visible: cleanVisible(item && item.visible),
+          sort: cleanSort(item && item.sort)
+        };
+      }
+
+      function isUsablePrice(item){
+        return item.visible && item.category && item.title && item.price;
+      }
+
+      function createPriceRow(item){
+        var row=document.createElement('div');
+        row.className='price-row price-json-row';
+        row.setAttribute('data-price-id',item.id || '');
+
+        var copy=document.createElement('div');
+        copy.className='price-json-copy';
+
+        var title=document.createElement('span');
+        title.className='price-json-title';
+        title.textContent=item.title;
+        copy.appendChild(title);
+
+        if(item.description){
+          var description=document.createElement('small');
+          description.textContent=item.description;
+          copy.appendChild(description);
+        }
+
+        var price=document.createElement('span');
+        price.className='price-json-amount';
+        price.textContent=item.price;
+
+        row.appendChild(copy);
+        row.appendChild(price);
+        return row;
+      }
+
+      function createPriceCard(group){
+        var card=document.createElement('div');
+        card.className='price-card price-json-card';
+
+        var title=document.createElement('h3');
+        title.textContent=group.category;
+        card.appendChild(title);
+
+        group.items.forEach(function(item){
+          card.appendChild(createPriceRow(item));
+        });
+
+        return card;
+      }
+
+      function groupPrices(items){
+        var groups=[];
+        var byCategory={};
+        items.forEach(function(item){
+          if(!byCategory[item.category]){
+            byCategory[item.category]={category:item.category,items:[]};
+            groups.push(byCategory[item.category]);
+          }
+          byCategory[item.category].items.push(item);
+        });
+        return groups;
+      }
+
+      function renderPrices(target,items){
+        var prices=items.slice().sort(function(a,b){return a.sort-b.sort;}).slice(0,PRICE_LIMIT);
+        var groups=groupPrices(prices);
+        var fragment=document.createDocumentFragment();
+        groups.forEach(function(group){
+          fragment.appendChild(createPriceCard(group));
+        });
+        if(!fragment.childNodes.length){return;}
+        target.innerHTML='';
+        target.appendChild(fragment);
+        target.setAttribute('data-prices-source','json');
+      }
+
+      function initPricesJson(){
+        var target=document.querySelector('[data-prices-json-target=true]');
+        if(!target || !window.fetch){return;}
+
+        window.fetch(PRICE_ENDPOINT,{cache:'no-store'})
+          .then(function(response){
+            if(!response.ok){throw new Error('prices json failed');}
+            return response.json();
+          })
+          .then(function(data){
+            var prices=Array.isArray(data) ? data.map(normalizePrice).filter(isUsablePrice) : [];
+            if(prices.length){
+              renderPrices(target,prices);
+            }
+          })
+          .catch(function(){
+            target.setAttribute('data-prices-source','fallback');
+          });
+      }
+
+      onReady(initPricesJson);
+    })();
+
     /* SLIDER_IMAGE_PRELOAD */
     (function(){
       window.preloadSliderImages=function(scope){
