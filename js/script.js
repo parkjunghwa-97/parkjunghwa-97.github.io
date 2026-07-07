@@ -497,6 +497,261 @@
       onReady(initPricesJson);
     })();
 
+
+    /* CONTENT_JSON_INTEGRATION */
+    (function(){
+      var FAQ_LIMIT=100;
+      var NOTICE_LIMIT=50;
+      var BANNER_LIMIT=20;
+      var FAQ_ENDPOINT='/data/faq.json';
+      var NOTICE_ENDPOINT='/data/notices.json';
+      var BANNER_ENDPOINT='/data/banners.json';
+
+      function onReady(fn){
+        if(document.readyState==='loading'){
+          document.addEventListener('DOMContentLoaded',fn);
+        }else{
+          fn();
+        }
+      }
+
+      function cleanText(value){
+        return typeof value === 'string' ? value.trim() : '';
+      }
+
+      function cleanVisible(value){
+        return value !== false && value !== 'false';
+      }
+
+      function cleanSort(value){
+        var sort=Number(value || 0);
+        return isFinite(sort) ? sort : 0;
+      }
+
+      function bySort(a,b){
+        return a.sort-b.sort;
+      }
+
+      function fetchJson(endpoint,onSuccess,onFail){
+        window.fetch(endpoint,{cache:'no-store'})
+          .then(function(response){
+            if(!response.ok){throw new Error('content json failed');}
+            return response.json();
+          })
+          .then(onSuccess)
+          .catch(onFail);
+      }
+
+      function normalizeFaq(item){
+        return {
+          id: cleanText(item && item.id),
+          question: cleanText(item && item.question),
+          answer: cleanText(item && item.answer),
+          visible: cleanVisible(item && item.visible),
+          sort: cleanSort(item && item.sort)
+        };
+      }
+
+      function isUsableFaq(item){
+        return item.visible && item.question && item.answer;
+      }
+
+      function createFaqCard(item){
+        var card=document.createElement('div');
+        card.className='faq-card';
+        card.setAttribute('data-faq-id',item.id || '');
+
+        var question=document.createElement('b');
+        question.textContent=item.question;
+        card.appendChild(question);
+
+        var answer=document.createElement('p');
+        answer.textContent=item.answer;
+        card.appendChild(answer);
+
+        return card;
+      }
+
+      function renderFaq(target,items){
+        var faqs=items.slice().sort(bySort).slice(0,FAQ_LIMIT);
+        var fragment=document.createDocumentFragment();
+        faqs.forEach(function(item){
+          fragment.appendChild(createFaqCard(item));
+        });
+        if(!fragment.childNodes.length){return;}
+        target.innerHTML='';
+        target.appendChild(fragment);
+        target.setAttribute('data-faq-source','json');
+      }
+
+      function initFaqJson(){
+        var target=document.querySelector('[data-faq-json-target="true"]');
+        if(!target || !window.fetch){return;}
+
+        fetchJson(FAQ_ENDPOINT,function(data){
+          var faqs=Array.isArray(data) ? data.map(normalizeFaq).filter(isUsableFaq) : [];
+          if(faqs.length){
+            renderFaq(target,faqs);
+          }
+        },function(){
+          target.setAttribute('data-faq-source','fallback');
+        });
+      }
+
+      function normalizeNotice(item){
+        return {
+          id: cleanText(item && item.id),
+          title: cleanText(item && item.title),
+          content: cleanText(item && item.content),
+          date: cleanText(item && item.date),
+          visible: cleanVisible(item && item.visible),
+          sort: cleanSort(item && item.sort)
+        };
+      }
+
+      function isUsableNotice(item){
+        return item.visible && item.title && item.content;
+      }
+
+      function createNoticeCard(item){
+        var article=document.createElement('article');
+        article.className='notice-card';
+        article.setAttribute('data-notice-id',item.id || '');
+
+        var title=document.createElement('h3');
+        title.textContent=item.title;
+        article.appendChild(title);
+
+        var content=document.createElement('p');
+        content.textContent=item.content;
+        article.appendChild(content);
+
+        if(item.date){
+          var date=document.createElement('small');
+          date.textContent=item.date;
+          article.appendChild(date);
+        }
+
+        return article;
+      }
+
+      function renderNotices(target,items){
+        var notices=items.slice().sort(bySort).slice(0,NOTICE_LIMIT);
+        var fragment=document.createDocumentFragment();
+        notices.forEach(function(item){
+          fragment.appendChild(createNoticeCard(item));
+        });
+        if(!fragment.childNodes.length){return;}
+        target.innerHTML='';
+        target.appendChild(fragment);
+        target.setAttribute('data-notices-source','json');
+      }
+
+      function initNoticesJson(){
+        var target=document.querySelector('[data-notices-json-target="true"]');
+        if(!target || !window.fetch){return;}
+
+        fetchJson(NOTICE_ENDPOINT,function(data){
+          var notices=Array.isArray(data) ? data.map(normalizeNotice).filter(isUsableNotice) : [];
+          if(notices.length){
+            renderNotices(target,notices);
+          }
+        },function(){
+          target.setAttribute('data-notices-source','fallback');
+        });
+      }
+
+      function normalizeBanner(item){
+        return {
+          id: cleanText(item && item.id),
+          title: cleanText(item && item.title),
+          description: cleanText(item && item.description),
+          button: cleanText(item && item.button),
+          link: cleanText(item && item.link),
+          visible: cleanVisible(item && item.visible),
+          sort: cleanSort(item && item.sort)
+        };
+      }
+
+      function isUsableBanner(item){
+        return item.visible && item.title && item.description;
+      }
+
+      function createBannerButton(item,index){
+        if(!item.button){return null;}
+
+        var button=document.createElement('a');
+        button.className='hero-btn' + (index ? ' secondary' : '');
+        button.href=item.link || '#contact';
+        button.textContent=item.button;
+        button.addEventListener('click',function(event){
+          var link=item.link || '';
+          if(link.charAt(0) !== '#'){return;}
+          var pageId=link.slice(1);
+          if(!pageId || !document.getElementById(pageId) || typeof showPage !== 'function'){return;}
+          event.preventDefault();
+          showPage(pageId);
+        });
+        return button;
+      }
+
+      function createBannerCard(item,index){
+        var article=document.createElement('article');
+        article.className=index ? 'hero-json-banner' : 'hero-json-banner hero-json-banner-primary';
+        article.setAttribute('data-banner-id',item.id || '');
+
+        var title=document.createElement(index ? 'h2' : 'h1');
+        title.className=index ? 'hero-banner-title' : 'hero-main';
+        title.textContent=item.title;
+        article.appendChild(title);
+
+        var description=document.createElement('div');
+        description.className=index ? 'hero-banner-description' : 'hero-sub';
+        description.textContent=item.description;
+        article.appendChild(description);
+
+        var button=createBannerButton(item,index);
+        if(button){
+          var cta=document.createElement('div');
+          cta.className='hero-cta';
+          cta.appendChild(button);
+          article.appendChild(cta);
+        }
+
+        return article;
+      }
+
+      function renderBanners(target,items){
+        var banners=items.slice().sort(bySort).slice(0,BANNER_LIMIT);
+        var fragment=document.createDocumentFragment();
+        banners.forEach(function(item,index){
+          fragment.appendChild(createBannerCard(item,index));
+        });
+        if(!fragment.childNodes.length){return;}
+        target.innerHTML='';
+        target.appendChild(fragment);
+        target.setAttribute('data-banners-source','json');
+      }
+
+      function initBannersJson(){
+        var target=document.querySelector('[data-banners-json-target="true"]');
+        if(!target || !window.fetch){return;}
+
+        fetchJson(BANNER_ENDPOINT,function(data){
+          var banners=Array.isArray(data) ? data.map(normalizeBanner).filter(isUsableBanner) : [];
+          if(banners.length){
+            renderBanners(target,banners);
+          }
+        },function(){
+          target.setAttribute('data-banners-source','fallback');
+        });
+      }
+
+      onReady(initFaqJson);
+      onReady(initNoticesJson);
+      onReady(initBannersJson);
+    })();
+
     /* SLIDER_IMAGE_PRELOAD */
     (function(){
       window.preloadSliderImages=function(scope){
