@@ -1837,7 +1837,7 @@
       }
       config.required.forEach(function(field){
         if(!cleanText(item[field])){
-          result.warnings.push(row + ': ' + field + ' 값이 비어 있습니다.');
+          result.errors.push(row + ': ' + field + ' 값이 비어 있습니다.');
         }
       });
     });
