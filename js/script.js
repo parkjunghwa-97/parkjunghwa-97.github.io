@@ -264,8 +264,7 @@
           region: cleanText(item && item.region),
           title: cleanText(item && item.title),
           description: cleanText(item && item.description),
-          beforeImage: cleanText(item && item.beforeImage),
-          afterImage: cleanText(item && item.afterImage),
+          image: cleanText(item && item.image),
           date: cleanText(item && item.date),
           featured: cleanBool(item && item.featured)
         };
@@ -284,22 +283,19 @@
         return '/' + value.replace(/^\.\/+/, '');
       }
 
-      function appendCaseImage(parent,label,src,title){
+      function appendCasePhoto(parent,src,title){
+        var srcValue=imageSrc(src);
+        if(!srcValue){return;}
+
         var wrap=document.createElement('div');
         wrap.className='case-json-image';
 
-        var labelEl=document.createElement('span');
-        labelEl.textContent=label;
-        wrap.appendChild(labelEl);
-
-        if(src){
-          var img=document.createElement('img');
-          img.src=imageSrc(src);
-          img.alt=label + ' ' + title;
-          img.loading='lazy';
-          img.decoding='async';
-          wrap.appendChild(img);
-        }
+        var img=document.createElement('img');
+        img.src=srcValue;
+        img.alt=(title ? title + ' ' : '') + '\uC791\uC5C5 \uC0AC\uC9C4';
+        img.loading='lazy';
+        img.decoding='async';
+        wrap.appendChild(img);
 
         parent.appendChild(wrap);
       }
@@ -309,14 +305,7 @@
         article.className='case-mini case-json-card';
         article.setAttribute('data-case-id',item.id || '');
 
-        appendCaseImage(article,'Before',item.beforeImage,item.title);
-
-        var arrow=document.createElement('div');
-        arrow.className='case-json-arrow';
-        arrow.textContent='↓';
-        article.appendChild(arrow);
-
-        appendCaseImage(article,'After',item.afterImage,item.title);
+        appendCasePhoto(article,item.image,item.title);
 
         var service=document.createElement('span');
         service.className='case-json-service';

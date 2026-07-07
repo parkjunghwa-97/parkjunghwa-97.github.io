@@ -5,8 +5,7 @@
     "region": "서울 강서구",
     "title": "특수청소 작업사례",
     "description": "생활 폐기물 정리와 바닥 살균을 함께 진행한 작업사례입니다.",
-    "beforeImage": "images/reviews/review-02.jpg",
-    "afterImage": "images/reviews/review-05.jpg",
+    "image": "",
     "date": "2026-07-01",
     "featured": true
   },
@@ -16,8 +15,7 @@
     "region": "경기 부천",
     "title": "쓰레기집 정리 전후사진",
     "description": "폐기물 분류와 반출 후 생활 공간을 다시 사용할 수 있도록 정리했습니다.",
-    "beforeImage": "images/reviews/review-05.jpg",
-    "afterImage": "images/reviews/review-06.jpg",
+    "image": "",
     "date": "2026-07-01",
     "featured": true
   },
@@ -27,8 +25,7 @@
     "region": "인천",
     "title": "비둘기 퇴치 전후사진",
     "description": "분변 오염 구역을 정리하고 재유입 방지 상담을 함께 진행했습니다.",
-    "beforeImage": "images/reviews/review-06.jpg",
-    "afterImage": "images/reviews/review-07.jpg",
+    "image": "",
     "date": "2026-07-01",
     "featured": true
   },
@@ -38,8 +35,7 @@
     "region": "서울",
     "title": "유품정리 작업사례",
     "description": "보관 물품 확인과 정리 범위를 안내한 뒤 필요한 구역부터 차분히 진행했습니다.",
-    "beforeImage": "images/reviews/review-07.jpg",
-    "afterImage": "images/reviews/review-08.jpg",
+    "image": "",
     "date": "2026-07-01",
     "featured": false
   },
@@ -49,8 +45,7 @@
     "region": "인천",
     "title": "고독사 특수청소",
     "description": "현장 상태 확인 후 오염 구역 정리와 냄새 저감 작업을 단계별로 진행했습니다.",
-    "beforeImage": "images/reviews/review-02.jpg",
-    "afterImage": "images/reviews/review-06.jpg",
+    "image": "",
     "date": "2026-07-01",
     "featured": false
   },
@@ -60,8 +55,7 @@
     "region": "경기 김포",
     "title": "폐기물 처리 사례",
     "description": "사진 상담으로 폐기물 양을 확인하고 반출 동선과 작업 순서를 정리했습니다.",
-    "beforeImage": "images/reviews/review-05.jpg",
-    "afterImage": "images/reviews/review-08.jpg",
+    "image": "",
     "date": "2026-07-01",
     "featured": false
   },
@@ -71,8 +65,7 @@
     "region": "인천 부평",
     "title": "입주청소 전후사진",
     "description": "입주 전 창틀, 주방, 욕실 등 확인이 필요한 구역을 중심으로 정리했습니다.",
-    "beforeImage": "images/reviews/review-06.jpg",
-    "afterImage": "images/reviews/review-02.jpg",
+    "image": "",
     "date": "2026-07-01",
     "featured": false
   },
@@ -82,8 +75,7 @@
     "region": "고양",
     "title": "사무실 · 상가청소",
     "description": "운영 전후 동선을 고려해 바닥, 집기 주변, 공용 공간을 정리했습니다.",
-    "beforeImage": "images/reviews/review-08.jpg",
-    "afterImage": "images/reviews/review-07.jpg",
+    "image": "",
     "date": "2026-07-01",
     "featured": false
   }
