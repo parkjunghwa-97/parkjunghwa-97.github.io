@@ -7,5 +7,14 @@
     "link": "#contact",
     "visible": true,
     "sort": 1
+  },
+  {
+    "id": "banner-002",
+    "title": "입주·거주·이사청소도 상담 가능합니다.",
+    "description": "거주 중 청소, 입주청소, 이사청소는 공간 상태와 작업 범위에 맞춰 상담합니다.",
+    "button": "입주·거주·이사청소 상담하기",
+    "link": "#contact",
+    "visible": true,
+    "sort": 2
   }
 ]
