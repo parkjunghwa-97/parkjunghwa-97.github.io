@@ -468,7 +468,13 @@ textarea:focus {
   gap: 10px;
 }
 
-.case-media {
+.case-card--text,
+.review-card--text {
+  grid-template-columns: 1fr;
+}
+
+.case-media,
+.review-media {
   display: grid;
   overflow: hidden;
   min-height: 126px;
@@ -480,11 +486,58 @@ textarea:focus {
   font-weight: 800;
 }
 
-.case-media img {
+.case-media img,
+.review-media img {
   width: 100%;
   height: 100%;
   min-height: 126px;
   object-fit: cover;
+}
+
+.image-url-field {
+  display: grid;
+  gap: 8px;
+}
+
+.image-url-field input {
+  width: 100%;
+}
+
+.image-url-field.has-warning input {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.14);
+}
+
+.image-url-preview {
+  display: grid;
+  overflow: hidden;
+  min-height: 150px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  background: #f8fafc;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.image-url-preview img {
+  display: block;
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+}
+
+.image-url-preview.is-empty {
+  padding: 18px;
+  border-style: dashed;
+}
+
+.image-url-warning {
+  min-height: 18px;
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .review-card {
@@ -1017,7 +1070,9 @@ textarea:focus {
   }
 
   .case-media,
-  .case-media img {
+  .review-media,
+  .case-media img,
+  .review-media img {
     min-height: 170px;
   }
 

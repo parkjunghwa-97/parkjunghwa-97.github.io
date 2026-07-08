@@ -887,6 +887,7 @@
       title: cleanText(item && item.title),
       rating: cleanRating(item && item.rating),
       content: cleanText(item && item.content),
+      image: cleanText(item && item.image),
       source: cleanText(item && item.source),
       date: cleanText(item && item.date)
     };
@@ -896,10 +897,41 @@
     return review.title && review.content && review.service && review.region;
   }
 
+  function imageSrc(src){
+    var value=cleanText(src);
+    if(!value){return '';}
+    if(value.indexOf('data:')===0 || /^https?:\/\//i.test(value) || value.indexOf('/')===0 || value.indexOf('../')===0){
+      return value;
+    }
+    return '/' + value.replace(/^\.\/+/, '');
+  }
+
+  function appendReviewImage(parent,src,title){
+    var srcValue=imageSrc(src);
+    if(!srcValue){return;}
+
+    var img=document.createElement('img');
+    img.className='review-json-image';
+    img.src=srcValue;
+    img.alt=(title ? title + ' ' : '') + 'review image';
+    img.loading='lazy';
+    img.decoding='async';
+    img.style.display='block';
+    img.style.width='100%';
+    img.style.height='150px';
+    img.style.objectFit='cover';
+    img.style.borderRadius='16px';
+    img.style.margin='0 0 14px';
+    img.style.background='#f1f5f9';
+    parent.appendChild(img);
+  }
+
   function createReviewCard(review){
     var article=document.createElement('article');
     article.className='review-text-card';
     article.setAttribute('data-review-source','json');
+
+    appendReviewImage(article,review.image,review.title);
 
     var title=document.createElement('b');
     title.textContent=review.title;
