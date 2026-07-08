@@ -472,6 +472,9 @@
       if(action === 'json-save-preview'){
         renderSaveTargetPreview();
       }
+      if(action === 'json-auto-save'){
+        saveJsonTargets();
+      }
     });
 
     document.addEventListener('submit', function(event){
@@ -1662,6 +1665,24 @@
     }
   }
 
+  function buildSaveTargetPreviews(){
+    return saveTargetTypes.map(function(type){
+      const config = typeConfig[type];
+      const payload = buildHomepagePayload(type);
+      const validation = validateSaveTarget(type, payload);
+      const jsonText = JSON.stringify(payload, null, 2);
+      return {
+        type: type,
+        file: config.file,
+        path: 'data/' + config.file,
+        payload: payload,
+        validation: validation,
+        jsonText: jsonText,
+        canSave: validation.errors.length === 0
+      };
+    });
+  }
+
   function renderSaveTargetPreview(){
     const container = document.getElementById('jsonSavePreviewResult');
     if(!container){
@@ -1670,14 +1691,15 @@
     const startedAt = Date.now();
     const fragment = document.createDocumentFragment();
     let totalErrors = 0;
+    const targets = buildSaveTargetPreviews();
 
     container.innerHTML = '';
-    saveTargetTypes.forEach(function(type){
-      const config = typeConfig[type];
-      const payload = buildHomepagePayload(type);
-      const validation = validateSaveTarget(type, payload);
-      const jsonText = JSON.stringify(payload, null, 2);
-      const hasErrors = validation.errors.length > 0;
+    targets.forEach(function(target){
+      const config = typeConfig[target.type];
+      const payload = target.payload;
+      const validation = target.validation;
+      const jsonText = target.jsonText;
+      const hasErrors = !target.canSave;
       totalErrors += validation.errors.length;
 
       const card = document.createElement('article');
@@ -1737,6 +1759,21 @@
     setStatus(totalErrors ? '저장 준비 오류 확인됨' : '저장 대상 미리보기 완료');
     showToast(totalErrors ? '저장 불가 항목을 확인하세요' : '저장 대상 미리보기 완료');
     container.dataset.previewMs = String(elapsed);
+  }
+
+  function saveJsonTargets(){
+    const targets = buildSaveTargetPreviews();
+    const totalErrors = targets.reduce(function(sum, target){
+      return sum + target.validation.errors.length;
+    }, 0);
+    renderSaveTargetPreview();
+    if(totalErrors){
+      showToast('저장 전 검증 오류를 먼저 확인하세요');
+      setStatus('저장 API 연결 전 검증 오류');
+      return;
+    }
+    showToast('저장 API 연결 전입니다');
+    setStatus('저장 API 연결 전입니다');
   }
 
   function formatJsonPreview(jsonText){

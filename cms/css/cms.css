@@ -773,6 +773,43 @@ textarea:focus {
   overflow-wrap: anywhere;
 }
 
+.save-api-panel {
+  display: grid;
+  min-width: 0;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.save-api-status {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.save-api-status strong {
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.save-api-status span,
+.save-api-panel p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.save-api-panel button {
+  width: fit-content;
+  max-width: 100%;
+  white-space: normal;
+}
+
 .json-result {
   display: grid;
   gap: 8px;
