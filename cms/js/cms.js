@@ -21,7 +21,7 @@
       file: 'reviews.json',
       prefix: 'review',
       label: '고객후기',
-      fields: ['id', 'service', 'region', 'title', 'rating', 'content', 'source', 'date', 'visible', 'sort'],
+      fields: ['id', 'service', 'region', 'title', 'rating', 'content', 'image', 'source', 'date', 'visible', 'sort'],
       required: ['title', 'content', 'service', 'region']
     },
     cases: {
@@ -595,7 +595,7 @@
         normalized.featured = cleanFeatured(source.featured);
       }else if(field === 'sort'){
         normalized.sort = cleanSort(source.sort, index);
-      }else if(type === 'cases' && field === 'image'){
+      }else if(field === 'image'){
         normalized.image = cleanText(source.image);
       }else if(type === 'prices' && field === 'category'){
         normalized.category = cleanText(source.category || source.service);
@@ -717,7 +717,7 @@
         { name: 'region', label: '지역', kind: 'text', placeholder: '예: 서울 강서구' },
         { name: 'title', label: '제목', kind: 'text', placeholder: '예: 특수청소 작업사례' },
         { name: 'description', label: '설명', kind: 'textarea', placeholder: '작업 상황과 처리 내용을 입력' },
-        { name: 'image', label: '작업 사진 경로', kind: 'text', placeholder: '예: images/cases/sample.jpg', required: false },
+        { name: 'image', label: '작업 사진 경로', kind: 'image-url', placeholder: '예: images/cases/sample.jpg', required: false },
         { name: 'date', label: '작업일', kind: 'date', required: false },
         { name: 'featured', label: '대표 사례', kind: 'checkbox', default: false, required: false },
         visibleField,
@@ -729,6 +729,7 @@
         { name: 'title', label: '후기 제목', kind: 'text', placeholder: '예: 인천 입주청소 고객 후기' },
         { name: 'rating', label: '별점 선택', kind: 'select', options: ['5', '4', '3', '2', '1'] },
         { name: 'content', label: '후기 내용', kind: 'textarea', placeholder: '고객 후기 내용을 입력' },
+        { name: 'image', label: '리뷰 이미지 경로', kind: 'image-url', placeholder: '예: images/reviews/review-01.jpg', required: false },
         { name: 'source', label: '출처', kind: 'text', placeholder: '예: 고객 상담 후기', required: false },
         { name: 'date', label: '후기일', kind: 'date', required: false },
         visibleField,
@@ -768,6 +769,10 @@
   }
 
   function inputField(field, value){
+    if(field.kind === 'image-url'){
+      return imageUrlField(field, value);
+    }
+
     const label = document.createElement('label');
     if(field.kind === 'textarea' || field.name === 'content' || field.name === 'description' || field.name === 'answer'){
       label.className = 'full';
@@ -821,6 +826,92 @@
     }
     label.appendChild(input);
     return label;
+  }
+
+  function imageUrlField(field, value){
+    const label = document.createElement('label');
+    label.className = 'full image-url-field';
+    label.appendChild(document.createTextNode(field.label));
+
+    const input = document.createElement('input');
+    input.name = field.name;
+    input.type = 'text';
+    input.inputMode = 'url';
+    input.autocomplete = 'off';
+    input.value = value == null ? '' : value;
+    if(field.placeholder){
+      input.placeholder = field.placeholder;
+    }
+    label.appendChild(input);
+
+    const preview = document.createElement('div');
+    preview.className = 'image-url-preview';
+    preview.setAttribute('aria-live', 'polite');
+    label.appendChild(preview);
+
+    const warning = document.createElement('span');
+    warning.className = 'image-url-warning';
+    warning.setAttribute('aria-live', 'polite');
+    label.appendChild(warning);
+
+    function syncPreview(){
+      const imageValue = cleanText(input.value);
+      renderImageUrlPreview(preview, imageValue, field.label);
+      if(imageValue && !isLikelyImageUrl(imageValue)){
+        warning.textContent = '이미지 URL 형식을 확인하세요. 저장은 가능합니다.';
+        label.classList.add('has-warning');
+      }else{
+        warning.textContent = '';
+        label.classList.remove('has-warning');
+      }
+    }
+
+    input.addEventListener('input', syncPreview);
+    input.addEventListener('change', syncPreview);
+    syncPreview();
+    return label;
+  }
+
+  function renderImageUrlPreview(container, src, label){
+    container.innerHTML = '';
+    const value = cleanText(src);
+    if(!value){
+      container.className = 'image-url-preview is-empty';
+      const empty = document.createElement('span');
+      empty.textContent = '이미지가 없으면 텍스트 카드로 표시됩니다.';
+      container.appendChild(empty);
+      return;
+    }
+    if(!isLikelyImageUrl(value)){
+      container.className = 'image-url-preview is-empty';
+      const invalid = document.createElement('span');
+      invalid.textContent = '미리보기 전 URL 형식을 확인하세요.';
+      container.appendChild(invalid);
+      return;
+    }
+
+    container.className = 'image-url-preview';
+    const img = document.createElement('img');
+    img.alt = (label || 'image') + ' preview';
+    img.loading = 'lazy';
+    img.src = normalizeImageSrc(value);
+    img.onerror = function(){
+      container.className = 'image-url-preview is-empty';
+      container.innerHTML = '';
+      const failed = document.createElement('span');
+      failed.textContent = '이미지를 불러올 수 없습니다. 경로를 확인하세요.';
+      container.appendChild(failed);
+    };
+    container.appendChild(img);
+  }
+
+  function refreshImageUrlPreviews(form){
+    if(!form){
+      return;
+    }
+    Array.from(form.querySelectorAll('.image-url-field input[name="image"]')).forEach(function(input){
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
   }
 
   function photoField(){
@@ -1091,21 +1182,12 @@
     const article = document.createElement('article');
     article.className = 'data-item ux-card case-card';
 
-    const media = document.createElement('div');
-    media.className = 'case-media';
     const image = normalizeImageSrc(item.image || '');
     if(image){
-      const img = document.createElement('img');
-      img.alt = item.title || '작업사례 이미지';
-      img.loading = 'lazy';
-      img.src = image;
-      media.appendChild(img);
+      article.appendChild(createImageMedia('case-media', image, item.title || '작업사례 이미지'));
     }else{
-      const empty = document.createElement('span');
-      empty.textContent = 'No image';
-      media.appendChild(empty);
+      article.classList.add('case-card--text');
     }
-    article.appendChild(media);
 
     const content = document.createElement('div');
     content.className = 'ux-card-content';
@@ -1130,6 +1212,12 @@
   function createReviewCard(item){
     const article = document.createElement('article');
     article.className = 'data-item ux-card review-card';
+    const image = normalizeImageSrc(item.image || '');
+    if(image){
+      article.appendChild(createImageMedia('review-media', image, item.title || '고객후기 이미지'));
+    }else{
+      article.classList.add('review-card--text');
+    }
 
     const content = document.createElement('div');
     content.className = 'ux-card-content';
@@ -1159,9 +1247,20 @@
     const paragraph = document.createElement('p');
     paragraph.textContent = item.content || '내용 없음';
     content.appendChild(paragraph);
-    appendMeta(content, [item.service, item.region, item.source, item.date, visibleLabel(item.visible), '정렬 ' + item.sort]);
+    appendMeta(content, [item.service, item.region, item.source, item.date, item.image ? '이미지 있음' : '텍스트 카드', visibleLabel(item.visible), '정렬 ' + item.sort]);
     article.appendChild(content);
     return article;
+  }
+
+  function createImageMedia(className, src, alt){
+    const media = document.createElement('div');
+    media.className = className;
+    const img = document.createElement('img');
+    img.alt = alt || 'image';
+    img.loading = 'lazy';
+    img.src = src;
+    media.appendChild(img);
+    return media;
   }
 
   function normalizeImageSrc(src){
@@ -1169,6 +1268,31 @@
       return src;
     }
     return src.indexOf('images/') === 0 ? '../' + src : src;
+  }
+
+  function isLikelyImageUrl(src){
+    const value = cleanText(src);
+    if(!value){
+      return true;
+    }
+    if(/[<>"\s]/.test(value)){
+      return false;
+    }
+    if(/^data:image\//i.test(value)){
+      return true;
+    }
+    if(/^https?:\/\//i.test(value)){
+      try {
+        new URL(value);
+        return true;
+      } catch(error) {
+        return false;
+      }
+    }
+    if(value.indexOf('/') === 0 || value.indexOf('../') === 0 || value.indexOf('./') === 0 || value.indexOf('images/') === 0 || value.indexOf('assets/') === 0){
+      return /\.(avif|gif|jpe?g|png|svg|webp)(\?.*)?$/i.test(value);
+    }
+    return /\.(avif|gif|jpe?g|png|svg|webp)(\?.*)?$/i.test(value);
   }
 
   function cardActions(type, item){
@@ -1481,7 +1605,7 @@
   function searchableText(type, item){
     const fields = {
       cases: ['title', 'service', 'region', 'description', 'image', 'date'],
-      reviews: ['title', 'service', 'region', 'content', 'source', 'rating', 'date'],
+      reviews: ['title', 'service', 'region', 'content', 'image', 'source', 'rating', 'date'],
       prices: ['category', 'title', 'price', 'description'],
       faq: ['question', 'answer'],
       notices: ['title', 'content', 'date'],
@@ -1575,6 +1699,7 @@
       return;
     }
     applyDraftValues(activeDraftContext.form, activeDraftContext.draft.values || {});
+    refreshImageUrlPreviews(activeDraftContext.form);
     if(activeDraftContext.type === 'cases'){
       activePhotoData = Array.isArray(activeDraftContext.draft.photos) ? activeDraftContext.draft.photos.slice() : [];
       const preview = activeDraftContext.form.querySelector('[data-photo-preview]');
@@ -1985,6 +2110,9 @@
       }
       if(type === 'cases' && ('beforeImage' in item || 'afterImage' in item)){
         result.errors.push(row + ': beforeImage/afterImage 필드는 사용할 수 없습니다. image 필드 1개만 사용하세요.');
+      }
+      if((type === 'cases' || type === 'reviews') && cleanText(item.image) && !isLikelyImageUrl(item.image)){
+        result.warnings.push(row + ': image URL 형식을 확인하세요. 비어 있으면 텍스트 카드로 저장됩니다.');
       }
       config.required.forEach(function(field){
         if(!cleanText(item[field])){
