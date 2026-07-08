@@ -645,6 +645,134 @@ textarea:focus {
   gap: 10px;
 }
 
+.json-save-card {
+  grid-column: 1 / -1;
+}
+
+.save-target-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.save-target-list li {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.save-target-list strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.save-target-list span,
+.save-preview-path {
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.save-preview-list {
+  display: grid;
+  gap: 12px;
+}
+
+.save-preview-list:empty {
+  display: none;
+}
+
+.save-preview-item {
+  display: grid;
+  min-width: 0;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(15, 118, 110, 0.28);
+  border-radius: 8px;
+  background: #ecfdf5;
+}
+
+.save-preview-item.is-blocked {
+  border-color: rgba(180, 35, 24, 0.28);
+  background: #fff1f0;
+}
+
+.save-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.save-preview-head strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.save-preview-head span {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 5px 8px;
+  color: var(--brand-strong);
+  background: #fff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.save-preview-item.is-blocked .save-preview-head span {
+  color: var(--danger);
+}
+
+.save-preview-summary {
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.save-preview-errors {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--danger);
+  font-size: 13px;
+}
+
+.save-preview-item details {
+  min-width: 0;
+}
+
+.save-preview-item summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.save-preview-item pre {
+  overflow: auto;
+  max-height: 220px;
+  margin: 10px 0 0;
+  padding: 10px;
+  border-radius: 8px;
+  color: #101828;
+  background: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .json-result {
   display: grid;
   gap: 8px;
