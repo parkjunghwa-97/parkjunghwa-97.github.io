@@ -1,17 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" role="img" aria-label="대한청소만세 로고">
-  <defs>
-    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#000000" flood-opacity="0.35"/>
-    </filter>
-  </defs>
-  <rect width="420" height="420" fill="none"/>
-  <path d="M96 122 C156 50 282 44 335 112" fill="none" stroke="#dc2626" stroke-width="30" stroke-linecap="round" opacity="0.95"/>
-  <path d="M86 295 C150 368 278 374 336 302" fill="none" stroke="#1d4ed8" stroke-width="30" stroke-linecap="round" opacity="0.95"/>
-  <path d="M105 116 C162 78 253 74 315 117" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" opacity="0.9"/>
-  <path d="M106 302 C162 342 257 344 318 302" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" opacity="0.9"/>
-  <g filter="url(#shadow)">
-    <text x="210" y="187" text-anchor="middle" font-size="64" font-weight="900" font-family="Arial, 'Noto Sans KR', sans-serif" fill="#ffffff">대한</text>
-    <text x="210" y="258" text-anchor="middle" font-size="72" font-weight="900" font-family="Arial, 'Noto Sans KR', sans-serif" fill="#ffffff">청소만세</text>
-    <text x="210" y="315" text-anchor="middle" font-size="22" font-weight="700" font-family="Arial, 'Noto Sans KR', sans-serif" fill="#e5e7eb">깨끗한 공간, 새로운 시작</text>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="기프트클린 로고">
+  <title>기프트클린 GIFT CLEAN 로고</title>
+  <image href="data:image/jpeg;base64,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" x="0" y="0" width="1024" height="1024" preserveAspectRatio="xMidYMid meet"/>
 </svg>
