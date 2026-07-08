@@ -5,16 +5,9 @@
     "description": "쓰레기집 청소, 유품정리, 비둘기 배설물 청소, 악취 제거, 폐기물 처리처럼 현장 상태가 먼저인 작업을 상담합니다. 특수청소부터 입주·이사청소까지, 현장 상태에 맞춰 상담합니다.",
     "button": "특수청소 상담하기",
     "link": "#contact",
+    "secondaryButton": "입주·거주·이사청소 상담하기",
+    "secondaryLink": "#contact",
     "visible": true,
     "sort": 1
-  },
-  {
-    "id": "banner-002",
-    "title": "입주·거주·이사청소도 상담 가능합니다.",
-    "description": "거주 중 청소, 입주청소, 이사청소는 공간 상태와 작업 범위에 맞춰 상담합니다.",
-    "button": "입주·거주·이사청소 상담하기",
-    "link": "#contact",
-    "visible": true,
-    "sort": 2
   }
 ]
