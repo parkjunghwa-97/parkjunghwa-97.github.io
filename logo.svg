@@ -1,17 +1,51 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" role="img" aria-label="대한청소만세 로고">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" role="img" aria-label="기프트클린 로고">
+  <title>기프트클린 GIFT CLEAN 임시 SVG 로고</title>
+  <!-- Temporary SVG logo for Gift Clean. Replace with uploaded brand asset in CMS builder later. -->
   <defs>
-    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#000000" flood-opacity="0.35"/>
+    <radialGradient id="bg" cx="50%" cy="42%" r="60%">
+      <stop offset="0%" stop-color="#0b2f63"/>
+      <stop offset="58%" stop-color="#061a35"/>
+      <stop offset="100%" stop-color="#030b18"/>
+    </radialGradient>
+    <filter id="softShadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#000000" flood-opacity="0.28"/>
     </filter>
+    <path id="topArc" d="M78 213a132 132 0 0 1 264 0"/>
+    <path id="bottomArc" d="M342 235a132 132 0 0 1-264 0"/>
   </defs>
+
   <rect width="420" height="420" fill="none"/>
-  <path d="M96 122 C156 50 282 44 335 112" fill="none" stroke="#dc2626" stroke-width="30" stroke-linecap="round" opacity="0.95"/>
-  <path d="M86 295 C150 368 278 374 336 302" fill="none" stroke="#1d4ed8" stroke-width="30" stroke-linecap="round" opacity="0.95"/>
-  <path d="M105 116 C162 78 253 74 315 117" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" opacity="0.9"/>
-  <path d="M106 302 C162 342 257 344 318 302" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" opacity="0.9"/>
-  <g filter="url(#shadow)">
-    <text x="210" y="187" text-anchor="middle" font-size="64" font-weight="900" font-family="Arial, 'Noto Sans KR', sans-serif" fill="#ffffff">대한</text>
-    <text x="210" y="258" text-anchor="middle" font-size="72" font-weight="900" font-family="Arial, 'Noto Sans KR', sans-serif" fill="#ffffff">청소만세</text>
-    <text x="210" y="315" text-anchor="middle" font-size="22" font-weight="700" font-family="Arial, 'Noto Sans KR', sans-serif" fill="#e5e7eb">깨끗한 공간, 새로운 시작</text>
+  <circle cx="210" cy="210" r="190" fill="url(#bg)" filter="url(#softShadow)"/>
+  <circle cx="210" cy="210" r="184" fill="none" stroke="#f5ead3" stroke-width="5"/>
+  <circle cx="210" cy="210" r="171" fill="none" stroke="#f5ead3" stroke-width="2.5" opacity="0.95"/>
+  <circle cx="210" cy="210" r="116" fill="none" stroke="#f5ead3" stroke-width="2.5" opacity="0.9"/>
+
+  <text font-family="Georgia, 'Times New Roman', serif" font-size="31" font-weight="700" letter-spacing="6" fill="#f5ead3">
+    <textPath href="#topArc" startOffset="50%" text-anchor="middle">GIFT CLEAN</textPath>
+  </text>
+  <text font-family="Georgia, 'Times New Roman', serif" font-size="21" font-weight="700" letter-spacing="2.5" fill="#f5ead3">
+    <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">CLEANING &amp; RESTORATION</textPath>
+  </text>
+
+  <circle cx="79" cy="210" r="5.5" fill="#f5ead3"/>
+  <circle cx="341" cy="210" r="5.5" fill="#f5ead3"/>
+
+  <g fill="#f5ead3">
+    <path d="M165 134h93a10 10 0 0 1 10 10v33H155v-33a10 10 0 0 1 10-10z"/>
+    <path d="M154 190h52v66h-42a10 10 0 0 1-10-10z"/>
+    <path d="M222 190h54v56a10 10 0 0 1-10 10h-44z"/>
+    <path d="M205 131c-17-30-38-27-45-15-7 13 7 31 44 25 2 0 3-8 1-10zm-13 1c-20 1-27-7-23-13 5-8 17-3 23 13z"/>
+    <path d="M219 131c17-30 38-27 45-15 7 13-7 31-44 25-2 0-3-8-1-10zm13 1c20 1 27-7 23-13-5-8-17-3-23 13z"/>
+    <rect x="206" y="132" width="16" height="124" rx="3" fill="#061a35" opacity="0.92"/>
   </g>
+
+  <path d="M125 236c34 38 110 43 169-7" fill="none" stroke="#f5ead3" stroke-width="14" stroke-linecap="round" opacity="0.98"/>
+  <path d="M135 234c35 25 95 29 145-11" fill="none" stroke="#061a35" stroke-width="6" stroke-linecap="round" opacity="0.75"/>
+  <path d="M284 145l8 19 19 8-19 8-8 19-8-19-19-8 19-8z" fill="#f5ead3"/>
+  <path d="M312 181l5 12 12 5-12 5-5 12-5-12-12-5 12-5z" fill="#f5ead3" opacity="0.95"/>
+
+  <text x="210" y="315" text-anchor="middle" font-family="'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-size="42" font-weight="900" fill="#f5ead3" letter-spacing="2">기프트클린</text>
+  <line x1="146" y1="339" x2="197" y2="339" stroke="#f5ead3" stroke-width="3" stroke-linecap="round"/>
+  <path d="M210 329l6 10 10 6-10 6-6 10-6-10-10-6 10-6z" fill="#f5ead3"/>
+  <line x1="223" y1="339" x2="274" y2="339" stroke="#f5ead3" stroke-width="3" stroke-linecap="round"/>
 </svg>
