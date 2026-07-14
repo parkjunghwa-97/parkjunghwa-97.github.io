@@ -150,11 +150,10 @@
       }
     });
 
-    /* ABOUT_LANDING_AUTO_TRIGGER: about.html is a standalone page (real URL, no SPA "active" class toggle),
-       so the highlight animation fires automatically on page entry instead of the old showPage()/MutationObserver path.
-       No scroll required; reduced-motion users see the text immediately with no animation. */
+    /* ABOUT_LANDING_SCROLL_TRIGGER: about.html is now a standalone page (real URL, no SPA "active" class toggle),
+       so the highlight animation is triggered by scroll visibility instead of the old showPage()/MutationObserver path. */
     (function(){
-      function initAboutLanding(){
+      function initAboutLandingObservers(){
         var sections=document.querySelectorAll('.about-page');
         if(!sections.length){return;}
 
@@ -164,19 +163,28 @@
         sections.forEach(function(section){
           var targetText=section.querySelector('.about-highlight');
           if(!targetText){return;}
-          playAboutLanding(section);
+
+          if(typeof IntersectionObserver !== 'function'){
+            playAboutLanding(section);
+            return;
+          }
+
+          var observer=new IntersectionObserver(function(entries){
+            entries.forEach(function(entry){
+              if(entry.isIntersecting){
+                playAboutLanding(section);
+                observer.unobserve(entry.target);
+              }
+            });
+          },{threshold:.4});
+          observer.observe(targetText);
         });
       }
 
-      function onReady(){
-        // small delay lets webfont/layout settle so the landing text measures the highlight's real position
-        setTimeout(initAboutLanding, 120);
-      }
-
       if(document.readyState==='loading'){
-        document.addEventListener('DOMContentLoaded', onReady);
+        document.addEventListener('DOMContentLoaded', initAboutLandingObservers);
       }else{
-        onReady();
+        initAboutLandingObservers();
       }
     })();
 
