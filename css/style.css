@@ -541,8 +541,12 @@
          34px h2 size, which wraps to 4-5 lines at mobile widths; footer h2 ("24시간 상담 가능") is
          outside .static-page and keeps its size */
       .static-page h2{font-size:22px;line-height:1.4;margin:0 0 12px}
+      /* static pages don't need the same left margin as the SPA .page/.hero panels (34px, shared
+         with the home layout above); narrowing it here widens the content column and the cards
+         (price/faq/geo-note/form) that stretch to fill it */
+      .static-page{padding-left:24px}
       /* keep body copy clear of the fixed-contact-bar column on the right edge */
-      .static-page{padding-right:74px}
+      .static-page{padding-right:68px}
     }
     /* PARTNER_SECTION */
     .partner-page .page-inner{max-width:960px}
@@ -569,7 +573,7 @@
     .fixed-contact-bar{position:fixed;right:20px;bottom:92px;z-index:999;display:flex;flex-direction:column;gap:10px;background:transparent;padding:0;border-radius:0;box-shadow:none;width:auto}
     .fixed-contact-bar a{display:flex;align-items:center;justify-content:center;text-align:center;width:76px;height:76px;border-radius:50%;padding:0;background:#fff;color:#0f172a;font-weight:950;font-size:13px;line-height:1.22;text-decoration:none;box-shadow:0 10px 24px rgba(0,0,0,.18);border:1px solid rgba(15,23,42,.16);word-spacing:999px}
     .fixed-contact-bar a.kakao{background:#facc15;color:#0f172a;border-color:rgba(202,138,4,.22)}
-    @media(max-width:760px){.fixed-contact-bar{right:10px;bottom:88px;gap:6px}.fixed-contact-bar a{width:56px;height:56px;font-size:11px;line-height:1.15}footer{padding-bottom:170px}.fixed-call{display:none}}
+    @media(max-width:760px){.fixed-contact-bar{right:8px;bottom:88px;gap:6px}.fixed-contact-bar a{width:50px;height:50px;font-size:10.5px;line-height:1.1}footer{padding-bottom:170px}.fixed-call{display:none}}
 
 
 
