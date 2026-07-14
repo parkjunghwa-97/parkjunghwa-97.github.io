@@ -26,7 +26,9 @@
 
     /* STATIC_PAGE_LAYOUT: real-URL subpages (about/services/prices/reviews/faq/contact) reuse .page-inner spacing without the SPA show/hide toggle */
     .static-page{min-height:100vh;padding:96px 20px 58px;display:flex;align-items:flex-start}
-    .static-page .page-inner{padding-top:16px}
+    /* .page-inner uses margin:auto for horizontal centering; pin the vertical margins so flex auto-margins
+       never vertically center short pages (content length must not change where the H1 starts) */
+    .static-page .page-inner{padding-top:16px;margin-top:0;margin-bottom:0}
     .json-loading-note{color:#64748b;font-size:14px;padding:18px 4px}
     .geo-note{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:20px;padding:20px 22px;margin:18px 0;line-height:1.8;color:#334155}
     .geo-note b{display:block;color:#0f172a;margin-bottom:6px}
@@ -528,8 +530,10 @@
     /* MOBILE_NAV_FLOW_FIX */
     @media(max-width:760px){
       .top-nav{position:sticky;top:0;left:auto;right:auto}
-      .page,.hero{padding-top:36px}
+      .page,.hero,.static-page{padding-top:36px}
       #portfolio{padding-top:36px}
+      /* keep body copy clear of the fixed-contact-bar column on the right edge */
+      .static-page{padding-right:88px}
     }
     /* PARTNER_SECTION */
     .partner-page .page-inner{max-width:960px}
