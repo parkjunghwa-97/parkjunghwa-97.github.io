@@ -142,6 +142,8 @@
     }
 
     .apply-btn:hover{transform:translateY(-1px)}
+    .partner-alt-contact{margin:0 0 22px}
+    .partner-alt-contact a{color:#0f172a;font-weight:800;text-decoration:underline;text-underline-offset:2px}
 
     .about-page{position:relative;text-align:center;background:#f8fafc}
     .about-kicker{font-size:14px;color:#64748b;font-weight:900;margin-bottom:30px;letter-spacing:.08em}
