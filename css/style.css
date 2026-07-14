@@ -415,10 +415,10 @@
     }
 
     @media(max-width:760px){
-      .top-nav{padding:14px 12px;display:block;text-align:center}
-      .nav-brand{display:block;font-size:22px;margin-bottom:12px}
-      .nav-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 8px;width:100%;justify-content:center}
-      .nav-menu a,.nav-menu button{font-size:14px;padding:4px 0;text-align:center}
+      .top-nav{padding:10px 12px;display:block;text-align:center}
+      .nav-brand{display:block;font-size:22px;margin-bottom:8px}
+      .nav-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 6px;width:100%;justify-content:center}
+      .nav-menu a,.nav-menu button{font-size:13px;padding:3px 0;text-align:center}
       .page,.hero,.static-page{padding:195px 34px 54px;align-items:flex-start}
       .page.active{align-items:flex-start}
       .hero-inner{transform:translateY(70px)}
@@ -530,10 +530,23 @@
     /* MOBILE_NAV_FLOW_FIX */
     @media(max-width:760px){
       .top-nav{position:sticky;top:0;left:auto;right:auto}
-      .page,.hero,.static-page{padding-top:36px}
+      .page,.hero{padding-top:36px}
       #portfolio{padding-top:36px}
+      /* static pages sit below a shorter, already-compact sticky nav, so the first content
+         (h1) doesn't need as much extra clearance as the SPA .page/.hero panels */
+      .static-page{padding-top:24px}
+      .static-page .page-inner{padding-top:10px}
+      .static-page h1{font-size:26px;line-height:1.35;margin-top:8px;margin-bottom:12px}
+      /* faq.html's SEO subtitle and similar section h2s inside static pages inherit the sitewide
+         34px h2 size, which wraps to 4-5 lines at mobile widths; footer h2 ("24시간 상담 가능") is
+         outside .static-page and keeps its size */
+      .static-page h2{font-size:22px;line-height:1.4;margin:0 0 12px}
+      /* static pages don't need the same left margin as the SPA .page/.hero panels (34px, shared
+         with the home layout above); narrowing it here widens the content column and the cards
+         (price/faq/geo-note/form) that stretch to fill it */
+      .static-page{padding-left:24px}
       /* keep body copy clear of the fixed-contact-bar column on the right edge */
-      .static-page{padding-right:88px}
+      .static-page{padding-right:68px}
     }
     /* PARTNER_SECTION */
     .partner-page .page-inner{max-width:960px}
@@ -560,7 +573,7 @@
     .fixed-contact-bar{position:fixed;right:20px;bottom:92px;z-index:999;display:flex;flex-direction:column;gap:10px;background:transparent;padding:0;border-radius:0;box-shadow:none;width:auto}
     .fixed-contact-bar a{display:flex;align-items:center;justify-content:center;text-align:center;width:76px;height:76px;border-radius:50%;padding:0;background:#fff;color:#0f172a;font-weight:950;font-size:13px;line-height:1.22;text-decoration:none;box-shadow:0 10px 24px rgba(0,0,0,.18);border:1px solid rgba(15,23,42,.16);word-spacing:999px}
     .fixed-contact-bar a.kakao{background:#facc15;color:#0f172a;border-color:rgba(202,138,4,.22)}
-    @media(max-width:760px){.fixed-contact-bar{right:12px;bottom:88px;gap:8px}.fixed-contact-bar a{width:68px;height:68px;font-size:12px;line-height:1.18}footer{padding-bottom:170px}.fixed-call{display:none}}
+    @media(max-width:760px){.fixed-contact-bar{right:8px;bottom:88px;gap:6px}.fixed-contact-bar a{width:50px;height:50px;font-size:10.5px;line-height:1.1}footer{padding-bottom:170px}.fixed-call{display:none}}
 
 
 
@@ -593,7 +606,7 @@
     .nav-brand{display:flex;flex-direction:column;line-height:1.12;align-items:flex-start}
     .nav-brand-main{font-weight:950;font-size:24px;white-space:nowrap}
     .nav-brand-cert{margin-top:4px;font-size:11px;font-weight:850;color:#cbd5e1;letter-spacing:-.02em;white-space:nowrap}
-    @media(max-width:760px){.nav-brand{display:flex!important;align-items:center;justify-content:center;margin-bottom:12px}.nav-brand-main{font-size:29px}.nav-brand-cert{font-size:11px;margin-top:4px}}
+    @media(max-width:760px){.nav-brand{display:flex!important;align-items:center;justify-content:center;margin-bottom:8px}.nav-brand-main{font-size:22px}.nav-brand-cert{font-size:11px;margin-top:2px}}
 
 
 
