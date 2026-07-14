@@ -150,6 +150,44 @@
       }
     });
 
+    /* ABOUT_LANDING_SCROLL_TRIGGER: about.html is now a standalone page (real URL, no SPA "active" class toggle),
+       so the highlight animation is triggered by scroll visibility instead of the old showPage()/MutationObserver path. */
+    (function(){
+      function initAboutLandingObservers(){
+        var sections=document.querySelectorAll('.about-page');
+        if(!sections.length){return;}
+
+        var reduceMotion=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if(reduceMotion){return;}
+
+        sections.forEach(function(section){
+          var targetText=section.querySelector('.about-highlight');
+          if(!targetText){return;}
+
+          if(typeof IntersectionObserver !== 'function'){
+            playAboutLanding(section);
+            return;
+          }
+
+          var observer=new IntersectionObserver(function(entries){
+            entries.forEach(function(entry){
+              if(entry.isIntersecting){
+                playAboutLanding(section);
+                observer.unobserve(entry.target);
+              }
+            });
+          },{threshold:.4});
+          observer.observe(targetText);
+        });
+      }
+
+      if(document.readyState==='loading'){
+        document.addEventListener('DOMContentLoaded', initAboutLandingObservers);
+      }else{
+        initAboutLandingObservers();
+      }
+    })();
+
     function handleContactSubmit(event){
       const form = event.target;
       const submitBtn = form.querySelector('.submit-btn');
