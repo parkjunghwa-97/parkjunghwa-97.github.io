@@ -44,74 +44,49 @@
       }
     }
 
+    /* playAboutLanding: reveals .about-highlight in place (scale+opacity) instead of animating a
+       cloned element across the viewport to a computed target rect. The old fly-clone approach measured
+       the highlight's position with getBoundingClientRect() and animated left/top/width toward it; once the
+       animation ran on page entry (rather than after the user scrolled the highlight into view), that target
+       rect could be off-screen or, if the matched section was hidden (display:none), a zero-size rect —
+       collapsing the clone into a single narrow vertical column of wrapped text. Animating the real element
+       in place removes the dependency on measuring an external target entirely. */
     function playAboutLanding(section){
       if(!section || section.dataset.aboutAnimating === '1'){return}
 
-      const content=section.querySelector('.about-content');
       const targetText=section.querySelector('.about-highlight');
-      if(!content || !targetText){return}
+      if(!targetText){return}
 
       section.dataset.aboutAnimating='1';
-      section.classList.add('prep');
-      targetText.style.visibility='hidden';
 
-      const runLanding=function(){
-        const rect=targetText.getBoundingClientRect();
-        const style=getComputedStyle(targetText);
-
-        const fly=document.createElement('div');
-        fly.className='fly-about-text';
-        fly.textContent='새로운 시작이 필요하기 때문입니다.';
-        document.body.appendChild(fly);
-
-        const isMobile=window.innerWidth <= 760;
-        const startWidth=Math.min(window.innerWidth * (isMobile ? 0.86 : 0.92), 980);
-        const startTop=isMobile ? '43vh' : '50vh';
-        const startFont=isMobile ? '37px' : '80px';
-        const duration=isMobile ? 1750 : 950;
-        fly.style.left='50vw';
-        fly.style.top=startTop;
-        fly.style.width=startWidth + 'px';
-        fly.style.fontSize=startFont;
-        fly.style.transform='translate(-50%,-50%) scale(1)';
-        fly.style.opacity='0';
-
-        let finished=false;
-        const finish=function(){
-          if(finished){return}
-          finished=true;
-          if(fly.parentNode){
-            fly.parentNode.removeChild(fly);
-          }
-          targetText.style.visibility='visible';
-          section.classList.remove('prep');
-          delete section.dataset.aboutAnimating;
-        };
-        setTimeout(finish, duration + 250);
-
-        const keyframes=[
-          {left:'50vw',top:startTop,width:startWidth+'px',fontSize:startFont,transform:'translate(-50%,-50%) scale(1.16)',opacity:0,offset:0},
-          {left:'50vw',top:startTop,width:startWidth+'px',fontSize:startFont,transform:'translate(-50%,-50%) scale(1)',opacity:1,offset:.24},
-          {left:'50vw',top:startTop,width:startWidth+'px',fontSize:startFont,transform:'translate(-50%,-50%) scale(.94)',opacity:1,offset:.58},
-          {left:rect.left+'px',top:rect.top+'px',width:rect.width+'px',fontSize:style.fontSize,transform:'translate(0,0) scale(1)',opacity:1,offset:1}
-        ];
-
-        if(typeof fly.animate === 'function'){
-          const animation=fly.animate(keyframes,{duration:duration,easing:'cubic-bezier(.16,1,.3,1)',fill:'forwards'});
-          animation.onfinish=finish;
-          if(animation.finished && typeof animation.finished.then === 'function'){
-            animation.finished.then(finish).catch(function(){});
-          }
-        }else{
-          fly.style.opacity='1';
-          setTimeout(finish, duration);
-        }
+      let settled=false;
+      const settle=function(){
+        if(settled){return}
+        settled=true;
+        targetText.style.opacity='';
+        targetText.style.transform='';
+        delete section.dataset.aboutAnimating;
       };
 
-      if(typeof requestAnimationFrame === 'function'){
-        requestAnimationFrame(runLanding);
-      }else{
-        setTimeout(runLanding, 0);
+      try{
+        if(typeof targetText.animate === 'function'){
+          const animation=targetText.animate(
+            [
+              {opacity:0,transform:'translateY(10px) scale(.97)'},
+              {opacity:1,transform:'translateY(0) scale(1)'}
+            ],
+            {duration:600,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'}
+          );
+          animation.onfinish=settle;
+          if(animation.finished && typeof animation.finished.then === 'function'){
+            animation.finished.then(settle).catch(settle);
+          }
+          setTimeout(settle, 900);
+        }else{
+          settle();
+        }
+      }catch(e){
+        settle();
       }
     }
 
@@ -152,10 +127,14 @@
 
     /* ABOUT_LANDING_AUTO_TRIGGER: about.html is a standalone page (real URL, no SPA "active" class toggle),
        so the highlight animation fires automatically on page entry instead of the old showPage()/MutationObserver path.
-       No scroll required; reduced-motion users see the text immediately with no animation. */
+       No scroll required; reduced-motion users see the text immediately with no animation.
+       Selector is scoped to .static-page.about-page (about.html's <main>) rather than bare .about-page,
+       because index.html still contains a legacy hidden SPA section with the same .about-page class
+       (<section id="about" class="page about-page">) — matching it too would run this against a
+       display:none element on the home page. */
     (function(){
       function initAboutLanding(){
-        var sections=document.querySelectorAll('.about-page');
+        var sections=document.querySelectorAll('main.static-page.about-page');
         if(!sections.length){return;}
 
         var reduceMotion=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
