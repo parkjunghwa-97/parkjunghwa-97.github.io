@@ -14,15 +14,22 @@
     @keyframes introOut{to{opacity:0;visibility:hidden;pointer-events:none}}
 
     .top-nav{position:fixed;top:0;left:0;right:0;background:rgba(15,23,42,.96);color:white;z-index:1000;backdrop-filter:blur(10px);box-shadow:0 4px 18px rgba(0,0,0,.18);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:18px}
-    .nav-brand{font-weight:900;font-size:18px;white-space:nowrap;cursor:pointer}
+    .nav-brand{font-weight:900;font-size:18px;white-space:nowrap;display:inline-block}
     .nav-menu{display:flex;align-items:center;justify-content:flex-end;gap:14px;flex-wrap:nowrap;min-width:0}
-    .nav-menu button{border:0;background:transparent;color:white;cursor:pointer;padding:8px 2px;opacity:.82;font-weight:900;font-size:14px;white-space:nowrap}
-    .nav-menu button.active,.nav-menu button:hover{opacity:1}
+    .nav-menu a,.nav-menu button{border:0;background:transparent;color:white;cursor:pointer;padding:8px 2px;opacity:.82;font-weight:900;font-size:14px;white-space:nowrap;display:inline-block}
+    .nav-menu a.active,.nav-menu a:hover,.nav-menu button.active,.nav-menu button:hover{opacity:1}
 
     .page{display:none;min-height:100vh;padding:96px 20px 58px}
     .page.active{display:flex;align-items:center;animation:pageIn .25s ease forwards}
     .page-inner{max-width:1100px;margin:auto;width:100%}
     @keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+    /* STATIC_PAGE_LAYOUT: real-URL subpages (about/services/prices/reviews/faq/contact) reuse .page-inner spacing without the SPA show/hide toggle */
+    .static-page{min-height:100vh;padding:96px 20px 58px;display:flex;align-items:flex-start}
+    .static-page .page-inner{padding-top:16px}
+    .json-loading-note{color:#64748b;font-size:14px;padding:18px 4px}
+    .geo-note{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:20px;padding:20px 22px;margin:18px 0;line-height:1.8;color:#334155}
+    .geo-note b{display:block;color:#0f172a;margin-bottom:6px}
 
     .hero{
       position:relative;
@@ -407,8 +414,8 @@
       .top-nav{padding:14px 12px;display:block;text-align:center}
       .nav-brand{display:block;font-size:22px;margin-bottom:12px}
       .nav-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 8px;width:100%;justify-content:center}
-      .nav-menu button{font-size:14px;padding:4px 0;text-align:center}
-      .page,.hero{padding:195px 34px 54px;align-items:flex-start}
+      .nav-menu a,.nav-menu button{font-size:14px;padding:4px 0;text-align:center}
+      .page,.hero,.static-page{padding:195px 34px 54px;align-items:flex-start}
       .page.active{align-items:flex-start}
       .hero-inner{transform:translateY(70px)}
       .hero::before{transform:scale(1.16)}
@@ -593,9 +600,18 @@
     .cert-marquee{display:block;margin:16px auto 0;max-width:520px;overflow:hidden;position:relative;padding:4px 0 8px;mask-image:linear-gradient(to right,transparent,#000 12%,#000 88%,transparent);-webkit-mask-image:linear-gradient(to right,transparent,#000 12%,#000 88%,transparent)}
     .cert-marquee-track{display:flex;gap:10px;width:max-content;animation:certSlide 42s linear infinite}
     .cert-marquee img{width:70px;height:88px;object-fit:cover;background:#fff;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(15,23,42,.06);opacity:.86}
+    .cert-marquee img.cert-award{object-fit:contain;background:#0f172a}
     .cert-marquee:hover .cert-marquee-track{animation-play-state:paused}
     @keyframes certSlide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
     @media(max-width:760px){.cert-marquee{max-width:100%;margin-top:14px}.cert-marquee img{width:62px;height:78px}.cert-marquee-track{gap:8px;animation-duration:38s}}
+
+    /* CERT_MEDIA_COVERAGE */
+    .cert-media{margin:16px auto 0;max-width:640px;text-align:center}
+    .cert-media h3{font-size:14.5px;font-weight:900;color:#0f172a;margin:0 0 6px;letter-spacing:-.02em}
+    .cert-media p{margin:0 0 10px;color:#64748b;font-size:13.5px;line-height:1.7}
+    .cert-media ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+    .cert-media a{color:#0f172a;font-weight:800;font-size:13.5px;text-decoration:underline;text-underline-offset:2px}
+    @media(max-width:760px){.cert-media{margin-top:14px}.cert-media p,.cert-media a{font-size:13px}}
 
 
 
@@ -692,6 +708,7 @@
     .price-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
     .price-cta button,.price-cta a{border:0;border-radius:999px;padding:14px 20px;background:#051231;color:#fff;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(15,23,42,.18)}
     .price-cta a{display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#0f172a;border:1px solid #cbd5e1}
+    .price-cta a.cta-primary{background:#051231;color:#fff;border:0}
     @media(max-width:760px){.nav-menu{grid-template-columns:repeat(3,1fr)}.price-card{border-radius:18px;padding:18px}.price-row{font-size:14.5px}.price-json-row{gap:10px}.price-json-copy small{font-size:11.5px}.price-note{border-radius:20px;padding:20px}.price-cta{display:grid}.price-cta button,.price-cta a{width:100%}}
 
 /* REVIEW_TEXT_SWIPE */
