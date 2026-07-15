@@ -1,0 +1,12 @@
+name = "giftclean-cms-auth"
+main = "src/index.js"
+compatibility_date = "2026-07-15"
+
+[vars]
+# CMS가 실제로 서비스되는 origin으로 배포 후 변경하세요 (예: "https://대한청소만세.kr").
+# 값을 좁히기 전까지는 테스트 편의를 위해 "*"로 둡니다.
+ALLOWED_ORIGIN = "*"
+
+# 아래 두 값은 여기(파일)에 절대 넣지 않고, 배포 후 아래 명령으로만 등록합니다.
+#   wrangler secret put ADMIN_PIN
+#   wrangler secret put SESSION_SECRET

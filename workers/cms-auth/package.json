@@ -1,0 +1,13 @@
+{
+  "name": "giftclean-cms-auth",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Gift Clean CMS 로그인 인증 전용 Cloudflare Worker (PR-A: 저장 기능 없음)",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^3"
+  }
+}
