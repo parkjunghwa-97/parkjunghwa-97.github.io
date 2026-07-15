@@ -478,8 +478,8 @@
     .hero-main{font-size:44px;font-weight:950;line-height:1.28;color:#fff;text-shadow:0 4px 18px rgba(0,0,0,.45);opacity:0;transform:translateY(34px);animation:heroTextIn 1.1s ease forwards;animation-delay:1.05s}
     .hero-sub{margin-top:20px;font-size:19px;font-weight:800;line-height:1.7;color:rgba(255,255,255,.92);text-shadow:0 3px 14px rgba(0,0,0,.38);opacity:0;transform:translateY(30px);animation:heroTextIn 1.05s ease forwards;animation-delay:1.45s}
     .hero-cta{margin-top:26px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap;opacity:0;transform:translateY(26px);animation:heroTextIn 1s ease forwards;animation-delay:1.85s}
-    .hero-btn{border:0;border-radius:999px;padding:14px 20px;font-size:15px;font-weight:950;cursor:pointer;background:#fff;color:#0f172a;box-shadow:0 10px 26px rgba(0,0,0,.24)}
-    .hero-btn.secondary{background:rgba(15,23,42,.72);color:#fff;border:1px solid rgba(255,255,255,.45)}
+    .hero-btn{border:0;border-radius:999px;padding:14px 20px;font-size:15px;font-weight:950;cursor:pointer;background:#021E42;color:#fff;box-shadow:0 10px 26px rgba(0,0,0,.24)}
+    .hero-btn.secondary{background:#021E42;color:#fff}
     .hero-banner,.hero-json-banner{display:grid;justify-items:center;text-align:center}
     .hero-json-banner+.hero-json-banner{margin-top:18px}
     .hero-cta a.hero-btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
