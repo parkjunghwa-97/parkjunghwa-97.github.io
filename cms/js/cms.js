@@ -1,6 +1,6 @@
 (function(){
   // 배포된 Cloudflare Worker 주소를 입력하세요. 예: https://giftclean-cms-auth.<subdomain>.workers.dev
-  const CMS_AUTH_WORKER_URL = '';
+  const CMS_AUTH_WORKER_URL = 'https://giftclean-cms-auth.giftclean-cms.workers.dev';
   const SESSION_KEY = 'daehanCmsSession';
   const LOCK_KEY = 'daehanCmsLock';
   const DATA_KEY = 'daehanCmsDraftData';
