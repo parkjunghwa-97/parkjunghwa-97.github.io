@@ -3,10 +3,19 @@ main = "src/index.js"
 compatibility_date = "2026-07-15"
 
 [vars]
-# CMS가 실제로 서비스되는 origin으로 배포 후 변경하세요 (예: "https://대한청소만세.kr").
-# 값을 좁히기 전까지는 테스트 편의를 위해 "*"로 둡니다.
-ALLOWED_ORIGIN = "*"
+# 다중 origin을 콤마로 구분해 나열합니다. 운영 핵심(펀코드 도메인)을 우선으로,
+# 참고용 한글 도메인, 마지막으로 로컬 테스트용 순서로 둡니다.
+# 로컬 테스트가 끝나면 127.0.0.1 항목은 제거하는 것을 권장합니다.
+ALLOWED_ORIGINS = "https://xn--vk1by2k4ygtjy88bcjm.kr,https://대한청소만세.kr,http://127.0.0.1:8000"
 
-# 아래 두 값은 여기(파일)에 절대 넣지 않고, 배포 후 아래 명령으로만 등록합니다.
+# /content, /save가 조회할 저장소/브랜치 (비밀값 아님)
+GITHUB_REPO_OWNER = "parkjunghwa-97"
+GITHUB_REPO_NAME = "parkjunghwa-97.github.io"
+GITHUB_BRANCH = "main"
+
+# 아래 값들은 여기(파일)에 절대 넣지 않고, 배포 후 아래 명령으로만 등록합니다.
 #   wrangler secret put ADMIN_PIN
 #   wrangler secret put SESSION_SECRET
+# GITHUB_SAVE_TOKEN은 PR-B1에서는 필요하지 않습니다 (공개 저장소 읽기이므로 토큰 없이 동작).
+# 실제 GitHub commit 기능이 들어가는 PR-B2에서 다음 명령으로 등록할 예정입니다.
+#   wrangler secret put GITHUB_SAVE_TOKEN
