@@ -1,26 +1,24 @@
-// Gift Clean CMS 인증/저장 Worker (PR-A: 로그인, PR-B1: 조회 + dryRun 저장)
+// Gift Clean CMS 인증/저장 Worker (PR-A: 로그인, PR-B1: 조회+dryRun, PR-B2: 실제 commit)
 //
 // PR-A: CMS 로그인 PIN 검증과 짧은 수명의 세션 토큰 발급
 // PR-B1: 세션 토큰으로 보호되는 data/*.json 조회(/content)와 저장 사전검증(/save, dryRun-only)
-//
-// 이 Worker는 아직 실제 GitHub commit을 수행하지 않습니다. /save는 dryRun 모드로만
-// 동작하며, 실제 GitHub PUT commit 코드는 PR-B2에서 추가될 예정입니다.
+// PR-B2: /save에서 dryRun:false일 때 GitHub Contents API PUT으로 실제 commit 수행
+//        (대상은 banners.json 하나로 제한, CMS 프론트엔드는 아직 연결하지 않음)
 //
 // 필요한 Secret (코드에는 절대 값을 넣지 않고 아래 명령으로 등록):
 //   wrangler secret put ADMIN_PIN
 //   wrangler secret put SESSION_SECRET
-// GITHUB_SAVE_TOKEN은 이 PR(B1)에서는 필요하지 않습니다. data/*.json 조회는 공개
-// 저장소 읽기 권한만으로 가능하기 때문입니다. 실제 commit이 추가되는 PR-B2에서
-// 아래 명령으로 등록할 예정입니다.
 //   wrangler secret put GITHUB_SAVE_TOKEN
+// GITHUB_SAVE_TOKEN이 없으면 dryRun:false 요청은 503 save_not_configured로 거부됩니다.
+// /content, /save(dryRun:true)는 공개 저장소 읽기이므로 이 토큰 없이도 동작합니다.
 //
 // 환경 변수 (wrangler.toml [vars], 비밀값 아님):
 //   ALLOWED_ORIGINS  - 콤마로 구분된 다중 origin 목록
-//   GITHUB_REPO_OWNER, GITHUB_REPO_NAME, GITHUB_BRANCH - 조회 대상 저장소/브랜치
+//   GITHUB_REPO_OWNER, GITHUB_REPO_NAME, GITHUB_BRANCH - 조회/commit 대상 저장소/브랜치
 
 const SESSION_TTL_SECONDS = 60 * 60 * 2; // 세션 토큰 유효 시간: 2시간
 
-// 저장 가능한 데이터 타입 whitelist. PR-B1 기준 banners만 허용합니다.
+// 저장 가능한 데이터 타입 whitelist. PR-B2 기준 banners만 허용합니다.
 const SAVE_WHITELIST = {
   banners: 'data/banners.json',
 };
@@ -135,10 +133,25 @@ async function handleSave(request, env, corsHeaders) {
   }
 
   if (body.dryRun === false) {
+    if (!env.GITHUB_SAVE_TOKEN) {
+      return jsonResponse({ error: 'save_not_configured' }, 503, corsHeaders);
+    }
+
+    let commit;
+    try {
+      commit = await commitGithubFile(path, body.payload, current.sha, env);
+    } catch (err) {
+      return jsonResponse({ error: 'github_api_error', message: String((err && err.message) || err) }, 502, corsHeaders);
+    }
+
     return jsonResponse({
-      error: 'dry_run_only',
-      message: 'PR-B1 단계에서는 실제 GitHub commit을 지원하지 않습니다. dryRun:true로만 저장을 검증할 수 있습니다.'
-    }, 501, corsHeaders);
+      ok: true,
+      dryRun: false,
+      type: type,
+      path: path,
+      commitSha: commit.sha,
+      commitUrl: commit.htmlUrl
+    }, 200, corsHeaders);
   }
 
   // dryRun:true이거나 dryRun이 생략된 경우, 안전하게 dry-run으로 처리하고 commit은 수행하지 않습니다.
@@ -226,8 +239,8 @@ async function fetchGithubFile(path, env) {
     'Accept': 'application/vnd.github+json',
     'User-Agent': 'giftclean-cms-auth-worker',
   };
-  // GITHUB_SAVE_TOKEN은 PR-B1에서는 등록되어 있지 않습니다(공개 저장소 읽기는 토큰 없이 동작).
-  // 이후 PR에서 토큰이 등록되면 자동으로 인증된 요청을 사용합니다.
+  // 조회는 공개 저장소 읽기이므로 토큰 없이도 동작합니다. 토큰이 등록되어 있으면
+  // (PR-B2부터) 자동으로 인증된 요청을 사용합니다.
   if (env.GITHUB_SAVE_TOKEN) {
     headers['Authorization'] = 'Bearer ' + env.GITHUB_SAVE_TOKEN;
   }
@@ -240,6 +253,44 @@ async function fetchGithubFile(path, env) {
   const data = await response.json();
   const decoded = decodeStandardBase64ToString(data.content || '');
   return { sha: data.sha, content: JSON.parse(decoded) };
+}
+
+async function commitGithubFile(path, payload, sha, env) {
+  const owner = env.GITHUB_REPO_OWNER;
+  const repo = env.GITHUB_REPO_NAME;
+  const branch = env.GITHUB_BRANCH || 'main';
+  if (!owner || !repo) {
+    throw new Error('GITHUB_REPO_OWNER/GITHUB_REPO_NAME이 설정되지 않았습니다.');
+  }
+
+  const jsonText = JSON.stringify(payload, null, 2) + '\n';
+  const contentBase64 = encodeStringToStandardBase64(jsonText);
+  const message = 'chore(cms): update banners.json data from CMS\n\nSaved via Gift Clean CMS at ' + new Date().toISOString();
+
+  const apiUrl = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path;
+  const response = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: {
+      'Accept': 'application/vnd.github+json',
+      'User-Agent': 'giftclean-cms-auth-worker',
+      'Authorization': 'Bearer ' + env.GITHUB_SAVE_TOKEN,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      message: message,
+      content: contentBase64,
+      sha: sha,
+      branch: branch,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('GitHub Contents API PUT 실패: ' + response.status);
+  }
+
+  const data = await response.json();
+  const commitInfo = (data && data.commit) || {};
+  return { sha: commitInfo.sha, htmlUrl: commitInfo.html_url };
 }
 
 async function createSessionToken(secret) {
@@ -301,6 +352,15 @@ function decodeStandardBase64ToString(b64) {
     bytes[i] = binary.charCodeAt(i);
   }
   return new TextDecoder().decode(bytes);
+}
+
+function encodeStringToStandardBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i += 1) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
 }
 
 function buildCorsHeaders(request, env) {
