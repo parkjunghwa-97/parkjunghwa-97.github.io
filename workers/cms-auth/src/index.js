@@ -1,9 +1,13 @@
-// Gift Clean CMS 인증/저장 Worker (PR-A: 로그인, PR-B1: 조회+dryRun, PR-B2: 실제 commit)
+// Gift Clean CMS 인증/저장 Worker (PR-A: 로그인, PR-B1: 조회+dryRun, PR-B2: 실제 commit, PR-B2.1: 저장 방어 로직)
 //
 // PR-A: CMS 로그인 PIN 검증과 짧은 수명의 세션 토큰 발급
 // PR-B1: 세션 토큰으로 보호되는 data/*.json 조회(/content)와 저장 사전검증(/save, dryRun-only)
 // PR-B2: /save에서 dryRun:false일 때 GitHub Contents API PUT으로 실제 commit 수행
 //        (대상은 banners.json 하나로 제한, CMS 프론트엔드는 아직 연결하지 않음)
+// PR-B2.1: /save에 두 가지 방어 로직 추가
+//   - 인코딩 손상 검사: payload에 U+FFFD(�)가 있으면 dryRun 여부와 무관하게 400 invalid_encoding
+//   - 무변경 감지: 현재 GitHub 파일과 payload가 동일하면 dryRun:false에서도 commit을 만들지 않고
+//     unchanged:true로 응답 (dryRun:true 응답에도 unchanged 여부를 함께 반환)
 //
 // 필요한 Secret (코드에는 절대 값을 넣지 않고 아래 명령으로 등록):
 //   wrangler secret put ADMIN_PIN
@@ -121,6 +125,15 @@ async function handleSave(request, env, corsHeaders) {
     return jsonResponse({ error: 'invalid_payload', details: validationErrors }, 400, corsHeaders);
   }
 
+  // 인코딩 손상 검사(PR-B2.1): dryRun 여부와 무관하게 항상 적용합니다.
+  // dryRun:true로 "저장 가능"이라고 확인받은 뒤 dryRun:false에서만 거부되는
+  // 모순을 막기 위해, 마지막 GitHub 쓰기 단계 이전의 모든 검증은 dryRun 값과
+  // 무관하게 동일하게 수행합니다.
+  const encodingIssues = findEncodingIssues(body.payload);
+  if (encodingIssues.length) {
+    return jsonResponse({ error: 'invalid_encoding', details: encodingIssues }, 400, corsHeaders);
+  }
+
   let current;
   try {
     current = await fetchGithubFile(path, env);
@@ -132,7 +145,15 @@ async function handleSave(request, env, corsHeaders) {
     return jsonResponse({ error: 'sha_conflict', currentSha: current.sha }, 409, corsHeaders);
   }
 
+  const unchanged = deepEqualIgnoringKeyOrder(body.payload, current.content);
+
   if (body.dryRun === false) {
+    if (unchanged) {
+      // 내용이 실제로 같으면 쓰기 권한(GITHUB_SAVE_TOKEN)이 없어도 성공으로 처리합니다.
+      // 아무것도 쓰지 않으므로 토큰이 필요하지 않습니다.
+      return jsonResponse({ ok: true, unchanged: true, dryRun: false, type: type, path: path, sha: current.sha }, 200, corsHeaders);
+    }
+
     if (!env.GITHUB_SAVE_TOKEN) {
       return jsonResponse({ error: 'save_not_configured' }, 503, corsHeaders);
     }
@@ -146,6 +167,7 @@ async function handleSave(request, env, corsHeaders) {
 
     return jsonResponse({
       ok: true,
+      unchanged: false,
       dryRun: false,
       type: type,
       path: path,
@@ -155,7 +177,7 @@ async function handleSave(request, env, corsHeaders) {
   }
 
   // dryRun:true이거나 dryRun이 생략된 경우, 안전하게 dry-run으로 처리하고 commit은 수행하지 않습니다.
-  return jsonResponse({ ok: true, dryRun: true, type: type, path: path, sha: current.sha }, 200, corsHeaders);
+  return jsonResponse({ ok: true, dryRun: true, unchanged: unchanged, type: type, path: path, sha: current.sha }, 200, corsHeaders);
 }
 
 async function requireSession(request, env) {
@@ -224,6 +246,74 @@ function validatePayload(type, payload) {
   });
 
   return errors;
+}
+
+// payload 안에 유니코드 replacement character(U+FFFD, "�")가 포함되어 있는지 검사합니다.
+// 인코딩이 깨진 요청(예: 터미널 인코딩 문제로 한글이 깨져 전송된 경우)을 실제
+// commit 이전에 걸러내기 위한 방어 로직입니다. 가능하면 어느 index/field에서
+// 발견됐는지 details에 담고, 개별 필드로 특정하지 못하는 경우 payload 전체를
+// 대상으로 한 번 더 확인합니다.
+function findEncodingIssues(payload) {
+  const issues = [];
+  if (!Array.isArray(payload)) {
+    return issues;
+  }
+
+  payload.forEach(function (item, index) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      return;
+    }
+    Object.keys(item).forEach(function (field) {
+      const value = item[field];
+      if (typeof value === 'string' && value.indexOf('�') !== -1) {
+        issues.push('index ' + index + ': ' + field + ' 필드에 손상된 문자(�) 포함');
+      }
+    });
+  });
+
+  if (!issues.length && JSON.stringify(payload).indexOf('�') !== -1) {
+    issues.push('payload 전체에서 손상된 문자(�)가 감지되었습니다.');
+  }
+
+  return issues;
+}
+
+// 두 값이 "의미상" 동일한지 비교합니다. 객체는 key 순서를 무시하고 값만
+// 비교하며, 배열은 순서를 그대로 유지한 채 원소별로 비교합니다.
+function deepEqualIgnoringKeyOrder(a, b) {
+  if (a === b) {
+    return true;
+  }
+  if (a === null || b === null || a === undefined || b === undefined) {
+    return a === b;
+  }
+  if (Array.isArray(a) || Array.isArray(b)) {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) {
+      return false;
+    }
+    for (let i = 0; i < a.length; i += 1) {
+      if (!deepEqualIgnoringKeyOrder(a[i], b[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+  if (typeof a === 'object' && typeof b === 'object') {
+    const aKeys = Object.keys(a).sort();
+    const bKeys = Object.keys(b).sort();
+    if (aKeys.length !== bKeys.length) {
+      return false;
+    }
+    for (let i = 0; i < aKeys.length; i += 1) {
+      if (aKeys[i] !== bKeys[i]) {
+        return false;
+      }
+    }
+    return aKeys.every(function (key) {
+      return deepEqualIgnoringKeyOrder(a[key], b[key]);
+    });
+  }
+  return false;
 }
 
 async function fetchGithubFile(path, env) {
