@@ -1,5 +1,6 @@
 (function(){
-  const DEFAULT_PIN = '231204';
+  // 배포된 Cloudflare Worker 주소를 입력하세요. 예: https://giftclean-cms-auth.<subdomain>.workers.dev
+  const CMS_AUTH_WORKER_URL = 'https://giftclean-cms-auth.giftclean-cms.workers.dev';
   const SESSION_KEY = 'daehanCmsSession';
   const LOCK_KEY = 'daehanCmsLock';
   const DATA_KEY = 'daehanCmsDraftData';
@@ -228,10 +229,31 @@
     bindCrudActions();
     bindSettingsActions();
 
-    if(sessionStorage.getItem(SESSION_KEY) === 'active'){
+    if(hasValidSession()){
       showApp();
     }
   });
+
+  function hasValidSession(){
+    try {
+      const raw = sessionStorage.getItem(SESSION_KEY);
+      if(!raw){
+        return false;
+      }
+      const session = JSON.parse(raw);
+      if(!session || !session.token || !session.expiresAt){
+        return false;
+      }
+      if(Date.now() / 1000 >= session.expiresAt){
+        sessionStorage.removeItem(SESSION_KEY);
+        return false;
+      }
+      return true;
+    } catch(e){
+      sessionStorage.removeItem(SESSION_KEY);
+      return false;
+    }
+  }
 
   function installUxChrome(){
     installSearch();
@@ -336,23 +358,56 @@
         return;
       }
 
-      if(input.value === DEFAULT_PIN){
-        localStorage.removeItem(LOCK_KEY);
-        sessionStorage.setItem(SESSION_KEY, 'active');
-        input.value = '';
-        message.textContent = '';
-        showApp();
+      if(!CMS_AUTH_WORKER_URL){
+        message.textContent = 'Worker 주소가 설정되지 않았습니다. cms.js 상단의 CMS_AUTH_WORKER_URL을 확인하세요.';
         return;
       }
 
-      const nextAttempts = lock.attempts + 1;
-      const lockData = {
-        attempts: nextAttempts,
-        until: nextAttempts >= MAX_ATTEMPTS ? Date.now() + LOCK_MINUTES * 60 * 1000 : 0
-      };
-      localStorage.setItem(LOCK_KEY, JSON.stringify(lockData));
-      message.textContent = nextAttempts >= MAX_ATTEMPTS ? remainingLockText(lockData.until) : 'PIN이 일치하지 않습니다. 남은 시도: ' + (MAX_ATTEMPTS - nextAttempts);
+      const submitButton = form.querySelector('button[type="submit"]');
+      if(submitButton){
+        submitButton.disabled = true;
+      }
+      message.textContent = '로그인 확인 중...';
+
+      fetch(CMS_AUTH_WORKER_URL + '/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: input.value })
+      }).then(function(response){
+        return response.json().catch(function(){ return {}; }).then(function(data){
+          return { ok: response.ok, data: data };
+        });
+      }).then(function(result){
+        if(submitButton){
+          submitButton.disabled = false;
+        }
+        if(result.ok && result.data && result.data.token && result.data.expiresAt){
+          localStorage.removeItem(LOCK_KEY);
+          sessionStorage.setItem(SESSION_KEY, JSON.stringify({ token: result.data.token, expiresAt: result.data.expiresAt }));
+          input.value = '';
+          message.textContent = '';
+          showApp();
+          return;
+        }
+        registerFailedAttempt(message);
+      }).catch(function(){
+        if(submitButton){
+          submitButton.disabled = false;
+        }
+        message.textContent = '로그인 서버에 연결할 수 없습니다. 잠시 후 다시 시도하세요.';
+      });
     });
+  }
+
+  function registerFailedAttempt(message){
+    const lock = getLockState();
+    const nextAttempts = lock.attempts + 1;
+    const lockData = {
+      attempts: nextAttempts,
+      until: nextAttempts >= MAX_ATTEMPTS ? Date.now() + LOCK_MINUTES * 60 * 1000 : 0
+    };
+    localStorage.setItem(LOCK_KEY, JSON.stringify(lockData));
+    message.textContent = nextAttempts >= MAX_ATTEMPTS ? remainingLockText(lockData.until) : 'PIN이 일치하지 않습니다. 남은 시도: ' + (MAX_ATTEMPTS - nextAttempts);
   }
 
   function getLockState(){
