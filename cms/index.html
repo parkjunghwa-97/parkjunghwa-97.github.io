@@ -121,6 +121,17 @@
           <div class="json-tools">
             <article class="list-card">
               <div class="section-heading">
+                <h3>임시 데이터 초기화</h3>
+                <span>브라우저에 남은 이전 데이터 정리</span>
+              </div>
+              <p>이 브라우저에 저장된 임시 편집 데이터(localStorage)를 지우고, 실제 배포된 <code>data/*.json</code> 파일을 다시 불러옵니다. 로그인은 유지됩니다.</p>
+              <div class="settings-actions">
+                <button type="button" data-action="reload-live-json">임시 데이터 초기화 / 실제 JSON 다시 불러오기</button>
+              </div>
+              <div class="json-result" id="liveReloadResult" aria-live="polite"></div>
+            </article>
+            <article class="list-card">
+              <div class="section-heading">
                 <h3>JSON 가져오기</h3>
                 <span>텍스트 붙여넣기</span>
               </div>
