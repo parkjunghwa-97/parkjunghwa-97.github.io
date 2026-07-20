@@ -1,4 +1,4 @@
-// Gift Clean CMS 인증/저장 Worker (PR-A: 로그인, PR-B1: 조회+dryRun, PR-B2: 실제 commit, PR-B2.1: 저장 방어 로직)
+// Gift Clean CMS 인증/저장 Worker (PR-A: 로그인, PR-B1: 조회+dryRun, PR-B2: 실제 commit, PR-B2.1: 저장 방어 로직, PR-B4: 저장 허용 타입 확장)
 //
 // PR-A: CMS 로그인 PIN 검증과 짧은 수명의 세션 토큰 발급
 // PR-B1: 세션 토큰으로 보호되는 data/*.json 조회(/content)와 저장 사전검증(/save, dryRun-only)
@@ -8,6 +8,8 @@
 //   - 인코딩 손상 검사: payload에 U+FFFD(�)가 있으면 dryRun 여부와 무관하게 400 invalid_encoding
 //   - 무변경 감지: 현재 GitHub 파일과 payload가 동일하면 dryRun:false에서도 commit을 만들지 않고
 //     unchanged:true로 응답 (dryRun:true 응답에도 unchanged 여부를 함께 반환)
+// PR-B4: SAVE_WHITELIST/TYPE_VALIDATION_RULES를 banners 외 5개 타입(cases/reviews/prices/faq/notices)으로 확장
+//        (CMS 프론트엔드는 아직 연결하지 않음, 나머지 저장 로직은 변경 없음)
 //
 // 필요한 Secret (코드에는 절대 값을 넣지 않고 아래 명령으로 등록):
 //   wrangler secret put ADMIN_PIN
@@ -22,14 +24,24 @@
 
 const SESSION_TTL_SECONDS = 60 * 60 * 2; // 세션 토큰 유효 시간: 2시간
 
-// 저장 가능한 데이터 타입 whitelist. PR-B2 기준 banners만 허용합니다.
+// 저장 가능한 데이터 타입 whitelist. PR-B4 기준 6개 타입 전체를 허용합니다.
 const SAVE_WHITELIST = {
   banners: 'data/banners.json',
+  cases: 'data/cases.json',
+  reviews: 'data/reviews.json',
+  prices: 'data/prices.json',
+  faq: 'data/faq.json',
+  notices: 'data/notices.json',
 };
 
 // 타입별 필수 필드 규칙 (cms/js/cms.js의 typeConfig.required와 동일하게 유지)
 const TYPE_VALIDATION_RULES = {
   banners: { required: ['title', 'description'] },
+  cases: { required: ['title', 'description', 'service', 'region'] },
+  reviews: { required: ['title', 'content', 'service', 'region'] },
+  prices: { required: ['category', 'title', 'price'] },
+  faq: { required: ['question', 'answer'] },
+  notices: { required: ['title', 'content'] },
 };
 
 export default {
