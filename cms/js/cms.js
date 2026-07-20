@@ -220,6 +220,7 @@
   let searchTimer = 0;
   let activeDraftContext = null;
   let visibleCounts = {};
+  let remoteShaByType = {};
 
   document.addEventListener('DOMContentLoaded', function(){
     installUxChrome();
@@ -252,6 +253,148 @@
     } catch(e){
       sessionStorage.removeItem(SESSION_KEY);
       return false;
+    }
+  }
+
+  function getSessionToken(){
+    try {
+      const raw = sessionStorage.getItem(SESSION_KEY);
+      if(!raw){
+        return null;
+      }
+      const session = JSON.parse(raw);
+      return (session && session.token) || null;
+    } catch(e){
+      return null;
+    }
+  }
+
+  function handleExpiredSession(){
+    sessionStorage.removeItem(SESSION_KEY);
+    document.getElementById('appView').classList.add('is-hidden');
+    document.getElementById('loginView').classList.remove('is-hidden');
+    const message = document.getElementById('loginMessage');
+    if(message){
+      message.textContent = '로그인이 만료되었습니다. 다시 로그인해주세요.';
+    }
+  }
+
+  // 메인배너(banners)의 GitHub 최신 sha를 백그라운드로 확보합니다. 화면에
+  // 보이는 cmsData.banners는 절대 덮어쓰지 않고, remoteShaByType만 갱신합니다.
+  // CMS_AUTH_WORKER_URL이 비어있거나 세션이 없거나 요청이 실패해도 화면
+  // 동작에는 영향을 주지 않습니다(다음 저장 시도 때 다시 시도됩니다).
+  async function refreshRemoteContent(type){
+    if(!CMS_AUTH_WORKER_URL){
+      return null;
+    }
+    const token = getSessionToken();
+    if(!token){
+      return null;
+    }
+    try {
+      const response = await fetch(CMS_AUTH_WORKER_URL + '/content?type=' + encodeURIComponent(type), {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      if(response.status === 401){
+        handleExpiredSession();
+        return null;
+      }
+      if(!response.ok){
+        return null;
+      }
+      const data = await response.json();
+      if(data && data.sha){
+        remoteShaByType[type] = data.sha;
+      }
+      return data;
+    } catch(e){
+      return null;
+    }
+  }
+
+  async function saveBannersToRemote(button){
+    if(!CMS_AUTH_WORKER_URL){
+      showToast('Worker 주소가 설정되지 않았습니다.');
+      return;
+    }
+    const token = getSessionToken();
+    if(!token){
+      handleExpiredSession();
+      return;
+    }
+
+    // 저장 직전에 sha를 다시 확보해 확인창을 띄우는 시점과 실제 저장 시점 사이의
+    // 간격을 최소화합니다.
+    await refreshRemoteContent('banners');
+    if(!remoteShaByType.banners){
+      showToast('최신 데이터를 불러오지 못해 저장할 수 없습니다. 다시 시도해주세요.');
+      return;
+    }
+
+    const confirmed = window.confirm('banners.json을 실제 홈페이지에 저장하시겠습니까?\n저장 후 약 1~2분 뒤 홈페이지에 반영됩니다.');
+    if(!confirmed){
+      return;
+    }
+
+    if(button){
+      button.disabled = true;
+    }
+
+    try {
+      const response = await fetch(CMS_AUTH_WORKER_URL + '/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({
+          type: 'banners',
+          payload: cmsData.banners || [],
+          expectedSha: remoteShaByType.banners,
+          dryRun: false
+        })
+      });
+
+      const data = await response.json().catch(function(){ return {}; });
+
+      if(response.status === 401){
+        handleExpiredSession();
+        return;
+      }
+      if(response.status === 400 && data.error === 'invalid_encoding'){
+        showToast('문자 인코딩 오류로 저장이 차단되었습니다. 새로고침 후 다시 입력해주세요.');
+        setStatus('문자 인코딩 오류로 저장이 차단되었습니다. 새로고침 후 다시 입력해주세요.');
+        return;
+      }
+      if(response.status === 409 && data.error === 'sha_conflict'){
+        // 화면 내용(cmsData.banners)과 localStorage는 그대로 유지하고, sha만 갱신합니다.
+        await refreshRemoteContent('banners');
+        const message = '다른 변경사항이 먼저 저장되었습니다. 현재 편집 내용은 유지했습니다. 다시 저장하면 현재 화면 내용으로 홈페이지에 저장됩니다.';
+        showToast(message);
+        setStatus(message);
+        return;
+      }
+      if(response.status === 503 && data.error === 'save_not_configured'){
+        showToast('저장 기능이 아직 서버에 설정되지 않았습니다.');
+        setStatus('저장 기능이 아직 서버에 설정되지 않았습니다.');
+        return;
+      }
+      if(!response.ok || !data.ok){
+        showToast('저장에 실패했습니다. 잠시 후 다시 시도하세요.');
+        setStatus('저장에 실패했습니다. 잠시 후 다시 시도하세요.');
+        return;
+      }
+
+      const message = data.unchanged ? '변경사항이 없습니다' : '저장 완료';
+      showToast(message);
+      setStatus(message);
+
+      // 저장 성공(또는 무변경) 후에도 화면 내용과 localStorage는 그대로 두고 sha만 갱신합니다.
+      await refreshRemoteContent('banners');
+    } catch(e){
+      showToast('저장 서버에 연결할 수 없습니다. 잠시 후 다시 시도하세요.');
+      setStatus('저장 서버에 연결할 수 없습니다. 잠시 후 다시 시도하세요.');
+    } finally {
+      if(button){
+        button.disabled = false;
+      }
     }
   }
 
@@ -533,6 +676,9 @@
       if(action === 'reload-live-json'){
         reloadLiveJsonData(button);
       }
+      if(action === 'save-banners-remote'){
+        saveBannersToRemote(button);
+      }
     });
 
     document.addEventListener('submit', function(event){
@@ -585,6 +731,12 @@
     renderScreen(screen);
     renderSearchResults(getSearchQuery());
     document.getElementById('screenTitle').textContent = titles[screen] || '관리 화면';
+
+    if(screen === 'banners'){
+      // 화면에 보이는 편집 내용(cmsData.banners)은 건드리지 않고, 저장 시 충돌
+      // 비교에 쓸 최신 sha만 백그라운드로 미리 확보해둡니다.
+      refreshRemoteContent('banners');
+    }
   }
 
   async function loadData(options){
