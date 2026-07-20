@@ -752,6 +752,142 @@
       onReady(initBannersJson);
     })();
 
+    /* SERVICES_JSON_INTEGRATION */
+    (function(){
+      var SERVICES_LIMIT=30;
+      var SERVICES_ENDPOINT='/data/services.json';
+
+      function onReady(fn){
+        if(document.readyState==='loading'){
+          document.addEventListener('DOMContentLoaded',fn);
+        }else{
+          fn();
+        }
+      }
+
+      function cleanText(value){
+        return typeof value === 'string' ? value.trim() : '';
+      }
+
+      function cleanVisible(value){
+        return value !== false && value !== 'false';
+      }
+
+      function cleanSort(value){
+        var sort=Number(value || 0);
+        return isFinite(sort) ? sort : 0;
+      }
+
+      function bySort(a,b){
+        return a.sort-b.sort;
+      }
+
+      function normalizeService(item){
+        return {
+          id: cleanText(item && item.id),
+          service: cleanText(item && item.service),
+          seoTitle: cleanText(item && item.seoTitle),
+          summary: cleanText(item && item.summary),
+          description: cleanText(item && item.description),
+          scope: cleanText(item && item.scope),
+          process: cleanText(item && item.process),
+          priceNote: cleanText(item && item.priceNote),
+          region: cleanText(item && item.region),
+          notes: cleanText(item && item.notes),
+          ctaText: cleanText(item && item.ctaText),
+          visible: cleanVisible(item && item.visible),
+          sort: cleanSort(item && item.sort)
+        };
+      }
+
+      function isUsableService(item){
+        return item.visible && item.service && item.summary && item.description;
+      }
+
+      function appendServiceField(container,label,value){
+        if(!value){return;}
+        var row=document.createElement('p');
+        var strong=document.createElement('strong');
+        strong.textContent=label + ': ';
+        row.appendChild(strong);
+        row.appendChild(document.createTextNode(value));
+        container.appendChild(row);
+      }
+
+      function createServiceDetail(item){
+        var details=document.createElement('details');
+        details.setAttribute('data-service-id',item.id || '');
+
+        var summary=document.createElement('summary');
+        summary.textContent=item.service;
+        details.appendChild(summary);
+
+        var body=document.createElement('div');
+        body.className='policy-content';
+
+        var description=document.createElement('p');
+        description.textContent=item.description;
+        body.appendChild(description);
+
+        appendServiceField(body,'작업 범위',item.scope);
+        appendServiceField(body,'진행 순서',item.process);
+        appendServiceField(body,'가격 기준',item.priceNote);
+        appendServiceField(body,'가능 지역',item.region);
+        appendServiceField(body,'주의사항',item.notes);
+
+        if(item.ctaText){
+          var cta=document.createElement('p');
+          cta.className='service-detail-cta';
+          cta.textContent=item.ctaText;
+          body.appendChild(cta);
+        }
+
+        details.appendChild(body);
+        return details;
+      }
+
+      function renderServices(target,items){
+        var services=items.slice().sort(bySort).slice(0,SERVICES_LIMIT);
+        if(!services.length){return;}
+
+        var fragment=document.createDocumentFragment();
+
+        var heading=document.createElement('h3');
+        heading.textContent='서비스별 상세 안내';
+        fragment.appendChild(heading);
+
+        services.forEach(function(item){
+          fragment.appendChild(createServiceDetail(item));
+        });
+
+        target.innerHTML='';
+        target.appendChild(fragment);
+        target.setAttribute('data-services-source','json');
+      }
+
+      function initServicesJson(){
+        var target=document.querySelector('[data-services-json-target="true"]');
+        if(!target || !window.fetch){return;}
+
+        window.fetch(SERVICES_ENDPOINT,{cache:'no-store'})
+          .then(function(response){
+            if(!response.ok){throw new Error('services json failed');}
+            return response.json();
+          })
+          .then(function(data){
+            var services=Array.isArray(data) ? data.map(normalizeService).filter(isUsableService) : [];
+            if(services.length){
+              renderServices(target,services);
+            }
+          })
+          .catch(function(){
+            target.setAttribute('data-services-source','fallback');
+          });
+      }
+
+      onReady(initServicesJson);
+    })();
+
     /* SLIDER_IMAGE_PRELOAD */
     (function(){
       window.preloadSliderImages=function(scope){
