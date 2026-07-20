@@ -724,6 +724,7 @@
 
   function showScreen(screen){
     activeScreen = screen;
+    setStatus('');
     document.getElementById('previewPane').classList.add('is-hidden');
     closeAllEditors();
     document.querySelectorAll('.menu-btn').forEach(function(button){
