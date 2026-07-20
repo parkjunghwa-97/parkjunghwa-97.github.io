@@ -530,6 +530,9 @@
       if(action === 'json-auto-save'){
         saveJsonTargets();
       }
+      if(action === 'reload-live-json'){
+        reloadLiveJsonData(button);
+      }
     });
 
     document.addEventListener('submit', function(event){
@@ -1954,6 +1957,30 @@
     }
     showToast('저장 API 연결 전입니다');
     setStatus('저장 API 연결 전입니다');
+  }
+
+  async function reloadLiveJsonData(button){
+    if(button){
+      button.disabled = true;
+    }
+    localStorage.removeItem(DATA_KEY);
+    localStorage.removeItem(FORM_DRAFT_KEY);
+    closeAllEditors();
+    await loadData({ forceSample: true });
+    visibleCounts = {};
+    renderScreen(activeScreen);
+    renderSearchResults(getSearchQuery());
+
+    const message = '임시 데이터가 초기화되고 실제 배포 JSON을 다시 불러왔습니다.';
+    showToast(message);
+    setStatus(message);
+    const result = document.getElementById('liveReloadResult');
+    if(result){
+      result.textContent = message;
+    }
+    if(button){
+      button.disabled = false;
+    }
   }
 
   function formatJsonPreview(jsonText){
