@@ -279,10 +279,11 @@
     }
   }
 
-  // 메인배너(banners)의 GitHub 최신 sha를 백그라운드로 확보합니다. 화면에
-  // 보이는 cmsData.banners는 절대 덮어쓰지 않고, remoteShaByType만 갱신합니다.
-  // CMS_AUTH_WORKER_URL이 비어있거나 세션이 없거나 요청이 실패해도 화면
-  // 동작에는 영향을 주지 않습니다(다음 저장 시도 때 다시 시도됩니다).
+  // 각 타입(banners/cases/reviews/prices/faq/notices)의 GitHub 최신 sha를
+  // 백그라운드로 확보합니다. 화면에 보이는 cmsData[type]은 절대 덮어쓰지 않고,
+  // remoteShaByType만 갱신합니다. CMS_AUTH_WORKER_URL이 비어있거나 세션이
+  // 없거나 요청이 실패해도 화면 동작에는 영향을 주지 않습니다(다음 저장 시도
+  // 때 다시 시도됩니다).
   async function refreshRemoteContent(type){
     if(!CMS_AUTH_WORKER_URL){
       return null;
@@ -312,7 +313,7 @@
     }
   }
 
-  async function saveBannersToRemote(button){
+  async function saveTypeToRemote(type, button){
     if(!CMS_AUTH_WORKER_URL){
       showToast('Worker 주소가 설정되지 않았습니다.');
       return;
@@ -323,15 +324,18 @@
       return;
     }
 
+    const config = typeConfig[type];
+    const fileName = config ? config.file : type + '.json';
+
     // 저장 직전에 sha를 다시 확보해 확인창을 띄우는 시점과 실제 저장 시점 사이의
     // 간격을 최소화합니다.
-    await refreshRemoteContent('banners');
-    if(!remoteShaByType.banners){
+    await refreshRemoteContent(type);
+    if(!remoteShaByType[type]){
       showToast('최신 데이터를 불러오지 못해 저장할 수 없습니다. 다시 시도해주세요.');
       return;
     }
 
-    const confirmed = window.confirm('banners.json을 실제 홈페이지에 저장하시겠습니까?\n저장 후 약 1~2분 뒤 홈페이지에 반영됩니다.');
+    const confirmed = window.confirm(fileName + '을 실제 홈페이지에 저장하시겠습니까?\n저장 후 약 1~2분 뒤 홈페이지에 반영됩니다.');
     if(!confirmed){
       return;
     }
@@ -345,9 +349,9 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
         body: JSON.stringify({
-          type: 'banners',
-          payload: cmsData.banners || [],
-          expectedSha: remoteShaByType.banners,
+          type: type,
+          payload: cmsData[type] || [],
+          expectedSha: remoteShaByType[type],
           dryRun: false
         })
       });
@@ -364,8 +368,8 @@
         return;
       }
       if(response.status === 409 && data.error === 'sha_conflict'){
-        // 화면 내용(cmsData.banners)과 localStorage는 그대로 유지하고, sha만 갱신합니다.
-        await refreshRemoteContent('banners');
+        // 화면 내용(cmsData[type])과 localStorage는 그대로 유지하고, sha만 갱신합니다.
+        await refreshRemoteContent(type);
         const message = '다른 변경사항이 먼저 저장되었습니다. 현재 편집 내용은 유지했습니다. 다시 저장하면 현재 화면 내용으로 홈페이지에 저장됩니다.';
         showToast(message);
         setStatus(message);
@@ -387,7 +391,7 @@
       setStatus(message);
 
       // 저장 성공(또는 무변경) 후에도 화면 내용과 localStorage는 그대로 두고 sha만 갱신합니다.
-      await refreshRemoteContent('banners');
+      await refreshRemoteContent(type);
     } catch(e){
       showToast('저장 서버에 연결할 수 없습니다. 잠시 후 다시 시도하세요.');
       setStatus('저장 서버에 연결할 수 없습니다. 잠시 후 다시 시도하세요.');
@@ -676,8 +680,8 @@
       if(action === 'reload-live-json'){
         reloadLiveJsonData(button);
       }
-      if(action === 'save-banners-remote'){
-        saveBannersToRemote(button);
+      if(action === 'save-remote'){
+        saveTypeToRemote(button.dataset.type, button);
       }
     });
 
@@ -732,10 +736,10 @@
     renderSearchResults(getSearchQuery());
     document.getElementById('screenTitle').textContent = titles[screen] || '관리 화면';
 
-    if(screen === 'banners'){
-      // 화면에 보이는 편집 내용(cmsData.banners)은 건드리지 않고, 저장 시 충돌
+    if(saveTargetTypes.includes(screen)){
+      // 화면에 보이는 편집 내용(cmsData[screen])은 건드리지 않고, 저장 시 충돌
       // 비교에 쓸 최신 sha만 백그라운드로 미리 확보해둡니다.
-      refreshRemoteContent('banners');
+      refreshRemoteContent(screen);
     }
   }
 
