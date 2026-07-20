@@ -61,6 +61,19 @@
       required: ['title', 'description']
     }
   };
+  // 홈페이지 data/*.json이 실제로 사용하는 필드만 담은 저장 허용 목록입니다.
+  // typeConfig[type].fields는 CMS 편집 화면 표시용(visible/sort 입력창 등
+  // CMS 내부 필드 포함)이라 그대로 쓰면 안 되고, GitHub 저장 payload는 이
+  // 목록으로만 구성합니다(PR-B6).
+  const REMOTE_SAVE_FIELDS = {
+    banners: ['id', 'title', 'description', 'button', 'link', 'visible', 'sort'],
+    cases: ['id', 'service', 'region', 'title', 'description', 'image', 'date', 'featured'],
+    reviews: ['id', 'service', 'region', 'title', 'rating', 'content', 'source', 'date'],
+    prices: ['id', 'category', 'title', 'price', 'description', 'visible', 'sort'],
+    faq: ['id', 'question', 'answer', 'visible', 'sort'],
+    notices: ['id', 'title', 'content', 'date', 'visible', 'sort']
+  };
+
   const fallbackData = {
     cases: [
       {
@@ -313,6 +326,32 @@
     }
   }
 
+  // GitHub로 실제 저장하기 직전에, 화면/localStorage에는 있는 CMS 내부
+  // 필드(예: cases/reviews의 visible/sort)를 제거하고 홈페이지 data/*.json이
+  // 실제로 쓰는 필드만 남깁니다. cmsData 자체나 localStorage는 건드리지
+  // 않고, 전송용 배열을 새로 만들어 반환합니다(PR-B6).
+  function normalizePayloadForRemote(type, payload){
+    const allowedFields = REMOTE_SAVE_FIELDS[type];
+    if(!allowedFields || !Array.isArray(payload)){
+      return payload;
+    }
+    return payload.map(function(item){
+      const normalized = {};
+      allowedFields.forEach(function(field){
+        normalized[field] = item && item[field] !== undefined ? item[field] : '';
+      });
+      // reviews.image는 홈페이지가 선택적으로 지원하지만 실제 data/reviews.json에는
+      // 아직 없는 필드라, 값이 있을 때만 포함하고 없으면 키 자체를 만들지 않습니다.
+      if(type === 'reviews'){
+        const image = item && item.image;
+        if(image !== undefined && image !== null && image !== ''){
+          normalized.image = image;
+        }
+      }
+      return normalized;
+    });
+  }
+
   async function saveTypeToRemote(type, button){
     if(!CMS_AUTH_WORKER_URL){
       showToast('Worker 주소가 설정되지 않았습니다.');
@@ -350,7 +389,7 @@
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
         body: JSON.stringify({
           type: type,
-          payload: cmsData[type] || [],
+          payload: normalizePayloadForRemote(type, cmsData[type] || []),
           expectedSha: remoteShaByType[type],
           dryRun: false
         })
