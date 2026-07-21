@@ -1,4 +1,4 @@
-// Gift Clean CMS 인증/저장 Worker (PR-A: 로그인, PR-B1: 조회+dryRun, PR-B2: 실제 commit, PR-B2.1: 저장 방어 로직, PR-B4: 저장 허용 타입 확장)
+// Gift Clean CMS 인증/저장 Worker (PR-A: 로그인, PR-B1: 조회+dryRun, PR-B2: 실제 commit, PR-B2.1: 저장 방어 로직, PR-B4: 저장 허용 타입 확장, PR-C2a: services 저장 준비)
 //
 // PR-A: CMS 로그인 PIN 검증과 짧은 수명의 세션 토큰 발급
 // PR-B1: 세션 토큰으로 보호되는 data/*.json 조회(/content)와 저장 사전검증(/save, dryRun-only)
@@ -10,6 +10,9 @@
 //     unchanged:true로 응답 (dryRun:true 응답에도 unchanged 여부를 함께 반환)
 // PR-B4: SAVE_WHITELIST/TYPE_VALIDATION_RULES를 banners 외 5개 타입(cases/reviews/prices/faq/notices)으로 확장
 //        (CMS 프론트엔드는 아직 연결하지 않음, 나머지 저장 로직은 변경 없음)
+// PR-C2a: SAVE_WHITELIST/TYPE_VALIDATION_RULES에 services(data/services.json) 추가.
+//         서비스 상세 CMS 화면(PR-C2b)을 붙이기 위한 서버 준비 단계로, CMS 프론트엔드는
+//         아직 연결하지 않고 /content, /save(dryRun 포함)만 services type을 허용합니다.
 //
 // 필요한 Secret (코드에는 절대 값을 넣지 않고 아래 명령으로 등록):
 //   wrangler secret put ADMIN_PIN
@@ -24,7 +27,7 @@
 
 const SESSION_TTL_SECONDS = 60 * 60 * 2; // 세션 토큰 유효 시간: 2시간
 
-// 저장 가능한 데이터 타입 whitelist. PR-B4 기준 6개 타입 전체를 허용합니다.
+// 저장 가능한 데이터 타입 whitelist. PR-C2a 기준 7개 타입 전체를 허용합니다.
 const SAVE_WHITELIST = {
   banners: 'data/banners.json',
   cases: 'data/cases.json',
@@ -32,9 +35,13 @@ const SAVE_WHITELIST = {
   prices: 'data/prices.json',
   faq: 'data/faq.json',
   notices: 'data/notices.json',
+  services: 'data/services.json',
 };
 
 // 타입별 필수 필드 규칙 (cms/js/cms.js의 typeConfig.required와 동일하게 유지)
+// services의 필수 필드는 js/script.js의 isUsableService() 렌더링 조건(visible && service &&
+// summary && description)과 맞춰 service/summary/description으로 정합니다. seoTitle/scope/
+// process/priceNote/notes/ctaText/id/sort는 선택 필드로 허용됩니다(값이 없어도 저장 가능).
 const TYPE_VALIDATION_RULES = {
   banners: { required: ['title', 'description'] },
   cases: { required: ['title', 'description', 'service', 'region'] },
@@ -42,6 +49,7 @@ const TYPE_VALIDATION_RULES = {
   prices: { required: ['category', 'title', 'price'] },
   faq: { required: ['question', 'answer'] },
   notices: { required: ['title', 'content'] },
+  services: { required: ['service', 'summary', 'description'] },
 };
 
 export default {
@@ -367,7 +375,8 @@ async function commitGithubFile(path, payload, sha, env) {
 
   const jsonText = JSON.stringify(payload, null, 2) + '\n';
   const contentBase64 = encodeStringToStandardBase64(jsonText);
-  const message = 'chore(cms): update banners.json data from CMS\n\nSaved via Gift Clean CMS at ' + new Date().toISOString();
+  const fileName = path.split('/').pop();
+  const message = 'chore(cms): update ' + fileName + ' data from CMS\n\nSaved via Gift Clean CMS at ' + new Date().toISOString();
 
   const apiUrl = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path;
   const response = await fetch(apiUrl, {
