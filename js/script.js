@@ -854,9 +854,9 @@
       function appendPositioningLead(fragment){
         var lead=document.createElement('p');
         lead.className='service-positioning-lead';
-        lead.appendChild(document.createTextNode('기프트클린은 식당·상가 인수청소부터 쓰레기집·고독사·유품정리 같은 특수청소까지 전국 출장 가능한 청소업체입니다.'));
+        lead.appendChild(document.createTextNode('기프트클린은 특수청소를 중심으로 쓰레기집청소·고독사 특수청소·유품정리·화재·침수청소·비둘기 퇴치·폐기물 처리부터 입주·이사·거주청소, 상가·식당·사무실 청소까지 전국 출장 서비스를 진행합니다.'));
         lead.appendChild(document.createElement('br'));
-        lead.appendChild(document.createTextNode('별도 출장비 없이 상담부터 작업까지 진행합니다.'));
+        lead.appendChild(document.createTextNode('별도 출장비 없이 현장 상태를 기준으로 안내드립니다.'));
         fragment.appendChild(lead);
       }
 
