@@ -752,6 +752,160 @@
       onReady(initBannersJson);
     })();
 
+    /* SERVICES_JSON_INTEGRATION */
+    // PR-C1a: 구조만 추가(data/services.json은 빈 배열). 실제 12개 서비스 본문은
+    // PR-C1b에서 작성 예정이며, 확정된 목록과 sort 순서는 다음과 같습니다.
+    //   1 특수청소, 2 쓰레기집청소, 3 고독사 특수청소, 4 유품정리, 5 화재청소,
+    //   6 침수청소, 7 비둘기 퇴치, 8 폐기물 처리, 9 입주청소, 10 이사청소,
+    //   11 거주청소, 12 상가·식당·사무실 청소
+    // 메인 브랜드 정체성은 "특수청소 중심 종합 청소업체"이며, 이 순서는 그
+    // 우선순위를 반영합니다(상가·식당·사무실 청소가 메인을 대체하지 않음).
+    (function(){
+      var SERVICES_LIMIT=30;
+      var SERVICES_ENDPOINT='/data/services.json';
+
+      function onReady(fn){
+        if(document.readyState==='loading'){
+          document.addEventListener('DOMContentLoaded',fn);
+        }else{
+          fn();
+        }
+      }
+
+      function cleanText(value){
+        return typeof value === 'string' ? value.trim() : '';
+      }
+
+      function cleanVisible(value){
+        return value !== false && value !== 'false';
+      }
+
+      function cleanSort(value){
+        var sort=Number(value || 0);
+        return isFinite(sort) ? sort : 0;
+      }
+
+      function bySort(a,b){
+        return a.sort-b.sort;
+      }
+
+      function normalizeService(item){
+        return {
+          id: cleanText(item && item.id),
+          service: cleanText(item && item.service),
+          seoTitle: cleanText(item && item.seoTitle),
+          summary: cleanText(item && item.summary),
+          description: cleanText(item && item.description),
+          scope: cleanText(item && item.scope),
+          process: cleanText(item && item.process),
+          priceNote: cleanText(item && item.priceNote),
+          notes: cleanText(item && item.notes),
+          ctaText: cleanText(item && item.ctaText),
+          visible: cleanVisible(item && item.visible),
+          sort: cleanSort(item && item.sort)
+        };
+      }
+
+      function isUsableService(item){
+        return item.visible && item.service && item.summary && item.description;
+      }
+
+      function appendServiceField(container,label,value){
+        if(!value){return;}
+        var row=document.createElement('p');
+        var strong=document.createElement('strong');
+        strong.textContent=label + ': ';
+        row.appendChild(strong);
+        row.appendChild(document.createTextNode(value));
+        container.appendChild(row);
+      }
+
+      function createServiceDetail(item){
+        var details=document.createElement('details');
+        details.setAttribute('data-service-id',item.id || '');
+
+        var summary=document.createElement('summary');
+        summary.textContent=item.service;
+        details.appendChild(summary);
+
+        var body=document.createElement('div');
+        body.className='policy-content';
+
+        var description=document.createElement('p');
+        description.textContent=item.description;
+        body.appendChild(description);
+
+        appendServiceField(body,'작업 범위',item.scope);
+        appendServiceField(body,'진행 순서',item.process);
+        appendServiceField(body,'가격 기준',item.priceNote);
+        appendServiceField(body,'주의사항',item.notes);
+
+        if(item.ctaText){
+          var cta=document.createElement('p');
+          cta.className='service-detail-cta';
+          cta.textContent=item.ctaText;
+          body.appendChild(cta);
+        }
+
+        details.appendChild(body);
+        return details;
+      }
+
+      function appendPositioningLead(fragment){
+        var lead=document.createElement('p');
+        lead.className='service-positioning-lead';
+        lead.appendChild(document.createTextNode('기프트클린은 식당·상가 인수청소부터 쓰레기집·고독사·유품정리 같은 특수청소까지 전국 출장 가능한 청소업체입니다.'));
+        lead.appendChild(document.createElement('br'));
+        lead.appendChild(document.createTextNode('별도 출장비 없이 상담부터 작업까지 진행합니다.'));
+        fragment.appendChild(lead);
+      }
+
+      function renderServices(target,items){
+        var services=items.slice().sort(bySort).slice(0,SERVICES_LIMIT);
+        if(!services.length){return;}
+
+        var fragment=document.createDocumentFragment();
+
+        var heading=document.createElement('h3');
+        heading.textContent='서비스별 상세 안내';
+        fragment.appendChild(heading);
+
+        // services.json이 비어있을 때는(위의 이른 return) 이 문구도 함께 노출되지
+        // 않습니다. 데이터가 1개 이상 있을 때만 상세 목록과 함께 보여줍니다.
+        appendPositioningLead(fragment);
+
+        services.forEach(function(item){
+          fragment.appendChild(createServiceDetail(item));
+        });
+
+        target.innerHTML='';
+        target.appendChild(fragment);
+        target.setAttribute('data-services-source','json');
+      }
+
+      function initServicesJson(){
+        var target=document.querySelector('[data-services-json-target="true"]');
+        if(!target || !window.fetch){return;}
+
+        window.fetch(SERVICES_ENDPOINT,{cache:'no-store'})
+          .then(function(response){
+            if(!response.ok){throw new Error('services json failed');}
+            return response.json();
+          })
+          .then(function(data){
+            var services=Array.isArray(data) ? data.map(normalizeService).filter(isUsableService) : [];
+            if(services.length){
+              renderServices(target,services);
+            }
+          })
+          .catch(function(){
+            target.setAttribute('data-services-source','fallback');
+          });
+      }
+
+      onReady(initServicesJson);
+    })();
+
     /* SLIDER_IMAGE_PRELOAD */
     (function(){
       window.preloadSliderImages=function(scope){
