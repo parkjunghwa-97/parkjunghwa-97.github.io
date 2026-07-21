@@ -792,7 +792,6 @@
           scope: cleanText(item && item.scope),
           process: cleanText(item && item.process),
           priceNote: cleanText(item && item.priceNote),
-          region: cleanText(item && item.region),
           notes: cleanText(item && item.notes),
           ctaText: cleanText(item && item.ctaText),
           visible: cleanVisible(item && item.visible),
@@ -832,7 +831,6 @@
         appendServiceField(body,'작업 범위',item.scope);
         appendServiceField(body,'진행 순서',item.process);
         appendServiceField(body,'가격 기준',item.priceNote);
-        appendServiceField(body,'가능 지역',item.region);
         appendServiceField(body,'주의사항',item.notes);
 
         if(item.ctaText){
@@ -846,6 +844,15 @@
         return details;
       }
 
+      function appendPositioningLead(fragment){
+        var lead=document.createElement('p');
+        lead.className='service-positioning-lead';
+        lead.appendChild(document.createTextNode('기프트클린은 식당·상가 인수청소부터 쓰레기집·고독사·유품정리 같은 특수청소까지 전국 출장 가능한 청소업체입니다.'));
+        lead.appendChild(document.createElement('br'));
+        lead.appendChild(document.createTextNode('별도 출장비 없이 상담부터 작업까지 진행합니다.'));
+        fragment.appendChild(lead);
+      }
+
       function renderServices(target,items){
         var services=items.slice().sort(bySort).slice(0,SERVICES_LIMIT);
         if(!services.length){return;}
@@ -855,6 +862,10 @@
         var heading=document.createElement('h3');
         heading.textContent='서비스별 상세 안내';
         fragment.appendChild(heading);
+
+        // services.json이 비어있을 때는(위의 이른 return) 이 문구도 함께 노출되지
+        // 않습니다. 데이터가 1개 이상 있을 때만 상세 목록과 함께 보여줍니다.
+        appendPositioningLead(fragment);
 
         services.forEach(function(item){
           fragment.appendChild(createServiceDetail(item));
