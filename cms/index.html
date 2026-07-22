@@ -34,6 +34,7 @@
           <button class="menu-btn" type="button" data-screen="faq">FAQ 관리</button>
           <button class="menu-btn" type="button" data-screen="notices">공지 관리</button>
           <button class="menu-btn" type="button" data-screen="banners">메인배너 관리</button>
+          <button class="menu-btn" type="button" data-screen="services">서비스 상세 관리</button>
           <button class="menu-btn" type="button" data-screen="json">JSON 관리</button>
           <button class="menu-btn" type="button" data-screen="settings">설정</button>
         </nav>
@@ -118,6 +119,14 @@
           </div>
           <div class="editor-panel is-hidden" id="bannersEditor"></div>
           <div class="item-list" id="bannersList"></div>
+        </section>
+
+        <section class="screen" id="screen-services" data-type="services">
+          <div class="screen-toolbar">
+            <p>서비스 상세 12개 항목을 홈페이지 data/services.json 구조로 관리합니다. 항목을 펼쳐 내용을 수정한 뒤 저장하세요. 서비스 항목 추가/삭제는 지원하지 않습니다.</p>
+            <button type="button" class="secondary-btn" data-action="save-remote" data-type="services">홈페이지에 저장하기</button>
+          </div>
+          <div class="services-accordion" id="servicesAccordion"></div>
         </section>
 
         <section class="screen" id="screen-json" data-type="json">

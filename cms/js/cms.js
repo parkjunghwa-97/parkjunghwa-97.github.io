@@ -15,8 +15,8 @@
   const JSON_PREVIEW_LIMIT = 3600;
 
   const serviceOptions = ['특수청소', '쓰레기집청소', '유품정리', '화재복구', '누수복구', '비둘기퇴치', '입주청소'];
-  const contentTypes = ['cases', 'reviews', 'prices', 'faq', 'notices', 'banners'];
-  const saveTargetTypes = ['reviews', 'cases', 'prices', 'faq', 'notices', 'banners'];
+  const contentTypes = ['cases', 'reviews', 'prices', 'faq', 'notices', 'banners', 'services'];
+  const saveTargetTypes = ['reviews', 'cases', 'prices', 'faq', 'notices', 'banners', 'services'];
   const typeConfig = {
     reviews: {
       file: 'reviews.json',
@@ -59,6 +59,13 @@
       label: '메인배너',
       fields: ['id', 'title', 'description', 'button', 'link', 'visible', 'sort'],
       required: ['title', 'description']
+    },
+    services: {
+      file: 'services.json',
+      prefix: 'service',
+      label: '서비스 상세',
+      fields: ['id', 'service', 'seoTitle', 'summary', 'description', 'scope', 'process', 'priceNote', 'notes', 'ctaText', 'visible', 'sort'],
+      required: ['service', 'summary', 'description']
     }
   };
   // 홈페이지 data/*.json이 실제로 사용하는 필드만 담은 저장 허용 목록입니다.
@@ -71,7 +78,9 @@
     reviews: ['id', 'service', 'region', 'title', 'rating', 'content', 'source', 'date'],
     prices: ['id', 'category', 'title', 'price', 'description', 'visible', 'sort'],
     faq: ['id', 'question', 'answer', 'visible', 'sort'],
-    notices: ['id', 'title', 'content', 'date', 'visible', 'sort']
+    notices: ['id', 'title', 'content', 'date', 'visible', 'sort'],
+    // services는 CMS 편집 필드와 data/services.json 저장 필드가 완전히 동일합니다(PR-C2b).
+    services: ['id', 'service', 'seoTitle', 'summary', 'description', 'scope', 'process', 'priceNote', 'notes', 'ctaText', 'visible', 'sort']
   };
 
   const fallbackData = {
@@ -184,6 +193,24 @@
         sort: 1
       }
     ],
+    // data/services.json은 same-origin 정적 파일 fetch로 항상 실제 내용을 불러오므로
+    // 이 fallback은 네트워크 오류 등 예외 상황에서만 쓰이는 최소 placeholder입니다.
+    services: [
+      {
+        id: 'service-001',
+        service: '',
+        seoTitle: '',
+        summary: '',
+        description: '',
+        scope: '',
+        process: '',
+        priceNote: '',
+        notes: '',
+        ctaText: '',
+        visible: true,
+        sort: 1
+      }
+    ],
     settings: {
       cmsVersion: '1.7',
       initialPin: '231204',
@@ -200,7 +227,8 @@
     prices: '../data/prices.json',
     faq: '../data/faq.json',
     notices: '../data/notices.json',
-    banners: '../data/banners.json'
+    banners: '../data/banners.json',
+    services: '../data/services.json'
   };
 
   const titles = {
@@ -210,6 +238,7 @@
     faq: 'FAQ 관리',
     notices: '공지 관리',
     banners: '메인배너 관리',
+    services: '서비스 상세 관리',
     json: 'JSON 관리',
     settings: '설정'
   };
@@ -220,7 +249,8 @@
     prices: '비용안내',
     faq: 'FAQ',
     notices: '공지',
-    banners: '메인배너'
+    banners: '메인배너',
+    services: '서비스 상세'
   };
 
   let cmsData = {};
@@ -1353,10 +1383,171 @@
       renderJsonScreen();
       return;
     }
+    if(type === 'services'){
+      renderServicesScreen();
+      return;
+    }
     const renderer = getRenderer(type);
     if(renderer){
       renderList(type, renderer);
     }
+  }
+
+  // services는 12개 고정 항목을 아코디언으로 펼쳐 편집하는 화면입니다(PR-C2b).
+  // cases/reviews 등과 달리 항목 추가/삭제가 없고, 각 카드 안의 입력값이 바뀔
+  // 때마다 cmsData.services를 직접 갱신한 뒤 localStorage에 반영합니다.
+  let servicesDraftTimer = 0;
+
+  function renderServicesScreen(){
+    const container = document.getElementById('servicesAccordion');
+    if(!container){
+      return;
+    }
+    const items = (cmsData.services || []).slice().sort(function(a, b){
+      return (a.sort || 0) - (b.sort || 0);
+    });
+    container.innerHTML = '';
+    if(!items.length){
+      const empty = document.createElement('article');
+      empty.className = 'data-item';
+      const strong = document.createElement('strong');
+      strong.textContent = '데이터 없음';
+      const paragraph = document.createElement('p');
+      paragraph.textContent = 'data/services.json을 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.';
+      empty.appendChild(strong);
+      empty.appendChild(paragraph);
+      container.appendChild(empty);
+      return;
+    }
+    const fragment = document.createDocumentFragment();
+    items.forEach(function(item){
+      fragment.appendChild(buildServiceCard(item));
+    });
+    container.appendChild(fragment);
+  }
+
+  function buildServiceCard(item){
+    const details = document.createElement('details');
+    details.className = 'service-card';
+    details.dataset.id = item.id;
+
+    const summary = document.createElement('summary');
+    summary.appendChild(buildServiceSummaryLabel(item));
+    details.appendChild(summary);
+
+    const body = document.createElement('div');
+    body.className = 'service-card-body';
+
+    const idTag = document.createElement('p');
+    idTag.className = 'service-id-tag';
+    idTag.textContent = 'id: ' + item.id + ' (읽기 전용)';
+    body.appendChild(idTag);
+
+    const grid = document.createElement('div');
+    grid.className = 'editor-grid';
+    getServiceFields().forEach(function(field){
+      grid.appendChild(serviceInputField(item, field, summary));
+    });
+    body.appendChild(grid);
+
+    details.appendChild(body);
+    return details;
+  }
+
+  function buildServiceSummaryLabel(item){
+    const label = document.createElement('span');
+    label.className = 'service-summary-label';
+    label.dataset.role = 'summary-label';
+    label.textContent = serviceSummaryText(item);
+    return label;
+  }
+
+  function serviceSummaryText(item){
+    return (item.sort || 0) + '. ' + (item.service || '(서비스명 없음)') + ' · ' + visibleLabel(item.visible) + ' · 정렬 ' + (item.sort || 0);
+  }
+
+  function getServiceFields(){
+    return [
+      { name: 'service', label: '서비스명', kind: 'text', placeholder: '예: 특수청소' },
+      { name: 'seoTitle', label: 'SEO 제목', kind: 'text', placeholder: '검색결과에 노출될 제목', required: false },
+      { name: 'summary', label: '요약', kind: 'textarea', placeholder: '한두 문장 요약' },
+      { name: 'description', label: '상세 설명', kind: 'textarea', placeholder: '서비스 상세 설명' },
+      { name: 'scope', label: '작업 범위', kind: 'textarea', placeholder: '작업 범위', required: false },
+      { name: 'process', label: '진행 순서', kind: 'textarea', placeholder: '진행 순서(비워두면 홈페이지 공통 진행 절차만 표시)', required: false },
+      { name: 'priceNote', label: '가격 기준', kind: 'textarea', placeholder: '가격 산정 기준', required: false },
+      { name: 'notes', label: '주의사항', kind: 'textarea', placeholder: '주의사항', required: false },
+      { name: 'ctaText', label: 'CTA 문구', kind: 'text', placeholder: '(현재 정책상 비워두는 것을 권장)', required: false },
+      { name: 'visible', label: '홈페이지 표시', kind: 'checkbox' },
+      { name: 'sort', label: '정렬 순서', kind: 'number', placeholder: '예: 1' }
+    ];
+  }
+
+  function serviceInputField(item, field, summaryEl){
+    const label = document.createElement('label');
+    if(field.kind === 'textarea'){
+      label.className = 'full';
+    }
+
+    if(field.kind === 'checkbox'){
+      label.className = 'checkbox-row';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.name = field.name;
+      input.checked = item.visible !== false;
+      input.addEventListener('change', function(){
+        updateServiceField(item.id, field.name, input.checked, summaryEl);
+      });
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(field.label));
+      return label;
+    }
+
+    label.appendChild(document.createTextNode(field.label));
+    let input;
+    if(field.kind === 'textarea'){
+      input = document.createElement('textarea');
+      input.rows = field.name === 'description' || field.name === 'scope' ? 6 : 4;
+      input.value = item[field.name] == null ? '' : item[field.name];
+    }else{
+      input = document.createElement('input');
+      input.type = field.kind === 'number' ? 'number' : 'text';
+      if(field.kind === 'number'){
+        input.min = '1';
+        input.step = '1';
+      }
+      input.value = item[field.name] == null ? '' : item[field.name];
+    }
+    input.name = field.name;
+    if(field.placeholder){
+      input.placeholder = field.placeholder;
+    }
+    if(field.required !== false){
+      input.required = true;
+    }
+    const eventName = field.kind === 'number' ? 'change' : 'input';
+    input.addEventListener(eventName, function(){
+      const value = field.kind === 'number' ? Number(input.value || 0) : input.value;
+      updateServiceField(item.id, field.name, value, summaryEl);
+    });
+    label.appendChild(input);
+    return label;
+  }
+
+  function updateServiceField(id, field, value, summaryEl){
+    const list = cmsData.services || [];
+    const target = list.find(function(entry){ return entry.id === id; });
+    if(!target){
+      return;
+    }
+    target[field] = value;
+    if((field === 'service' || field === 'visible' || field === 'sort') && summaryEl){
+      const labelEl = summaryEl.querySelector('[data-role="summary-label"]');
+      if(labelEl){
+        labelEl.textContent = serviceSummaryText(target);
+      }
+    }
+    clearTimeout(servicesDraftTimer);
+    servicesDraftTimer = setTimeout(persistData, DRAFT_SAVE_DELAY);
   }
 
   function getRenderer(type){
