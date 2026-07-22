@@ -15,7 +15,11 @@
   const JSON_PREVIEW_LIMIT = 3600;
 
   const serviceOptions = ['특수청소', '쓰레기집청소', '유품정리', '화재복구', '누수복구', '비둘기퇴치', '입주청소'];
-  const contentTypes = ['cases', 'reviews', 'prices', 'faq', 'notices', 'banners', 'services'];
+  // sections는 Worker가 아직 저장을 지원하지 않아(PR-D1 기준) contentTypes에만
+  // 포함하고 saveTargetTypes에는 넣지 않습니다. saveTargetTypes에 없으면
+  // refreshRemoteContent 백그라운드 sha 조회, JSON 관리 화면의 저장 대상
+  // 미리보기 대상에서도 자동으로 제외됩니다.
+  const contentTypes = ['cases', 'reviews', 'prices', 'faq', 'notices', 'banners', 'services', 'sections'];
   const saveTargetTypes = ['reviews', 'cases', 'prices', 'faq', 'notices', 'banners', 'services'];
   const typeConfig = {
     reviews: {
@@ -66,6 +70,13 @@
       label: '서비스 상세',
       fields: ['id', 'service', 'seoTitle', 'summary', 'description', 'scope', 'process', 'priceNote', 'notes', 'ctaText', 'visible', 'sort'],
       required: ['service', 'summary', 'description']
+    },
+    sections: {
+      file: 'sections.json',
+      prefix: 'section',
+      label: '섹션 표시',
+      fields: ['id', 'name', 'visible', 'sort'],
+      required: ['name']
     }
   };
   // 홈페이지 data/*.json이 실제로 사용하는 필드만 담은 저장 허용 목록입니다.
@@ -211,6 +222,11 @@
         sort: 1
       }
     ],
+    // data/sections.json도 same-origin 정적 파일 fetch로 실제 내용을 불러오며,
+    // 이 fallback은 네트워크 오류 등 예외 상황에서만 쓰이는 최소 placeholder입니다.
+    sections: [
+      { id: 'home', name: '홈', visible: true, sort: 1 }
+    ],
     settings: {
       cmsVersion: '1.7',
       initialPin: '231204',
@@ -228,7 +244,8 @@
     faq: '../data/faq.json',
     notices: '../data/notices.json',
     banners: '../data/banners.json',
-    services: '../data/services.json'
+    services: '../data/services.json',
+    sections: '../data/sections.json'
   };
 
   const titles = {
@@ -239,6 +256,7 @@
     notices: '공지 관리',
     banners: '메인배너 관리',
     services: '서비스 상세 관리',
+    sections: '섹션 표시 관리',
     json: 'JSON 관리',
     settings: '설정'
   };
@@ -250,7 +268,8 @@
     faq: 'FAQ',
     notices: '공지',
     banners: '메인배너',
-    services: '서비스 상세'
+    services: '서비스 상세',
+    sections: '섹션'
   };
 
   let cmsData = {};
@@ -1387,6 +1406,10 @@
       renderServicesScreen();
       return;
     }
+    if(type === 'sections'){
+      renderSectionsScreen();
+      return;
+    }
     const renderer = getRenderer(type);
     if(renderer){
       renderList(type, renderer);
@@ -1548,6 +1571,76 @@
     }
     clearTimeout(servicesDraftTimer);
     servicesDraftTimer = setTimeout(persistData, DRAFT_SAVE_DELAY);
+  }
+
+  // 섹션 표시 관리(PR-D1): 홈페이지 주요 섹션의 visible만 켜고 끄는 최소 화면입니다.
+  // 추가/삭제/순서 변경 UI는 없고, sort는 표시만 합니다. Worker가 아직 sections
+  // 저장을 지원하지 않아(SAVE_WHITELIST 미등록) 저장 버튼은 비활성화되어 있습니다.
+  let sectionsDraftTimer = 0;
+
+  function renderSectionsScreen(){
+    const container = document.getElementById('sectionsList');
+    if(!container){
+      return;
+    }
+    const items = (cmsData.sections || []).slice().sort(function(a, b){
+      return (a.sort || 0) - (b.sort || 0);
+    });
+    container.innerHTML = '';
+    if(!items.length){
+      container.appendChild(emptyCard('sections'));
+      return;
+    }
+    const fragment = document.createDocumentFragment();
+    items.forEach(function(item){
+      fragment.appendChild(buildSectionRow(item));
+    });
+    container.appendChild(fragment);
+  }
+
+  function buildSectionRow(item){
+    const article = document.createElement('article');
+    article.className = 'data-item section-row';
+
+    const head = document.createElement('div');
+    head.className = 'data-item-head';
+
+    const titleWrap = document.createElement('div');
+    const strong = document.createElement('strong');
+    strong.textContent = item.name || item.id;
+    titleWrap.appendChild(strong);
+    const sortTag = document.createElement('p');
+    sortTag.className = 'service-id-tag';
+    sortTag.textContent = '정렬 순서: ' + (item.sort || 0) + ' (읽기 전용)';
+    titleWrap.appendChild(sortTag);
+    head.appendChild(titleWrap);
+
+    const label = document.createElement('label');
+    label.className = 'checkbox-row';
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.name = 'visible';
+    input.checked = item.visible !== false;
+    input.addEventListener('change', function(){
+      updateSectionVisible(item.id, input.checked);
+    });
+    label.appendChild(input);
+    label.appendChild(document.createTextNode('홈페이지 표시'));
+    head.appendChild(label);
+
+    article.appendChild(head);
+    return article;
+  }
+
+  function updateSectionVisible(id, checked){
+    const list = cmsData.sections || [];
+    const target = list.find(function(entry){ return entry.id === id; });
+    if(!target){
+      return;
+    }
+    target.visible = checked;
+    clearTimeout(sectionsDraftTimer);
+    sectionsDraftTimer = setTimeout(persistData, DRAFT_SAVE_DELAY);
   }
 
   function getRenderer(type){
