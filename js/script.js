@@ -906,6 +906,101 @@
       onReady(initServicesJson);
     })();
 
+    /* SECTIONS_JSON_INTEGRATION */
+    // PR-D1: data/sections.json으로 홈페이지 주요 섹션(nav로 이동하는 9개 페이지)의
+    // 표시 여부만 제어합니다. 순서 변경/드래그/새 섹션 추가는 다루지 않습니다(PR-D2 예정).
+    // sections.json 로딩에 실패하면 아무 것도 하지 않아 기존처럼 모든 섹션이 보입니다.
+    (function(){
+      var SECTIONS_ENDPOINT='/data/sections.json';
+
+      function onReady(fn){
+        if(document.readyState==='loading'){
+          document.addEventListener('DOMContentLoaded',fn);
+        }else{
+          fn();
+        }
+      }
+
+      function cleanVisible(value){
+        return value !== false && value !== 'false';
+      }
+
+      // 처음부터(HTML에 이미) 숨겨야 할 섹션은 없으므로, sections.json에서
+      // visible:false로 확인된 id만 골라 화면에서만 감춥니다. 홈페이지 구조/순서는
+      // 그대로 두고 인라인 style로만 제어해 CSS 파일은 건드리지 않습니다.
+      function hideSection(id){
+        var section=document.getElementById(id);
+        if(section){
+          section.style.display='none';
+          section.setAttribute('data-section-hidden','true');
+        }
+        document.querySelectorAll('.nav-btn').forEach(function(btn){
+          var clickValue=btn.getAttribute('onclick') || '';
+          if(clickValue.indexOf("'" + id + "'") !== -1){
+            btn.style.display='none';
+          }
+        });
+      }
+
+      // 방어 코드: 기본 활성 페이지(home)가 숨김 처리된 예외적인 경우에만 동작합니다.
+      // 실제 서비스 기본값은 전부 visible:true라 평소에는 아무 일도 하지 않습니다.
+      function ensureActivePageVisible(){
+        var home=document.getElementById('home');
+        if(!home || !home.hasAttribute('data-section-hidden') || typeof MutationObserver !== 'function'){
+          return;
+        }
+        var firstVisible=document.querySelector('.page:not([data-section-hidden])');
+        if(!firstVisible){
+          return;
+        }
+        var observer=new MutationObserver(function(){
+          if(home.classList.contains('active')){
+            home.classList.remove('active');
+            firstVisible.classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(function(btn){
+              btn.classList.remove('active');
+            });
+            var firstNav=document.querySelector('.nav-btn:not([style*="display: none"])');
+            if(firstNav){
+              firstNav.classList.add('active');
+            }
+            observer.disconnect();
+          }
+        });
+        observer.observe(home,{attributes:true,attributeFilter:['class']});
+      }
+
+      function initSectionsJson(){
+        if(!window.fetch){
+          return;
+        }
+        window.fetch(SECTIONS_ENDPOINT,{cache:'no-store'})
+          .then(function(response){
+            if(!response.ok){throw new Error('sections json failed');}
+            return response.json();
+          })
+          .then(function(data){
+            if(!Array.isArray(data)){return;}
+            var hiddenAny=false;
+            data.forEach(function(item){
+              if(item && typeof item.id === 'string' && !cleanVisible(item.visible)){
+                hideSection(item.id);
+                hiddenAny=true;
+              }
+            });
+            if(hiddenAny){
+              ensureActivePageVisible();
+            }
+          })
+          .catch(function(){
+            // sections.json이 없거나 요청이 실패하면 아무 것도 바꾸지 않습니다.
+            // 즉, 기존 홈페이지처럼 모든 섹션이 그대로 보입니다.
+          });
+      }
+
+      onReady(initSectionsJson);
+    })();
+
     /* SLIDER_IMAGE_PRELOAD */
     (function(){
       window.preloadSliderImages=function(scope){

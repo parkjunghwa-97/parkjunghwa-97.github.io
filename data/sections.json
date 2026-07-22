@@ -1,0 +1,56 @@
+[
+  {
+    "id": "home",
+    "name": "홈",
+    "visible": true,
+    "sort": 1
+  },
+  {
+    "id": "about",
+    "name": "회사소개",
+    "visible": true,
+    "sort": 2
+  },
+  {
+    "id": "service",
+    "name": "서비스안내",
+    "visible": true,
+    "sort": 3
+  },
+  {
+    "id": "price",
+    "name": "비용안내",
+    "visible": true,
+    "sort": 4
+  },
+  {
+    "id": "portfolio",
+    "name": "작업사례",
+    "visible": true,
+    "sort": 5
+  },
+  {
+    "id": "journal",
+    "name": "현장기록",
+    "visible": true,
+    "sort": 6
+  },
+  {
+    "id": "policy",
+    "name": "FAQ",
+    "visible": true,
+    "sort": 7
+  },
+  {
+    "id": "partner",
+    "name": "파트너모집",
+    "visible": true,
+    "sort": 8
+  },
+  {
+    "id": "contact",
+    "name": "상담문의",
+    "visible": true,
+    "sort": 9
+  }
+]
