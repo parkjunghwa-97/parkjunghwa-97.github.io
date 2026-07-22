@@ -15,11 +15,12 @@
   const JSON_PREVIEW_LIMIT = 3600;
 
   const serviceOptions = ['특수청소', '쓰레기집청소', '유품정리', '화재복구', '누수복구', '비둘기퇴치', '입주청소'];
-  // sections는 PR-D1a부터 Worker의 SAVE_WHITELIST에 등록되어 saveTargetTypes에도
-  // 포함합니다. 다른 7개 타입과 동일하게 refreshRemoteContent 백그라운드 sha 조회,
-  // JSON 관리 화면의 저장 대상 미리보기에도 자동으로 포함됩니다.
+  // sections는 Worker가 아직 저장을 지원하지 않아(PR-D1 기준) contentTypes에만
+  // 포함하고 saveTargetTypes에는 넣지 않습니다. saveTargetTypes에 없으면
+  // refreshRemoteContent 백그라운드 sha 조회, JSON 관리 화면의 저장 대상
+  // 미리보기 대상에서도 자동으로 제외됩니다.
   const contentTypes = ['cases', 'reviews', 'prices', 'faq', 'notices', 'banners', 'services', 'sections'];
-  const saveTargetTypes = ['reviews', 'cases', 'prices', 'faq', 'notices', 'banners', 'services', 'sections'];
+  const saveTargetTypes = ['reviews', 'cases', 'prices', 'faq', 'notices', 'banners', 'services'];
   const typeConfig = {
     reviews: {
       file: 'reviews.json',
@@ -90,9 +91,7 @@
     faq: ['id', 'question', 'answer', 'visible', 'sort'],
     notices: ['id', 'title', 'content', 'date', 'visible', 'sort'],
     // services는 CMS 편집 필드와 data/services.json 저장 필드가 완전히 동일합니다(PR-C2b).
-    services: ['id', 'service', 'seoTitle', 'summary', 'description', 'scope', 'process', 'priceNote', 'notes', 'ctaText', 'visible', 'sort'],
-    // sections도 CMS 편집 필드와 data/sections.json 저장 필드가 동일합니다(PR-D1a).
-    sections: ['id', 'name', 'visible', 'sort']
+    services: ['id', 'service', 'seoTitle', 'summary', 'description', 'scope', 'process', 'priceNote', 'notes', 'ctaText', 'visible', 'sort']
   };
 
   const fallbackData = {
