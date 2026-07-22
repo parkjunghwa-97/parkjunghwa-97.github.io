@@ -441,6 +441,54 @@ textarea:focus {
   line-height: 1.55;
 }
 
+/* 서비스 상세 관리(PR-C2b): 12개 고정 항목을 아코디언으로 편집합니다. */
+.services-accordion {
+  display: grid;
+  gap: 12px;
+}
+
+.service-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  padding: 4px 22px;
+}
+
+.service-card > summary {
+  cursor: pointer;
+  padding: 14px 0;
+  list-style: none;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.service-card > summary::-webkit-details-marker {
+  display: none;
+}
+
+.service-card > summary::before {
+  content: '▸ ';
+  color: var(--muted);
+}
+
+.service-card[open] > summary::before {
+  content: '▾ ';
+}
+
+.service-card-body {
+  display: grid;
+  gap: 16px;
+  padding: 4px 0 22px;
+}
+
+.service-id-tag {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .data-meta {
   display: flex;
   flex-wrap: wrap;
