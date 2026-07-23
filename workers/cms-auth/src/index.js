@@ -58,6 +58,13 @@ const TYPE_VALIDATION_RULES = {
   sections: { required: ['id', 'name'] },
 };
 
+// sections는 홈페이지 nav의 고정된 9개 섹션과 1:1로 매칭되는 데이터라, 다른 타입과
+// 달리 개수/전체 id 목록/타입까지 엄격하게 검증합니다(PR-D1c). 2026-07-22 CMS에서
+// 저장 버튼을 눌렀을 때 로컬 캐시가 손상된 1개짜리 payload가 그대로 GitHub에
+// 저장되는 사고가 있었고, 이 검증은 그런 payload가 다시는 서버를 통과하지 못하게
+// 막기 위한 최후 방어선입니다.
+const REQUIRED_SECTION_IDS = ['home', 'about', 'service', 'price', 'portfolio', 'journal', 'policy', 'partner', 'contact'];
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -146,7 +153,9 @@ async function handleSave(request, env, corsHeaders) {
     return jsonResponse({ error: 'file_not_allowed' }, 403, corsHeaders);
   }
 
-  const validationErrors = validatePayload(type, body.payload);
+  const validationErrors = type === 'sections'
+    ? validateSectionsPayload(body.payload)
+    : validatePayload(type, body.payload);
   if (validationErrors.length) {
     return jsonResponse({ error: 'invalid_payload', details: validationErrors }, 400, corsHeaders);
   }
@@ -269,6 +278,62 @@ function validatePayload(type, payload) {
         errors.push('index ' + index + ': 필수 필드 누락 - ' + field);
       }
     });
+  });
+
+  return errors;
+}
+
+// sections 전용 무결성 검증(PR-D1c). 일반 validatePayload()보다 훨씬 엄격하게,
+// 정확히 9개 항목/필수 9개 id 전체 포함/중복 id 없음/visible이 boolean/sort가
+// number이고 1~9 범위인지까지 확인합니다. 하나라도 어긋나면 details에 원인을
+// 담아 400으로 거부합니다.
+function validateSectionsPayload(payload) {
+  const errors = [];
+  if (!Array.isArray(payload)) {
+    errors.push('payload는 배열이어야 합니다.');
+    return errors;
+  }
+  if (payload.length !== REQUIRED_SECTION_IDS.length) {
+    errors.push('sections must contain exactly ' + REQUIRED_SECTION_IDS.length + ' items');
+  }
+
+  const seenIds = new Set();
+  payload.forEach(function (item, index) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      errors.push('index ' + index + ': 객체가 아닙니다.');
+      return;
+    }
+    const id = item.id;
+    const label = typeof id === 'string' && id ? id : 'index ' + index;
+
+    if (typeof id !== 'string' || id.trim() === '') {
+      errors.push('index ' + index + ': 필수 필드 누락 - id');
+    } else {
+      if (seenIds.has(id)) {
+        errors.push('duplicate section id: ' + id);
+      }
+      seenIds.add(id);
+    }
+
+    if (typeof item.name !== 'string' || item.name.trim() === '') {
+      errors.push(label + ': 필수 필드 누락 - name');
+    }
+
+    if (typeof item.visible !== 'boolean') {
+      errors.push(label + ': visible must be boolean');
+    }
+
+    if (typeof item.sort !== 'number' || !Number.isFinite(item.sort)) {
+      errors.push(label + ': sort must be number');
+    } else if (item.sort < 1 || item.sort > REQUIRED_SECTION_IDS.length) {
+      errors.push(label + ': sort must be between 1 and ' + REQUIRED_SECTION_IDS.length);
+    }
+  });
+
+  REQUIRED_SECTION_IDS.forEach(function (requiredId) {
+    if (!seenIds.has(requiredId)) {
+      errors.push('missing required section id: ' + requiredId);
+    }
   });
 
   return errors;

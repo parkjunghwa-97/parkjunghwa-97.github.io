@@ -770,6 +770,15 @@
         reloadLiveJsonData(button);
       }
       if(action === 'save-remote'){
+        if(button.dataset.type === 'sections'){
+          const sectionErrors = validateSectionsForSave(cmsData.sections || []);
+          if(sectionErrors.length){
+            const message = '섹션 데이터에 문제가 있어 저장할 수 없습니다: ' + sectionErrors.join(' / ');
+            showToast(message);
+            setStatus(message);
+            return;
+          }
+        }
         saveTypeToRemote(button.dataset.type, button);
       }
     });
@@ -1642,6 +1651,62 @@
     target.visible = checked;
     clearTimeout(sectionsDraftTimer);
     sectionsDraftTimer = setTimeout(persistData, DRAFT_SAVE_DELAY);
+  }
+
+  // sections 저장 버튼을 누르기 전, 실제 홈페이지 저장 서버(Worker)와 동일한
+  // 규칙으로 미리 검증합니다(PR-D1c). 2026-07-22에 localStorage 캐시가 손상돼
+  // sections가 1개짜리로 줄어든 채 저장된 사고가 있었는데, 그 payload는 아래
+  // 조건에 걸려 saveTypeToRemote() 호출 자체가 막혔을 것입니다. cmsData.sections
+  // 전체(화면에 보이는 항목 수/검색·필터와 무관)를 대상으로 검증합니다.
+  const REQUIRED_SECTION_IDS = ['home', 'about', 'service', 'price', 'portfolio', 'journal', 'policy', 'partner', 'contact'];
+
+  function validateSectionsForSave(payload){
+    const errors = [];
+    if(!Array.isArray(payload)){
+      errors.push('sections must contain exactly ' + REQUIRED_SECTION_IDS.length + ' items');
+      return errors;
+    }
+    if(payload.length !== REQUIRED_SECTION_IDS.length){
+      errors.push('sections must contain exactly ' + REQUIRED_SECTION_IDS.length + ' items');
+    }
+
+    const seenIds = new Set();
+    payload.forEach(function(item, index){
+      const id = item && item.id;
+      const label = typeof id === 'string' && id ? id : 'index ' + index;
+
+      if(typeof id !== 'string' || id.trim() === ''){
+        errors.push('index ' + index + ': id is required');
+      }else{
+        if(seenIds.has(id)){
+          errors.push('duplicate section id: ' + id);
+        }
+        seenIds.add(id);
+      }
+
+      if(typeof (item && item.name) !== 'string' || !item.name || !item.name.trim()){
+        errors.push(label + ': name is required');
+      }
+
+      if(typeof (item && item.visible) !== 'boolean'){
+        errors.push(label + ': visible must be boolean');
+      }
+
+      const sort = item && item.sort;
+      if(typeof sort !== 'number' || !Number.isFinite(sort)){
+        errors.push(label + ': sort must be number');
+      }else if(sort < 1 || sort > REQUIRED_SECTION_IDS.length){
+        errors.push(label + ': sort must be between 1 and ' + REQUIRED_SECTION_IDS.length);
+      }
+    });
+
+    REQUIRED_SECTION_IDS.forEach(function(requiredId){
+      if(!seenIds.has(requiredId)){
+        errors.push('missing required section id: ' + requiredId);
+      }
+    });
+
+    return errors;
   }
 
   function getRenderer(type){
