@@ -309,6 +309,8 @@
     .notice-card small{display:block;margin-top:10px;color:#94a3b8;font-weight:800}
     footer{background:#0f172a;color:white;text-align:center;padding:46px 20px 95px}
     .company-info{margin-top:30px;font-size:12px;color:#94a3b8;line-height:1.8}
+    .footer-links{margin-top:14px}
+    .footer-links a{color:#94a3b8;font-size:12px;text-decoration:underline}
     .fixed-call{position:fixed;right:20px;bottom:90px;background:#0f172a;color:white;padding:12px 18px;border-radius:999px;font-size:14px;font-weight:700;box-shadow:0 8px 20px rgba(0,0,0,.20);z-index:999}
 
     .form-card{
@@ -373,6 +375,13 @@
       border-color:#1c4fa7;
       box-shadow:0 0 0 3px rgba(28,79,167,.12);
     }
+
+    .privacy-mini-notice{font-size:13px;color:#64748b;margin:-6px 0 20px;line-height:1.7}
+    .privacy-mini-notice a{color:#1c4fa7;text-decoration:underline}
+
+    .consent-row label{display:flex;align-items:flex-start;gap:8px;font-weight:400;font-size:13px;color:#475569;cursor:pointer}
+    .consent-row input[type="checkbox"]{margin-top:3px;width:16px;height:16px;flex:none}
+    .consent-row a{color:#1c4fa7;text-decoration:underline}
 
     .submit-btn{
       border:0;
