@@ -15,6 +15,10 @@
 //         아직 연결하지 않고 /content, /save(dryRun 포함)만 services type을 허용합니다.
 // PR-D1a: SAVE_WHITELIST/TYPE_VALIDATION_RULES에 sections(data/sections.json) 추가.
 //         id는 홈페이지 섹션/nav 버튼 매칭 키라 name과 함께 필수 필드로 검증합니다.
+// PR-F1: sections 외 7개 타입(banners/cases/reviews/prices/faq/notices/services)에
+//        공통 저장 무결성 검증(validateArrayIntegrity)을 추가. 기존 id 소실/개수
+//        감소/빈 배열 저장을 거부하며, services는 id set이 기존과 정확히 일치해야
+//        합니다(추가/삭제 불가). "삭제 저장"은 이번 PR에서 허용하지 않습니다.
 //
 // 필요한 Secret (코드에는 절대 값을 넣지 않고 아래 명령으로 등록):
 //   wrangler secret put ADMIN_PIN
@@ -64,6 +68,18 @@ const TYPE_VALIDATION_RULES = {
 // 저장되는 사고가 있었고, 이 검증은 그런 payload가 다시는 서버를 통과하지 못하게
 // 막기 위한 최후 방어선입니다.
 const REQUIRED_SECTION_IDS = ['home', 'about', 'service', 'price', 'portfolio', 'journal', 'policy', 'partner', 'contact'];
+
+// PR-F1: sections 외 7개 타입(banners/cases/reviews/prices/faq/notices/services)에
+// 공통 저장 무결성 검증을 추가합니다. 2026-07-22 sections 사고(로컬 캐시 손상으로
+// 축소된 payload가 그대로 저장됨)와 동일한 유형의 사고가 이 7개 타입에서도 발생할
+// 수 있어, "삭제 저장"을 이번 PR에서는 허용하지 않습니다. 항목을 숨기려면
+// visible:false를 쓰고, 개수 감소가 필요한 명시적 삭제 기능은 이후 별도 PR로
+// 설계합니다. sections는 이미 validateSectionsPayload()로 별도 검증하므로 이
+// 목록에서 제외합니다.
+const INTEGRITY_GUARDED_TYPES = ['banners', 'cases', 'reviews', 'prices', 'faq', 'notices', 'services'];
+// services는 현재 12개 고정 서비스 상세로 운영 중이라, 추가/삭제 없이 기존 id set과
+// 정확히 일치해야만 저장을 허용합니다(내용/visible/sort 수정만 허용).
+const FIXED_ID_SET_TYPES = ['services'];
 
 export default {
   async fetch(request, env) {
@@ -174,6 +190,15 @@ async function handleSave(request, env, corsHeaders) {
     current = await fetchGithubFile(path, env);
   } catch (err) {
     return jsonResponse({ error: 'github_api_error', message: String((err && err.message) || err) }, 502, corsHeaders);
+  }
+
+  // PR-F1: sections 외 7개 타입은 방금 읽은 원격 최신 content와 비교해 "삭제 저장"
+  // (기존 id 소실/개수 감소/빈 배열)을 dryRun 여부와 무관하게 거부합니다.
+  if (INTEGRITY_GUARDED_TYPES.indexOf(type) !== -1) {
+    const integrityErrors = validateArrayIntegrity(type, body.payload, current.content);
+    if (integrityErrors.length) {
+      return jsonResponse({ error: 'invalid_payload', details: integrityErrors }, 400, corsHeaders);
+    }
   }
 
   if (!body.expectedSha || body.expectedSha !== current.sha) {
@@ -335,6 +360,84 @@ function validateSectionsPayload(payload) {
       errors.push('missing required section id: ' + requiredId);
     }
   });
+
+  return errors;
+}
+
+function getItemIds(items) {
+  return (Array.isArray(items) ? items : [])
+    .filter(function (item) { return item && typeof item === 'object' && typeof item.id === 'string' && item.id.trim() !== ''; })
+    .map(function (item) { return item.id; });
+}
+
+function findDuplicateIds(ids) {
+  const seen = new Set();
+  const duplicates = new Set();
+  ids.forEach(function (id) {
+    if (seen.has(id)) {
+      duplicates.add(id);
+    }
+    seen.add(id);
+  });
+  return Array.from(duplicates);
+}
+
+function findMissingIds(baseIds, otherIds) {
+  const otherSet = new Set(otherIds);
+  return baseIds.filter(function (id) { return !otherSet.has(id); });
+}
+
+// sections 외 7개 타입 공통 저장 무결성 검증(PR-F1). 원격에 이미 존재하는 GitHub
+// 파일 content(currentContent)와 이번에 저장하려는 payload를 비교해, "삭제 저장"에
+// 해당하는 상태를 400 invalid_payload로 거부합니다. details의 각 항목은
+// "reason_code: 설명" 형태라 원인을 바로 확인할 수 있습니다.
+//   - empty_array: payload가 빈 배열
+//   - missing_id: 문자열 id가 없는 항목 존재
+//   - duplicate_id: payload 안에서 id 중복
+//   - missing_existing_id: 원격에 있던 id가 payload에서 사라짐(일반 7개 타입)
+//   - count_decreased: 원격 대비 항목 수가 줄어듦(일반 7개 타입)
+//   - services_id_set_changed: services의 id set이 기존과 정확히 일치하지 않음
+//     (누락/신규 추가/개수 변경 전부 이 코드로 보고)
+function validateArrayIntegrity(type, payload, currentContent) {
+  const errors = [];
+  if (!Array.isArray(payload)) {
+    errors.push('not_array: payload는 배열이어야 합니다.');
+    return errors;
+  }
+  if (payload.length === 0) {
+    errors.push('empty_array: ' + type + ' payload는 빈 배열일 수 없습니다. 항목을 숨기려면 visible:false를 사용하세요.');
+    return errors;
+  }
+
+  const payloadIds = getItemIds(payload);
+  if (payloadIds.length !== payload.length) {
+    errors.push('missing_id: 모든 항목에는 문자열 id가 있어야 합니다.');
+  }
+  findDuplicateIds(payloadIds).forEach(function (id) {
+    errors.push('duplicate_id: ' + id);
+  });
+
+  const currentList = Array.isArray(currentContent) ? currentContent : [];
+  const currentIds = getItemIds(currentList);
+
+  if (FIXED_ID_SET_TYPES.indexOf(type) !== -1) {
+    findMissingIds(currentIds, payloadIds).forEach(function (id) {
+      errors.push('services_id_set_changed: missing existing id ' + id);
+    });
+    findMissingIds(payloadIds, currentIds).forEach(function (id) {
+      errors.push('services_id_set_changed: unexpected new id ' + id);
+    });
+    if (payload.length !== currentList.length) {
+      errors.push('services_id_set_changed: item count must stay exactly ' + currentIds.length);
+    }
+  } else {
+    findMissingIds(currentIds, payloadIds).forEach(function (id) {
+      errors.push('missing_existing_id: ' + id);
+    });
+    if (payload.length < currentList.length) {
+      errors.push('count_decreased: ' + type + ' item count decreased (current: ' + currentList.length + ', payload: ' + payload.length + ')');
+    }
+  }
 
   return errors;
 }

@@ -20,6 +20,15 @@
   // JSON 관리 화면의 저장 대상 미리보기에도 자동으로 포함됩니다.
   const contentTypes = ['cases', 'reviews', 'prices', 'faq', 'notices', 'banners', 'services', 'sections'];
   const saveTargetTypes = ['reviews', 'cases', 'prices', 'faq', 'notices', 'banners', 'services', 'sections'];
+  // PR-F1: sections 외 7개 타입의 저장 무결성 방어 대상. 이 목록에 있는 타입은
+  // 저장 버튼 클릭 시 saveTypeToRemote() 호출 전에 원격 최신 데이터와 비교해
+  // "기존 id 소실/개수 감소/빈 배열" 상태의 저장을 차단합니다(Worker에도 동일한
+  // 검증이 있어 이중 방어입니다). sections는 이미 자체 검증(validateSectionsForSave)이
+  // 있어 이 목록에서 제외합니다.
+  const INTEGRITY_GUARDED_TYPES = ['banners', 'cases', 'reviews', 'prices', 'faq', 'notices', 'services'];
+  // services는 현재 12개 고정 서비스 상세로 운영 중이라, 추가/삭제 없이 기존
+  // id set과 정확히 일치해야만 저장을 허용합니다.
+  const FIXED_ID_SET_TYPES = ['services'];
   const typeConfig = {
     reviews: {
       file: 'reviews.json',
@@ -284,6 +293,9 @@
   let activeDraftContext = null;
   let visibleCounts = {};
   let remoteShaByType = {};
+  // PR-F1: 저장 전 무결성 검증(existing id 유지/개수 감소 방지)을 위해,
+  // refreshRemoteContent()가 받아온 원격 배열도 함께 캐시해둡니다.
+  let remoteContentByType = {};
 
   document.addEventListener('DOMContentLoaded', function(){
     installUxChrome();
@@ -369,6 +381,9 @@
       const data = await response.json();
       if(data && data.sha){
         remoteShaByType[type] = data.sha;
+      }
+      if(data && Array.isArray(data.content)){
+        remoteContentByType[type] = data.content;
       }
       return data;
     } catch(e){
@@ -709,7 +724,7 @@
   }
 
   function bindCrudActions(){
-    document.addEventListener('click', function(event){
+    document.addEventListener('click', async function(event){
       const button = event.target.closest('[data-action]');
       if(!button && !event.target.closest('.card-menu')){
         closeCardMenus();
@@ -770,7 +785,8 @@
         reloadLiveJsonData(button);
       }
       if(action === 'save-remote'){
-        if(button.dataset.type === 'sections'){
+        const saveType = button.dataset.type;
+        if(saveType === 'sections'){
           const sectionErrors = validateSectionsForSave(cmsData.sections || []);
           if(sectionErrors.length){
             const message = '섹션 데이터에 문제가 있어 저장할 수 없습니다: ' + sectionErrors.join(' / ');
@@ -778,8 +794,21 @@
             setStatus(message);
             return;
           }
+        }else if(INTEGRITY_GUARDED_TYPES.indexOf(saveType) !== -1){
+          // PR-F1: 원격 최신 데이터를 다시 확보해 비교합니다(saveTypeToRemote() 내부에서도
+          // 저장 직전 한 번 더 갱신하지만, 여기서는 비교용 currentContent가 필요합니다).
+          await refreshRemoteContent(saveType);
+          const currentContent = remoteContentByType[saveType];
+          const localPayload = normalizePayloadForRemote(saveType, cmsData[saveType] || []);
+          const integrityErrors = validateArrayIntegrityForSave(saveType, localPayload, currentContent);
+          if(integrityErrors.length){
+            const message = describeIntegrityBlockReason(integrityErrors);
+            showToast(message);
+            setStatus(message);
+            return;
+          }
         }
-        saveTypeToRemote(button.dataset.type, button);
+        saveTypeToRemote(saveType, button);
       }
     });
 
@@ -1707,6 +1736,104 @@
     });
 
     return errors;
+  }
+
+  // PR-F1: sections 외 7개 타입(banners/cases/reviews/prices/faq/notices/services)
+  // 공통 저장 무결성 검증입니다. Worker의 validateArrayIntegrity()와 동일한 규칙을
+  // 프론트에서 먼저 적용해, 명백히 잘못된 payload(빈 배열/기존 항목 소실/개수 감소)는
+  // 네트워크 요청 자체를 보내지 않고 저장 버튼 클릭 단계에서 막습니다. 이번 PR에서는
+  // "삭제 저장"을 허용하지 않습니다 - 항목을 숨기려면 visible:false를 사용해야 하며,
+  // 개수 감소가 필요한 명시적 삭제 기능은 이후 별도 PR로 설계합니다.
+  function getItemIds(items){
+    return (items || [])
+      .filter(function(item){ return item && typeof item === 'object' && typeof item.id === 'string' && item.id.trim() !== ''; })
+      .map(function(item){ return item.id; });
+  }
+
+  function findDuplicateIds(ids){
+    const seen = new Set();
+    const duplicates = new Set();
+    ids.forEach(function(id){
+      if(seen.has(id)){
+        duplicates.add(id);
+      }
+      seen.add(id);
+    });
+    return Array.from(duplicates);
+  }
+
+  function findMissingIds(baseIds, otherIds){
+    const otherSet = new Set(otherIds);
+    return baseIds.filter(function(id){ return !otherSet.has(id); });
+  }
+
+  function validateArrayIntegrityForSave(type, payload, currentContent){
+    const errors = [];
+    if(!Array.isArray(payload)){
+      errors.push('not_array: payload는 배열이어야 합니다.');
+      return errors;
+    }
+    if(payload.length === 0){
+      errors.push('empty_array: ' + type + ' payload는 빈 배열일 수 없습니다. 항목을 숨기려면 visible:false를 사용하세요.');
+      return errors;
+    }
+
+    const payloadIds = getItemIds(payload);
+    if(payloadIds.length !== payload.length){
+      errors.push('missing_id: 모든 항목에는 문자열 id가 있어야 합니다.');
+    }
+    findDuplicateIds(payloadIds).forEach(function(id){
+      errors.push('duplicate_id: ' + id);
+    });
+
+    // 원격 데이터를 아직 확보하지 못한 경우(오프라인/최초 로드 실패 등)에는
+    // 비교 기준이 없으므로 기존 id/개수 검증은 건너뛰고, 위에서 이미 확인한
+    // 구조적 오류(빈 배열/중복 id)만 반영합니다. saveTypeToRemote() 쪽에서
+    // remoteShaByType이 없으면 어차피 저장을 막습니다.
+    if(!Array.isArray(currentContent)){
+      return errors;
+    }
+
+    const currentIds = getItemIds(currentContent);
+
+    if(FIXED_ID_SET_TYPES.indexOf(type) !== -1){
+      findMissingIds(currentIds, payloadIds).forEach(function(id){
+        errors.push('services_id_set_changed: missing existing id ' + id);
+      });
+      findMissingIds(payloadIds, currentIds).forEach(function(id){
+        errors.push('services_id_set_changed: unexpected new id ' + id);
+      });
+      if(payload.length !== currentContent.length){
+        errors.push('services_id_set_changed: item count must stay exactly ' + currentIds.length);
+      }
+    }else{
+      findMissingIds(currentIds, payloadIds).forEach(function(id){
+        errors.push('missing_existing_id: ' + id);
+      });
+      if(payload.length < currentContent.length){
+        errors.push('count_decreased: ' + type + ' item count decreased (current: ' + currentContent.length + ', payload: ' + payload.length + ')');
+      }
+    }
+
+    return errors;
+  }
+
+  // 검증 실패 원인(코드)에 따라 관리자가 바로 이해할 수 있는 안내 문구를 고릅니다.
+  function describeIntegrityBlockReason(errors){
+    const joined = errors.join(' / ');
+    if(joined.indexOf('missing_existing_id') !== -1 || joined.indexOf('missing existing id') !== -1){
+      return '저장 중단: 기존 항목이 사라진 상태입니다. 실제 JSON 다시 불러오기를 먼저 실행해주세요.';
+    }
+    if(joined.indexOf('count_decreased') !== -1 || joined.indexOf('empty_array') !== -1 || joined.indexOf('item count must stay exactly') !== -1){
+      return '저장 중단: 항목 수가 줄어든 상태에서는 저장할 수 없습니다. 숨김 처리는 visible 옵션을 사용해주세요.';
+    }
+    if(joined.indexOf('duplicate_id') !== -1){
+      return '저장 중단: 중복된 id가 있습니다. 항목 내용을 확인해주세요.';
+    }
+    if(joined.indexOf('unexpected new id') !== -1){
+      return '저장 중단: 서비스 상세는 항목 추가/삭제를 지원하지 않습니다. 기존 항목만 수정해주세요.';
+    }
+    return '저장 중단: 데이터에 문제가 있어 저장할 수 없습니다. (' + errors.join(', ') + ')';
   }
 
   function getRenderer(type){
