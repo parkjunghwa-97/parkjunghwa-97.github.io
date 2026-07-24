@@ -296,6 +296,11 @@
   // PR-F1: 저장 전 무결성 검증(existing id 유지/개수 감소 방지)을 위해,
   // refreshRemoteContent()가 받아온 원격 배열도 함께 캐시해둡니다.
   let remoteContentByType = {};
+  // PR-F2: 타입별로 실제 배포 data/*.json을 마지막으로 정상 fetch했는지 기록합니다.
+  // 'ok' | 'failed' | undefined(아직 확인 전). localStorage 캐시를 화면에 보여주는
+  // 것과는 별개로, "지금 이 타입을 실제로 다시 불러올 수 있는가"를 추적해 저장
+  // 가능 여부를 판단하는 데 씁니다.
+  let remoteLoadStatusByType = {};
 
   document.addEventListener('DOMContentLoaded', function(){
     installUxChrome();
@@ -786,6 +791,15 @@
       }
       if(action === 'save-remote'){
         const saveType = button.dataset.type;
+        // PR-F2: 실제 배포 JSON을 로드하는 단계에서부터 실패가 확인된 타입은,
+        // sections/PR-F1 검증 이전에 먼저 저장을 차단합니다. localStorage 캐시
+        // 유무와 무관하게 "지금 이 타입을 실제로 다시 불러올 수 있는가"가 기준입니다.
+        if(remoteLoadStatusByType[saveType] === 'failed'){
+          const message = '저장 중단: 실제 JSON을 불러오지 못한 상태입니다. 실제 JSON 다시 불러오기를 먼저 실행해주세요.';
+          showToast(message);
+          setStatus(message);
+          return;
+        }
         if(saveType === 'sections'){
           const sectionErrors = validateSectionsForSave(cmsData.sections || []);
           if(sectionErrors.length){
@@ -863,6 +877,8 @@
     renderScreen(screen);
     renderSearchResults(getSearchQuery());
     document.getElementById('screenTitle').textContent = titles[screen] || '관리 화면';
+    // PR-F2: 메뉴를 이동할 때마다 원격 로드 실패 경고가 최신 상태로 보이는지 다시 확인합니다.
+    renderRemoteLoadWarning();
 
     if(saveTargetTypes.includes(screen)){
       // 화면에 보이는 편집 내용(cmsData[screen])은 건드리지 않고, 저장 시 충돌
@@ -877,6 +893,11 @@
       if(saved){
         try {
           cmsData = normalizeData(JSON.parse(saved));
+          // PR-F2: localStorage 캐시를 그대로 화면에 보여주더라도, 실제 배포
+          // data/*.json을 지금도 정상적으로 다시 불러올 수 있는지는 백그라운드로
+          // 확인합니다. 화면에 보이는 cmsData(캐시)는 절대 건드리지 않고
+          // remoteLoadStatusByType만 갱신하며, 실패한 타입은 저장이 차단됩니다.
+          verifyRemoteDataFiles();
           return;
         } catch(error) {
           localStorage.removeItem(DATA_KEY);
@@ -890,13 +911,71 @@
         if(!response.ok){
           throw new Error('Failed to load ' + dataFiles[key]);
         }
-        return [key, await response.json()];
+        const json = await response.json();
+        if(!Array.isArray(json)){
+          throw new Error('Unexpected response shape for ' + dataFiles[key]);
+        }
+        remoteLoadStatusByType[key] = 'ok';
+        return [key, json];
       } catch(error) {
+        // PR-F2: 실제 JSON을 불러오지 못했다는 사실을 기록합니다. fallbackData는
+        // 화면이 완전히 비어 보이지 않게 하기 위한 임시 표시값일 뿐, 저장 가능한
+        // 실제 데이터로 취급하지 않습니다(저장 버튼 클릭 시 차단됨).
+        remoteLoadStatusByType[key] = 'failed';
         return [key, clone(fallbackData[key])];
       }
     }));
     cmsData = normalizeData(Object.fromEntries(entries));
     persistData();
+    renderRemoteLoadWarning();
+  }
+
+  // PR-F2: localStorage 캐시로 화면을 이미 채운 뒤에도, 실제 배포 data/*.json을
+  // 백그라운드로 한 번 더 확인합니다. cmsData는 전혀 건드리지 않고
+  // remoteLoadStatusByType만 갱신해 저장 가능 여부와 상단 경고 배너에 반영합니다.
+  async function verifyRemoteDataFiles(){
+    const entries = await Promise.all(Object.keys(dataFiles).map(async function(key){
+      try {
+        const response = await fetch(dataFiles[key], { cache: 'no-store' });
+        if(!response.ok){
+          throw new Error('bad status');
+        }
+        const json = await response.json();
+        if(!Array.isArray(json)){
+          throw new Error('not array');
+        }
+        return [key, true];
+      } catch(error) {
+        return [key, false];
+      }
+    }));
+    entries.forEach(function(entry){
+      remoteLoadStatusByType[entry[0]] = entry[1] ? 'ok' : 'failed';
+    });
+    renderRemoteLoadWarning();
+  }
+
+  // PR-F2: 원격 로드 실패 타입이 하나라도 있으면 CMS 상단(모든 화면 공통 헤더)에
+  // 눈에 띄는 경고를 표시합니다. console.warn만으로 끝내지 않고 관리자가 화면에서
+  // 바로 볼 수 있게 합니다. 실패가 없으면(=전부 'ok') 배너를 숨깁니다.
+  function renderRemoteLoadWarning(){
+    const banner = document.getElementById('remoteLoadWarning');
+    if(!banner){
+      return;
+    }
+    const failedTypes = Object.keys(remoteLoadStatusByType).filter(function(key){
+      return remoteLoadStatusByType[key] === 'failed';
+    });
+    if(!failedTypes.length){
+      banner.classList.add('is-hidden');
+      banner.textContent = '';
+      banner.removeAttribute('style');
+      return;
+    }
+    const labels = failedTypes.map(function(key){ return titles[key] || key; });
+    banner.textContent = '일부 데이터가 실제 배포 JSON에서 불러와지지 않았습니다(' + labels.join(', ') + '). 이 상태에서는 저장하지 마세요. "JSON 관리" 화면의 "임시 데이터 초기화 / 실제 JSON 다시 불러오기"를 먼저 실행해주세요.';
+    banner.classList.remove('is-hidden');
+    banner.style.cssText = 'background:#7f1d1d;color:#fff;padding:12px 18px;font-weight:800;font-size:14px;line-height:1.6;border-radius:12px;margin:0 0 16px;';
   }
 
   function normalizeData(data){
