@@ -845,8 +845,8 @@
         renderScreen('settings');
         renderSearchResults(getSearchQuery());
         showScreen('settings');
-        showToast('샘플 데이터로 초기화됨');
-        setStatus('샘플 데이터로 초기화됨');
+        showToast('브라우저 임시저장을 지우고 실제 JSON을 다시 불러왔습니다.');
+        setStatus('브라우저 임시저장을 지우고 실제 JSON을 다시 불러왔습니다.');
       });
     });
 
@@ -973,7 +973,7 @@
       return;
     }
     const labels = failedTypes.map(function(key){ return titles[key] || key; });
-    banner.textContent = '일부 데이터가 실제 배포 JSON에서 불러와지지 않았습니다(' + labels.join(', ') + '). 이 상태에서는 저장하지 마세요. "JSON 관리" 화면의 "임시 데이터 초기화 / 실제 JSON 다시 불러오기"를 먼저 실행해주세요.';
+    banner.textContent = '일부 데이터가 실제 배포 JSON에서 불러와지지 않았습니다(' + labels.join(', ') + '). 이 상태에서는 저장하지 마세요. "JSON 관리" 화면의 "실제 JSON 다시 불러오기"를 먼저 실행해주세요.';
     banner.classList.remove('is-hidden');
     banner.style.cssText = 'background:#7f1d1d;color:#fff;padding:12px 18px;font-weight:800;font-size:14px;line-height:1.6;border-radius:12px;margin:0 0 16px;';
   }
