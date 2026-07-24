@@ -51,7 +51,7 @@
             <p class="eyebrow">관리 화면</p>
             <h2 id="screenTitle">작업사례 관리</h2>
           </div>
-          <div class="status-pill" id="loadStatus">샘플 데이터 준비 중</div>
+          <div class="status-pill" id="loadStatus">데이터 불러오는 중</div>
         </header>
 
         <div class="is-hidden" id="remoteLoadWarning" role="alert"></div>
@@ -68,7 +68,7 @@
           <div class="screen-toolbar">
             <p>작업사례는 image 필드 1개로 홈페이지 data/cases.json 구조에 맞춰 관리합니다.</p>
             <button type="button" data-action="new" data-type="cases">작업사례 추가</button>
-            <button type="button" class="secondary-btn" data-action="save-remote" data-type="cases">홈페이지에 저장하기</button>
+            <button type="button" class="secondary-btn" data-action="save-remote" data-type="cases" title="이 버튼은 현재 화면의 내용을 실제 홈페이지 JSON에 저장합니다.">홈페이지에 저장하기</button>
           </div>
           <div class="editor-panel is-hidden" id="casesEditor"></div>
           <div class="item-list" id="casesList"></div>
@@ -78,7 +78,7 @@
           <div class="screen-toolbar">
             <p>고객후기를 붙여넣고 서비스와 별점을 선택해 저장합니다.</p>
             <button type="button" data-action="new" data-type="reviews">후기 추가</button>
-            <button type="button" class="secondary-btn" data-action="save-remote" data-type="reviews">홈페이지에 저장하기</button>
+            <button type="button" class="secondary-btn" data-action="save-remote" data-type="reviews" title="이 버튼은 현재 화면의 내용을 실제 홈페이지 JSON에 저장합니다.">홈페이지에 저장하기</button>
           </div>
           <div class="editor-panel is-hidden" id="reviewsEditor"></div>
           <div class="item-list" id="reviewsList"></div>
@@ -88,7 +88,7 @@
           <div class="screen-toolbar">
             <p>가격 항목을 홈페이지 data/prices.json 구조에 맞춰 관리합니다.</p>
             <button type="button" data-action="new" data-type="prices">가격 항목 추가</button>
-            <button type="button" class="secondary-btn" data-action="save-remote" data-type="prices">홈페이지에 저장하기</button>
+            <button type="button" class="secondary-btn" data-action="save-remote" data-type="prices" title="이 버튼은 현재 화면의 내용을 실제 홈페이지 JSON에 저장합니다.">홈페이지에 저장하기</button>
           </div>
           <div class="editor-panel is-hidden" id="pricesEditor"></div>
           <div class="item-list" id="pricesList"></div>
@@ -98,7 +98,7 @@
           <div class="screen-toolbar">
             <p>FAQ 질문과 답변을 홈페이지 data/faq.json 구조로 관리합니다.</p>
             <button type="button" data-action="new" data-type="faq">질문 추가</button>
-            <button type="button" class="secondary-btn" data-action="save-remote" data-type="faq">홈페이지에 저장하기</button>
+            <button type="button" class="secondary-btn" data-action="save-remote" data-type="faq" title="이 버튼은 현재 화면의 내용을 실제 홈페이지 JSON에 저장합니다.">홈페이지에 저장하기</button>
           </div>
           <div class="editor-panel is-hidden" id="faqEditor"></div>
           <div class="item-list" id="faqList"></div>
@@ -108,7 +108,7 @@
           <div class="screen-toolbar">
             <p>공지 데이터를 홈페이지 data/notices.json 구조로 관리합니다.</p>
             <button type="button" data-action="new" data-type="notices">공지 추가</button>
-            <button type="button" class="secondary-btn" data-action="save-remote" data-type="notices">홈페이지에 저장하기</button>
+            <button type="button" class="secondary-btn" data-action="save-remote" data-type="notices" title="이 버튼은 현재 화면의 내용을 실제 홈페이지 JSON에 저장합니다.">홈페이지에 저장하기</button>
           </div>
           <div class="editor-panel is-hidden" id="noticesEditor"></div>
           <div class="item-list" id="noticesList"></div>
@@ -118,7 +118,7 @@
           <div class="screen-toolbar">
             <p>메인배너 데이터를 홈페이지 data/banners.json 구조로 관리합니다.</p>
             <button type="button" data-action="new" data-type="banners">배너 추가</button>
-            <button type="button" class="secondary-btn" data-action="save-remote" data-type="banners">홈페이지에 저장하기</button>
+            <button type="button" class="secondary-btn" data-action="save-remote" data-type="banners" title="이 버튼은 현재 화면의 내용을 실제 홈페이지 JSON에 저장합니다.">홈페이지에 저장하기</button>
           </div>
           <div class="editor-panel is-hidden" id="bannersEditor"></div>
           <div class="item-list" id="bannersList"></div>
@@ -127,7 +127,7 @@
         <section class="screen" id="screen-services" data-type="services">
           <div class="screen-toolbar">
             <p>서비스 상세 12개 항목을 홈페이지 data/services.json 구조로 관리합니다. 항목을 펼쳐 내용을 수정한 뒤 저장하세요. 서비스 항목 추가/삭제는 지원하지 않습니다.</p>
-            <button type="button" class="secondary-btn" data-action="save-remote" data-type="services">홈페이지에 저장하기</button>
+            <button type="button" class="secondary-btn" data-action="save-remote" data-type="services" title="이 버튼은 현재 화면의 내용을 실제 홈페이지 JSON에 저장합니다.">홈페이지에 저장하기</button>
           </div>
           <div class="services-accordion" id="servicesAccordion"></div>
         </section>
@@ -143,7 +143,7 @@
             </div>
             <p>체크박스를 변경한 뒤 아래 버튼을 눌러 홈페이지에 저장하세요. 섹션 추가/삭제, 순서 변경은 이 화면에서 지원하지 않습니다.</p>
             <div class="settings-actions">
-              <button type="button" class="secondary-btn" data-action="save-remote" data-type="sections">홈페이지에 저장하기</button>
+              <button type="button" class="secondary-btn" data-action="save-remote" data-type="sections" title="이 버튼은 현재 화면의 내용을 실제 홈페이지 JSON에 저장합니다.">홈페이지에 저장하기</button>
             </div>
           </div>
           <div class="item-list" id="sectionsList"></div>
@@ -159,9 +159,9 @@
                 <h3>임시 데이터 초기화</h3>
                 <span>브라우저에 남은 이전 데이터 정리</span>
               </div>
-              <p>이 브라우저에 저장된 임시 편집 데이터(localStorage)를 지우고, 실제 배포된 <code>data/*.json</code> 파일을 다시 불러옵니다. 로그인은 유지됩니다.</p>
+              <p>현재 브라우저에 남아 있는 임시 저장본을 지우고, 배포된 <code>data/*.json</code> 파일을 다시 불러옵니다. 실제 홈페이지 데이터는 이 버튼만으로 변경되지 않습니다. 로그인은 유지됩니다.</p>
               <div class="settings-actions">
-                <button type="button" data-action="reload-live-json">임시 데이터 초기화 / 실제 JSON 다시 불러오기</button>
+                <button type="button" data-action="reload-live-json">실제 JSON 다시 불러오기</button>
               </div>
               <div class="json-result" id="liveReloadResult" aria-live="polite"></div>
             </article>
@@ -243,7 +243,7 @@
                 <span>localStorage 기반 임시 저장</span>
               </div>
               <div class="settings-actions">
-                <button type="button" id="resetDataButton">샘플 데이터로 초기화</button>
+                <button type="button" id="resetDataButton">브라우저 임시저장 삭제 후 실제 JSON 다시 불러오기</button>
                 <button class="secondary-btn" type="button" id="exportDataButton">전체 백업 JSON</button>
               </div>
               <div class="item-list" id="settingsList"></div>
