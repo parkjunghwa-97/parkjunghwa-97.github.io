@@ -239,6 +239,17 @@
           <div class="settings-grid">
             <article class="list-card">
               <div class="section-heading">
+                <h3>사업자 기본정보</h3>
+                <span>data/settings.json 연동</span>
+              </div>
+              <p>브랜드명, 상호, 연락처, 주소 등 홈페이지 기본정보를 관리합니다. 저장하면 실제 data/settings.json에 반영됩니다. 홈페이지 화면과 개인정보처리방침에는 아직 자동 반영되지 않습니다.</p>
+              <div class="editor-grid" id="settingsList"></div>
+              <div class="settings-actions">
+                <button type="button" class="secondary-btn" data-action="save-remote" data-type="settings" title="이 버튼은 사업자 기본정보를 실제 data/settings.json에 저장합니다.">홈페이지 데이터에 저장하기</button>
+              </div>
+            </article>
+            <article class="list-card">
+              <div class="section-heading">
                 <h3>CMS 설정</h3>
                 <span>localStorage 기반 임시 저장</span>
               </div>
@@ -246,7 +257,6 @@
                 <button type="button" id="resetDataButton">브라우저 임시저장 삭제 후 실제 JSON 다시 불러오기</button>
                 <button class="secondary-btn" type="button" id="exportDataButton">전체 백업 JSON</button>
               </div>
-              <div class="item-list" id="settingsList"></div>
             </article>
             <article class="list-card">
               <div class="section-heading">
@@ -260,6 +270,7 @@
                 <li>data/faq.json</li>
                 <li>data/notices.json</li>
                 <li>data/banners.json</li>
+                <li>data/settings.json</li>
               </ul>
             </article>
           </div>
