@@ -1236,3 +1236,63 @@
 
   onReady(initReviewsJson);
 })();
+
+/* SETTINGS_JSON_INTEGRATION */
+(function(){
+  var SETTINGS_ENDPOINT='/data/settings.json';
+
+  function onReady(fn){
+    if(document.readyState==='loading'){
+      document.addEventListener('DOMContentLoaded',fn);
+    }else{
+      fn();
+    }
+  }
+
+  function getSettingValue(settings,dotPath){
+    return dotPath.split('.').reduce(function(acc,key){
+      return (acc && typeof acc === 'object') ? acc[key] : undefined;
+    },settings);
+  }
+
+  // settings 값이 문자열이고 비어 있지 않을 때만 반영합니다. 필드가 없거나
+  // 빈 값/잘못된 타입이면 해당 요소는 건드리지 않고 기존 하드코딩 값을
+  // 그대로 유지합니다(fail-open, 요구사항 10번).
+  function applySettingsToHomepage(settings){
+    document.querySelectorAll('[data-setting]').forEach(function(el){
+      var path=el.getAttribute('data-setting');
+      var value=getSettingValue(settings,path);
+      if(typeof value==='string' && value.trim()!==''){
+        el.textContent=value;
+      }
+    });
+    document.querySelectorAll('[data-setting-href]').forEach(function(el){
+      var path=el.getAttribute('data-setting-href');
+      var value=getSettingValue(settings,path);
+      if(typeof value==='string' && value.trim()!==''){
+        el.setAttribute('href',value);
+      }
+    });
+  }
+
+  function initHomepageSettings(){
+    if(!window.fetch){return;}
+
+    window.fetch(SETTINGS_ENDPOINT,{cache:'no-store'})
+      .then(function(response){
+        if(!response.ok){throw new Error('settings json failed');}
+        return response.json();
+      })
+      .then(function(data){
+        if(data && typeof data==='object' && !Array.isArray(data)){
+          applySettingsToHomepage(data);
+        }
+      })
+      .catch(function(){
+        // fail-open: fetch 실패/JSON 오류 시 콘솔 에러 없이 조용히 무시하고
+        // index.html에 이미 있는 하드코딩 값을 그대로 유지합니다.
+      });
+  }
+
+  onReady(initHomepageSettings);
+})();
