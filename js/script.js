@@ -1255,6 +1255,21 @@
     },settings);
   }
 
+  // PR-H2b: data-setting-src(로고 등 이미지 경로) 전용 안전성 검사입니다. 상대경로,
+  // http(s) 절대경로, data:image/* URI는 허용하고, javascript:/vbscript: 스킴이나
+  // data:text/html처럼 스크립트를 실행시킬 수 있는 값은 반영하지 않습니다.
+  function isSafeImageSrc(value){
+    var trimmed=value.trim();
+    var lower=trimmed.toLowerCase();
+    if(lower.indexOf('javascript:')===0 || lower.indexOf('vbscript:')===0){
+      return false;
+    }
+    if(lower.indexOf('data:')===0 && lower.indexOf('data:image/')!==0){
+      return false;
+    }
+    return true;
+  }
+
   // settings 값이 문자열이고 비어 있지 않을 때만 반영합니다. 필드가 없거나
   // 빈 값/잘못된 타입이면 해당 요소는 건드리지 않고 기존 하드코딩 값을
   // 그대로 유지합니다(fail-open, 요구사항 10번).
@@ -1271,6 +1286,13 @@
       var value=getSettingValue(settings,path);
       if(typeof value==='string' && value.trim()!==''){
         el.setAttribute('href',value);
+      }
+    });
+    document.querySelectorAll('[data-setting-src]').forEach(function(el){
+      var path=el.getAttribute('data-setting-src');
+      var value=getSettingValue(settings,path);
+      if(typeof value==='string' && value.trim()!=='' && isSafeImageSrc(value)){
+        el.setAttribute('src',value);
       }
     });
   }
