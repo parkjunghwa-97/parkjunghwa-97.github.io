@@ -19,6 +19,13 @@
 //        공통 저장 무결성 검증(validateArrayIntegrity)을 추가. 기존 id 소실/개수
 //        감소/빈 배열 저장을 거부하며, services는 id set이 기존과 정확히 일치해야
 //        합니다(추가/삭제 불가). "삭제 저장"은 이번 PR에서 허용하지 않습니다.
+// PR-H1a: SAVE_WHITELIST/handleSave에 settings(data/settings.json) 저장을 준비합니다.
+//         settings는 배열이 아니라 단일 객체(business-settings-v1 스키마)라서
+//         validatePayload/validateArrayIntegrity(둘 다 배열 전제)를 그대로 쓸 수
+//         없으므로, 전용 validateSettingsPayload()를 추가하고 INTEGRITY_GUARDED_TYPES/
+//         FIXED_ID_SET_TYPES에는 넣지 않습니다. CMS 화면(cms/js/cms.js)은 아직
+//         settings를 saveTargetTypes에 연결하지 않았으므로, 이 PR만으로는 실제 저장
+//         경로가 열리지 않습니다(화면 연결은 PR-H1b에서 진행).
 //
 // 필요한 Secret (코드에는 절대 값을 넣지 않고 아래 명령으로 등록):
 //   wrangler secret put ADMIN_PIN
@@ -33,7 +40,8 @@
 
 const SESSION_TTL_SECONDS = 60 * 60 * 2; // 세션 토큰 유효 시간: 2시간
 
-// 저장 가능한 데이터 타입 whitelist. PR-D1a 기준 8개 타입 전체를 허용합니다.
+// 저장 가능한 데이터 타입 whitelist. PR-H1a 기준 9개 타입을 허용합니다(settings는
+// 서버 저장 준비만 된 상태이며, CMS 화면 연결은 PR-H1b에서 진행합니다).
 const SAVE_WHITELIST = {
   banners: 'data/banners.json',
   cases: 'data/cases.json',
@@ -43,6 +51,7 @@ const SAVE_WHITELIST = {
   notices: 'data/notices.json',
   services: 'data/services.json',
   sections: 'data/sections.json',
+  settings: 'data/settings.json',
 };
 
 // 타입별 필수 필드 규칙 (cms/js/cms.js의 typeConfig.required와 동일하게 유지)
@@ -61,6 +70,23 @@ const TYPE_VALIDATION_RULES = {
   services: { required: ['service', 'summary', 'description'] },
   sections: { required: ['id', 'name'] },
 };
+
+// settings(data/settings.json) 전용 필수 필드 목록(PR-H1a). TYPE_VALIDATION_RULES는
+// validatePayload()가 "배열의 각 원소 객체"를 검사하는 것을 전제로 하지만, settings는
+// 배열이 아니라 단일 중첩 객체(business-settings-v1)라 같은 틀에 넣을 수 없습니다.
+// 그래서 점(.) 경로로 표기한 별도 목록을 두고 validateSettingsPayload()에서
+// 직접 사용합니다.
+const SETTINGS_REQUIRED_STRING_FIELDS = [
+  'schemaVersion',
+  'brand.name',
+  'brand.legalName',
+  'brand.representative',
+  'contact.phone',
+  'contact.telLink',
+  'site.customerSite',
+  'site.adminPath',
+];
+const SETTINGS_REQUIRED_OBJECT_FIELDS = ['brand', 'contact', 'address', 'assets', 'site'];
 
 // sections는 홈페이지 nav의 고정된 9개 섹션과 1:1로 매칭되는 데이터라, 다른 타입과
 // 달리 개수/전체 id 목록/타입까지 엄격하게 검증합니다(PR-D1c). 2026-07-22 CMS에서
@@ -171,7 +197,9 @@ async function handleSave(request, env, corsHeaders) {
 
   const validationErrors = type === 'sections'
     ? validateSectionsPayload(body.payload)
-    : validatePayload(type, body.payload);
+    : type === 'settings'
+      ? validateSettingsPayload(body.payload)
+      : validatePayload(type, body.payload);
   if (validationErrors.length) {
     return jsonResponse({ error: 'invalid_payload', details: validationErrors }, 400, corsHeaders);
   }
@@ -364,6 +392,42 @@ function validateSectionsPayload(payload) {
   return errors;
 }
 
+// settings(data/settings.json) 전용 검증(PR-H1a). payload가 배열이 아니라 단일
+// 객체라는 점이 다른 8개 타입과의 근본적인 차이입니다. brand/contact/address/
+// assets/site가 모두 객체로 존재하는지, 그리고 화면에서 곧바로 쓰일 수 있는 최소
+// 필수 문자열 필드(SETTINGS_REQUIRED_STRING_FIELDS)가 채워져 있는지 점(.) 경로로
+// 확인합니다. address/assets 내부의 세부 필드(region/street, logo/ogImage 등)까지는
+// 이번 PR에서 강제하지 않습니다 - CMS 화면 설계(PR-H1b)에 맞춰 이후 조정합니다.
+function validateSettingsPayload(payload) {
+  const errors = [];
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    errors.push('payload는 객체여야 합니다.');
+    return errors;
+  }
+
+  SETTINGS_REQUIRED_OBJECT_FIELDS.forEach(function (key) {
+    const value = payload[key];
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      errors.push('필수 객체 필드 누락 또는 잘못된 타입 - ' + key);
+    }
+  });
+
+  SETTINGS_REQUIRED_STRING_FIELDS.forEach(function (fieldPath) {
+    const value = getNestedValue(payload, fieldPath);
+    if (typeof value !== 'string' || value.trim() === '') {
+      errors.push('필수 필드 누락 - ' + fieldPath);
+    }
+  });
+
+  return errors;
+}
+
+function getNestedValue(obj, dotPath) {
+  return dotPath.split('.').reduce(function (acc, key) {
+    return (acc && typeof acc === 'object') ? acc[key] : undefined;
+  }, obj);
+}
+
 function getItemIds(items) {
   return (Array.isArray(items) ? items : [])
     .filter(function (item) { return item && typeof item === 'object' && typeof item.id === 'string' && item.id.trim() !== ''; })
@@ -447,28 +511,52 @@ function validateArrayIntegrity(type, payload, currentContent) {
 // commit 이전에 걸러내기 위한 방어 로직입니다. 가능하면 어느 index/field에서
 // 발견됐는지 details에 담고, 개별 필드로 특정하지 못하는 경우 payload 전체를
 // 대상으로 한 번 더 확인합니다.
+// PR-H1a: settings처럼 배열이 아닌 단일 중첩 객체 payload도 검사할 수 있게 객체
+// 분기를 추가했습니다. 기존 배열 타입(banners~sections)의 동작/메시지 형식은
+// 그대로 유지됩니다 - 배열 분기 로직은 한 글자도 바꾸지 않았습니다.
 function findEncodingIssues(payload) {
   const issues = [];
-  if (!Array.isArray(payload)) {
-    return issues;
-  }
 
-  payload.forEach(function (item, index) {
-    if (!item || typeof item !== 'object' || Array.isArray(item)) {
-      return;
-    }
-    Object.keys(item).forEach(function (field) {
-      const value = item[field];
-      if (typeof value === 'string' && value.indexOf('�') !== -1) {
-        issues.push('index ' + index + ': ' + field + ' 필드에 손상된 문자(�) 포함');
+  if (Array.isArray(payload)) {
+    payload.forEach(function (item, index) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) {
+        return;
       }
+      Object.keys(item).forEach(function (field) {
+        const value = item[field];
+        if (typeof value === 'string' && value.indexOf('�') !== -1) {
+          issues.push('index ' + index + ': ' + field + ' 필드에 손상된 문자(�) 포함');
+        }
+      });
     });
-  });
+  } else if (payload && typeof payload === 'object') {
+    collectEncodingIssuesFromObject(payload, '').forEach(function (issue) {
+      issues.push(issue);
+    });
+  }
 
   if (!issues.length && JSON.stringify(payload).indexOf('�') !== -1) {
     issues.push('payload 전체에서 손상된 문자(�)가 감지되었습니다.');
   }
 
+  return issues;
+}
+
+// findEncodingIssues()의 객체 전용 보조 함수(PR-H1a). settings처럼 중첩된 객체
+// 구조를 점(.) 경로로 재귀 탐색하며 문자열 필드에서 U+FFFD를 찾습니다.
+function collectEncodingIssuesFromObject(obj, prefix) {
+  const issues = [];
+  Object.keys(obj).forEach(function (key) {
+    const value = obj[key];
+    const label = prefix ? prefix + '.' + key : key;
+    if (typeof value === 'string') {
+      if (value.indexOf('�') !== -1) {
+        issues.push(label + ' 필드에 손상된 문자(�) 포함');
+      }
+    } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+      issues.push.apply(issues, collectEncodingIssuesFromObject(value, label));
+    }
+  });
   return issues;
 }
 
