@@ -1,13 +1,36 @@
 {
-  "cmsVersion": "1.6",
-  "initialPin": "231204",
-  "dataMode": "localStorage",
-  "customerSite": "https://xn--vk1by2k4ygtjy88bcjm.kr/",
-  "adminPath": "/cms/",
-  "futureAdminDomain": "cms.xn--vk1by2k4ygtjy88bcjm.kr",
-  "nextStep": "V2 GitHub 자동 커밋/배포 및 고객 홈페이지 JSON 연동",
-  "lockPolicy": {
-    "maxAttempts": 5,
-    "lockMinutes": 10
+  "schemaVersion": "business-settings-v1",
+  "brand": {
+    "name": "기프트클린",
+    "legalName": "기프트클린 대한청소만세",
+    "representative": "박정화",
+    "businessNumber": "825-04-03699"
+  },
+  "contact": {
+    "phone": "010-4122-9207",
+    "telLink": "tel:010-4122-9207",
+    "kakaoUrl": "https://pf.kakao.com/_lxhwGX",
+    "blogUrl": "https://m.blog.naver.com/krcleangod?tab=1",
+    "instagramUrl": "https://www.instagram.com/gift.clean"
+  },
+  "address": {
+    "region": "인천광역시 부평구",
+    "street": "부영로 165",
+    "display": "인천광역시 부평구 부영로 165",
+    "country": "KR"
+  },
+  "assets": {
+    "logo": "logo.png?v=20260708a",
+    "ogImage": "logo.png?v=20260708a"
+  },
+  "site": {
+    "customerSite": "https://xn--vk1by2k4ygtjy88bcjm.kr/",
+    "adminPath": "/cms/",
+    "footerNotice": "24시간 상담 접수 · 전국 출장 서비스 · 별도 출장비 없음",
+    "consultationNotice": "문의 내용을 바탕으로 현장 상태를 확인해 작업 범위와 비용을 안내합니다."
+  },
+  "notes": {
+    "status": "reserved_for_pr_h1",
+    "message": "이 파일은 PR-H1 이후 사업자 기본정보 CMS 연동에 사용할 예정입니다. 현재 홈페이지와 CMS 화면에는 아직 자동 반영되지 않습니다."
   }
 }
