@@ -29,6 +29,43 @@
   // services는 현재 12개 고정 서비스 상세로 운영 중이라, 추가/삭제 없이 기존
   // id set과 정확히 일치해야만 저장을 허용합니다.
   const FIXED_ID_SET_TYPES = ['services'];
+  // PR-H1b: settings(data/settings.json)는 배열이 아니라 단일 객체라 위 8개 타입의
+  // contentTypes/saveTargetTypes/typeConfig 흐름(전부 배열 전제)에는 넣지 않고,
+  // 화면 렌더링(renderSettings)/저장 클릭 검증(validateSettingsForSave)에서
+  // 별도로 처리합니다. Worker의 SETTINGS_REQUIRED_STRING_FIELDS/
+  // SETTINGS_REQUIRED_OBJECT_FIELDS와 동일한 규칙입니다.
+  const SETTINGS_REQUIRED_STRING_FIELDS = [
+    'schemaVersion',
+    'brand.name',
+    'brand.legalName',
+    'brand.representative',
+    'contact.phone',
+    'contact.telLink',
+    'site.customerSite',
+    'site.adminPath'
+  ];
+  const SETTINGS_REQUIRED_OBJECT_FIELDS = ['brand', 'contact', 'address', 'assets', 'site'];
+  // 설정 화면에서 실제로 편집 가능하게 노출하는 필드 목록입니다. address.country,
+  // assets.*, notes.*처럼 목록에 없는 필드는 편집 UI에는 없지만, 저장 시 payload에서
+  // 제거되지 않고 그대로 유지됩니다(normalizeSettingsData가 기존 값을 보존).
+  const SETTINGS_FORM_FIELDS = [
+    { path: 'brand.name', label: '브랜드명' },
+    { path: 'brand.legalName', label: '법적 상호(사업자명)' },
+    { path: 'brand.representative', label: '대표자' },
+    { path: 'brand.businessNumber', label: '사업자등록번호' },
+    { path: 'contact.phone', label: '전화번호' },
+    { path: 'contact.telLink', label: '전화 링크(tel:)' },
+    { path: 'contact.kakaoUrl', label: '카카오톡 링크' },
+    { path: 'contact.blogUrl', label: '블로그 링크' },
+    { path: 'contact.instagramUrl', label: '인스타그램 링크' },
+    { path: 'address.region', label: '지역' },
+    { path: 'address.street', label: '상세 주소' },
+    { path: 'address.display', label: '주소 표시용 전체 문구' },
+    { path: 'site.customerSite', label: '고객 홈페이지 주소' },
+    { path: 'site.adminPath', label: '관리자 화면 경로' },
+    { path: 'site.footerNotice', label: '푸터 안내 문구', full: true },
+    { path: 'site.consultationNotice', label: '상담 안내 문구', full: true }
+  ];
   const typeConfig = {
     reviews: {
       file: 'reviews.json',
@@ -237,13 +274,45 @@
     sections: [
       { id: 'home', name: '홈', visible: true, sort: 1 }
     ],
+    // PR-H1b: data/settings.json이 business-settings-v1 구조로 정리된 뒤(PR-H0.1)의
+    // 실제 값과 동일한 모양을 fallback으로 둡니다. 이 값은 네트워크 오류 등 예외
+    // 상황에서만 쓰이는 placeholder이며, 화면에 보이더라도 저장 전 항상 실제
+    // data/settings.json을 다시 불러오려고 시도합니다.
     settings: {
-      cmsVersion: '1.7',
-      initialPin: '231204',
-      dataMode: 'localStorage',
-      customerSite: 'https://xn--vk1by2k4ygtjy88bcjm.kr/',
-      adminPath: '/cms/',
-      nextStep: 'V2 GitHub 자동 커밋/배포 연결'
+      schemaVersion: 'business-settings-v1',
+      brand: {
+        name: '기프트클린',
+        legalName: '특수청소',
+        representative: '박정화',
+        businessNumber: '825-04-03699'
+      },
+      contact: {
+        phone: '010-4122-9207',
+        telLink: 'tel:010-4122-9207',
+        kakaoUrl: 'https://pf.kakao.com/_lxhwGX',
+        blogUrl: 'https://m.blog.naver.com/krcleangod?tab=1',
+        instagramUrl: 'https://www.instagram.com/gift.clean'
+      },
+      address: {
+        region: '인천광역시 부평구',
+        street: '부영로 165',
+        display: '인천광역시 부평구 부영로 165',
+        country: 'KR'
+      },
+      assets: {
+        logo: 'logo.png?v=20260708a',
+        ogImage: 'logo.png?v=20260708a'
+      },
+      site: {
+        customerSite: 'https://xn--vk1by2k4ygtjy88bcjm.kr/',
+        adminPath: '/cms/',
+        footerNotice: '24시간 상담 접수 · 전국 출장 서비스 · 별도 출장비 없음',
+        consultationNotice: '문의 내용을 바탕으로 현장 상태를 확인해 작업 범위와 비용을 안내합니다.'
+      },
+      notes: {
+        status: 'reserved_for_pr_h1',
+        message: '이 파일은 PR-H1 이후 사업자 기본정보 CMS 연동에 사용할 예정입니다.'
+      }
     }
   };
 
@@ -255,7 +324,11 @@
     notices: '../data/notices.json',
     banners: '../data/banners.json',
     services: '../data/services.json',
-    sections: '../data/sections.json'
+    sections: '../data/sections.json',
+    // PR-H1b: settings(data/settings.json)는 배열이 아니라 단일 객체라, 이 목록에
+    // 함께 있어도 loadData()/verifyRemoteDataFiles()에서 'settings'만 별도로
+    // 분기해 객체 형태를 검사합니다(다른 8개 타입의 배열 검사는 그대로 유지).
+    settings: '../data/settings.json'
   };
 
   const titles = {
@@ -301,6 +374,9 @@
   // 것과는 별개로, "지금 이 타입을 실제로 다시 불러올 수 있는가"를 추적해 저장
   // 가능 여부를 판단하는 데 씁니다.
   let remoteLoadStatusByType = {};
+  // PR-H1b: 설정 화면 입력 필드가 바뀔 때마다 즉시 persistData()를 호출하지 않고
+  // sections와 동일한 debounce 패턴으로 묶어서 저장합니다.
+  let settingsDraftTimer = 0;
 
   document.addEventListener('DOMContentLoaded', function(){
     installUxChrome();
@@ -808,6 +884,17 @@
             setStatus(message);
             return;
           }
+        }else if(saveType === 'settings'){
+          // PR-H1b: settings는 배열이 아니라 단일 객체라 sections/INTEGRITY_GUARDED_TYPES
+          // 어느 쪽 검증도 맞지 않아 Worker의 validateSettingsPayload()와 동일한 규칙을
+          // 프론트에서 미리 적용합니다.
+          const settingsErrors = validateSettingsForSave(cmsData.settings);
+          if(settingsErrors.length){
+            const message = '사업자 기본정보에 문제가 있어 저장할 수 없습니다: ' + settingsErrors.join(' / ');
+            showToast(message);
+            setStatus(message);
+            return;
+          }
         }else if(INTEGRITY_GUARDED_TYPES.indexOf(saveType) !== -1){
           // PR-F1: 원격 최신 데이터를 다시 확보해 비교합니다(saveTypeToRemote() 내부에서도
           // 저장 직전 한 번 더 갱신하지만, 여기서는 비교용 currentContent가 필요합니다).
@@ -880,11 +967,23 @@
     // PR-F2: 메뉴를 이동할 때마다 원격 로드 실패 경고가 최신 상태로 보이는지 다시 확인합니다.
     renderRemoteLoadWarning();
 
-    if(saveTargetTypes.includes(screen)){
+    // PR-H1b: settings는 saveTargetTypes(배열 전용 흐름)에는 넣지 않았지만, 저장
+    // 버튼이 동작하려면 다른 8개 타입과 동일하게 화면 진입 시 최신 sha를 미리
+    // 확보해둬야 합니다.
+    if(saveTargetTypes.includes(screen) || screen === 'settings'){
       // 화면에 보이는 편집 내용(cmsData[screen])은 건드리지 않고, 저장 시 충돌
       // 비교에 쓸 최신 sha만 백그라운드로 미리 확보해둡니다.
       refreshRemoteContent(screen);
     }
+  }
+
+  // PR-H1b: loadData()/verifyRemoteDataFiles()가 fetch한 JSON의 기대 형태를 타입별로
+  // 확인합니다. settings만 단일 객체이고, 나머지 8개 타입은 그대로 배열이어야 합니다.
+  function isExpectedDataShape(key, json){
+    if(key === 'settings'){
+      return !!json && typeof json === 'object' && !Array.isArray(json);
+    }
+    return Array.isArray(json);
   }
 
   async function loadData(options){
@@ -912,7 +1011,7 @@
           throw new Error('Failed to load ' + dataFiles[key]);
         }
         const json = await response.json();
-        if(!Array.isArray(json)){
+        if(!isExpectedDataShape(key, json)){
           throw new Error('Unexpected response shape for ' + dataFiles[key]);
         }
         remoteLoadStatusByType[key] = 'ok';
@@ -941,7 +1040,7 @@
           throw new Error('bad status');
         }
         const json = await response.json();
-        if(!Array.isArray(json)){
+        if(!isExpectedDataShape(key, json)){
           throw new Error('not array');
         }
         return [key, true];
@@ -987,12 +1086,28 @@
       source.banners = Array.isArray(source.banner) ? source.banner : [source.banner];
     }
 
-    const normalized = { settings: Object.assign({}, fallbackData.settings, source.settings || {}, { cmsVersion: '1.7', dataMode: 'localStorage' }) };
+    const normalized = { settings: normalizeSettingsData(source.settings) };
     contentTypes.forEach(function(type){
       const list = Array.isArray(source[type]) ? source[type] : fallbackData[type];
       normalized[type] = normalizeTypeItems(type, list);
     });
     return normalized;
+  }
+
+  // PR-H1b: settings는 배열이 아닌 중첩 객체라 normalizeTypeItems()를 쓸 수 없습니다.
+  // fallbackData.settings를 기본 뼈대로 두고 실제 로드/가져오기 값을 최상위 및
+  // brand/contact/address/assets/site/notes 각 객체 단위로 얕게 병합합니다. 예전
+  // V1 CMS 시절처럼 cmsVersion/dataMode 같은 내부 메타값을 강제로 덮어쓰지 않습니다.
+  function normalizeSettingsData(source){
+    const base = fallbackData.settings;
+    const validSource = source && typeof source === 'object' && !Array.isArray(source) ? source : {};
+    const merged = Object.assign({}, base, validSource);
+    ['brand', 'contact', 'address', 'assets', 'site', 'notes'].forEach(function(key){
+      const sourceValue = validSource[key];
+      const sourceObject = sourceValue && typeof sourceValue === 'object' && !Array.isArray(sourceValue) ? sourceValue : {};
+      merged[key] = Object.assign({}, base[key], sourceObject);
+    });
+    return merged;
   }
 
   function normalizeTypeItems(type, items){
@@ -1817,6 +1932,53 @@
     return errors;
   }
 
+  // PR-H1b: settings(data/settings.json) 전용 저장 전 검증. Worker의
+  // validateSettingsPayload()와 동일한 규칙(객체 여부/필수 객체 필드/필수 문자열
+  // 필드)을 프론트에서 먼저 적용해, 명백히 잘못된 payload는 네트워크 요청 자체를
+  // 보내지 않고 저장 버튼 클릭 단계에서 막습니다.
+  function validateSettingsForSave(payload){
+    const errors = [];
+    if(!payload || typeof payload !== 'object' || Array.isArray(payload)){
+      errors.push('payload는 객체여야 합니다.');
+      return errors;
+    }
+
+    SETTINGS_REQUIRED_OBJECT_FIELDS.forEach(function(key){
+      const value = payload[key];
+      if(!value || typeof value !== 'object' || Array.isArray(value)){
+        errors.push('필수 객체 필드 누락 또는 잘못된 타입 - ' + key);
+      }
+    });
+
+    SETTINGS_REQUIRED_STRING_FIELDS.forEach(function(fieldPath){
+      const value = getSettingsFieldValue(payload, fieldPath);
+      if(typeof value !== 'string' || value.trim() === ''){
+        errors.push('필수 필드 누락 - ' + fieldPath);
+      }
+    });
+
+    return errors;
+  }
+
+  function getSettingsFieldValue(source, dotPath){
+    return dotPath.split('.').reduce(function(acc, key){
+      return (acc && typeof acc === 'object') ? acc[key] : undefined;
+    }, source);
+  }
+
+  function setSettingsFieldValue(target, dotPath, value){
+    const keys = dotPath.split('.');
+    let node = target;
+    for(let i = 0; i < keys.length - 1; i += 1){
+      const key = keys[i];
+      if(!node[key] || typeof node[key] !== 'object' || Array.isArray(node[key])){
+        node[key] = {};
+      }
+      node = node[key];
+    }
+    node[keys[keys.length - 1]] = value;
+  }
+
   // PR-F1: sections 외 7개 타입(banners/cases/reviews/prices/faq/notices/services)
   // 공통 저장 무결성 검증입니다. Worker의 validateArrayIntegrity()와 동일한 규칙을
   // 프론트에서 먼저 적용해, 명백히 잘못된 payload(빈 배열/기존 항목 소실/개수 감소)는
@@ -2217,21 +2379,51 @@
     return article;
   }
 
+  // PR-H1b: 설정 화면을 읽기 전용 key/value 나열에서 실제 편집 폼으로 바꿉니다.
+  // cmsData.settings가 아직 없으면(로드 실패 등) fallbackData.settings를 채워
+  // 넣어 폼이 빈 값으로 시작하지 않게 합니다. 입력값은 input 이벤트마다 바로
+  // cmsData.settings에 반영되고(sections와 동일한 debounce 저장 패턴), 저장
+  // 버튼을 눌러야만 실제 data/settings.json에 반영됩니다.
   function renderSettings(){
-    const list = document.getElementById('settingsList');
-    const settings = cmsData.settings || fallbackData.settings;
-    list.innerHTML = '';
-    Object.keys(settings).forEach(function(key){
-      const article = document.createElement('article');
-      article.className = 'data-item';
-      const strong = document.createElement('strong');
-      strong.textContent = key;
-      const paragraph = document.createElement('p');
-      paragraph.textContent = typeof settings[key] === 'object' ? JSON.stringify(settings[key]) : String(settings[key]);
-      article.appendChild(strong);
-      article.appendChild(paragraph);
-      list.appendChild(article);
+    const container = document.getElementById('settingsList');
+    if(!container){
+      return;
+    }
+    if(!cmsData.settings || typeof cmsData.settings !== 'object' || Array.isArray(cmsData.settings)){
+      cmsData.settings = clone(fallbackData.settings);
+    }
+    const settings = cmsData.settings;
+
+    container.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+    SETTINGS_FORM_FIELDS.forEach(function(field){
+      const label = document.createElement('label');
+      if(field.full){
+        label.className = 'full';
+      }
+      label.appendChild(document.createTextNode(field.label));
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.dataset.settingsField = field.path;
+      input.value = getSettingsFieldValue(settings, field.path) || '';
+      input.addEventListener('input', function(){
+        updateSettingsField(field.path, input.value);
+      });
+
+      label.appendChild(input);
+      fragment.appendChild(label);
     });
+    container.appendChild(fragment);
+  }
+
+  function updateSettingsField(path, value){
+    if(!cmsData.settings || typeof cmsData.settings !== 'object' || Array.isArray(cmsData.settings)){
+      cmsData.settings = clone(fallbackData.settings);
+    }
+    setSettingsFieldValue(cmsData.settings, path, value);
+    clearTimeout(settingsDraftTimer);
+    settingsDraftTimer = setTimeout(persistData, DRAFT_SAVE_DELAY);
   }
 
   function requestDelete(type, id){
