@@ -1218,7 +1218,7 @@
       if(field.kind === 'photos'){
         grid.appendChild(photoField());
       }else{
-        grid.appendChild(inputField(field, item ? item[field.name] : undefined));
+        grid.appendChild(inputField(field, item ? item[field.name] : undefined, type, item ? item.id : ''));
       }
     });
     form.appendChild(grid);
@@ -1304,9 +1304,9 @@
     return map[type] || [];
   }
 
-  function inputField(field, value){
+  function inputField(field, value, type, itemId){
     if(field.kind === 'image-url'){
-      return imageUrlField(field, value);
+      return imageUrlField(field, value, type, itemId);
     }
 
     const label = document.createElement('label');
@@ -1364,7 +1364,7 @@
     return label;
   }
 
-  function imageUrlField(field, value){
+  function imageUrlField(field, value, type, itemId){
     const label = document.createElement('label');
     label.className = 'full image-url-field';
     label.appendChild(document.createTextNode(field.label));
@@ -1405,7 +1405,183 @@
     input.addEventListener('input', syncPreview);
     input.addEventListener('change', syncPreview);
     syncPreview();
+
+    // PR-H5b: 작업사례(cases)의 image 필드에서만 실제 업로드 UI를 붙입니다. 아래
+    // caseImageUploadBlock()이 만드는 파일 입력은 이 URL 입력창(input)의 값을
+    // 채워줄 뿐이고, 여기서 만든 값을 실제 data/cases.json에 반영하는 것은 여전히
+    // "홈페이지에 저장하기" 버튼입니다.
+    if(type === 'cases' && field.name === 'image'){
+      label.appendChild(caseImageUploadBlock(input, syncPreview, itemId));
+    }
     return label;
+  }
+
+  // PR-H5b: 작업사례 사진 실제 업로드 UI. 기존 photoField()/activePhotoData(아래에
+  // 남아있는 브라우저 미리보기+localStorage 전용 프로토타입)와는 별개의, 실제로
+  // Worker 업로드 엔드포인트까지 연결되는 최소 구현입니다. 서로 섞여 쓰이지 않도록
+  // 이 블록은 image-url 입력 바로 아래에만 붙입니다.
+  const CASE_PHOTO_MAX_DIMENSION = 1600;
+  const CASE_PHOTO_JPEG_QUALITY = 0.8;
+  const CASE_PHOTO_MAX_BYTES = 1024 * 1024; // Worker의 MAX_UPLOAD_BYTES와 동일
+
+  function caseImageUploadBlock(urlInput, syncPreview, itemId){
+    const wrap = document.createElement('div');
+    wrap.className = 'full photo-drop';
+
+    const privacyNotice = document.createElement('p');
+    privacyNotice.className = 'image-url-warning';
+    privacyNotice.textContent = '얼굴, 차량번호, 우편물, 주소, 이름 등 개인정보가 보이는 사진은 업로드하지 마세요. 필요한 경우 모자이크 후 업로드하세요.';
+    wrap.appendChild(privacyNotice);
+
+    const publicNotice = document.createElement('p');
+    publicNotice.className = 'image-url-warning';
+    publicNotice.textContent = '업로드된 사진은 홈페이지와 GitHub Pages에 공개될 수 있습니다.';
+    wrap.appendChild(publicNotice);
+
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/jpeg,image/png,image/webp';
+    wrap.appendChild(fileInput);
+
+    const status = document.createElement('p');
+    status.className = 'image-url-warning';
+    status.setAttribute('aria-live', 'polite');
+    wrap.appendChild(status);
+
+    if(!itemId){
+      fileInput.disabled = true;
+      status.textContent = '이 작업사례를 먼저 저장(추가/수정 저장)한 뒤 다시 열어야 사진을 업로드할 수 있습니다.';
+    }
+
+    fileInput.addEventListener('change', function(){
+      const file = fileInput.files && fileInput.files[0];
+      if(!file){
+        return;
+      }
+      uploadCasePhoto(itemId, file, fileInput, status, urlInput, syncPreview);
+    });
+
+    return wrap;
+  }
+
+  async function uploadCasePhoto(caseId, file, fileInput, statusEl, urlInput, syncPreview){
+    if(!CMS_AUTH_WORKER_URL){
+      statusEl.textContent = 'Worker 주소가 설정되지 않았습니다.';
+      fileInput.value = '';
+      return;
+    }
+    const token = getSessionToken();
+    if(!token){
+      handleExpiredSession();
+      return;
+    }
+    if(!/^image\/(jpeg|png|webp)$/.test(file.type)){
+      statusEl.textContent = 'jpg, png, webp 형식만 업로드할 수 있습니다.';
+      fileInput.value = '';
+      return;
+    }
+
+    fileInput.disabled = true;
+    statusEl.textContent = '사진을 준비하는 중...';
+
+    let blob;
+    try {
+      blob = await compressCasePhoto(file);
+    } catch(error){
+      statusEl.textContent = '사진을 처리하지 못했습니다. 다른 사진을 선택해주세요.';
+      fileInput.disabled = false;
+      fileInput.value = '';
+      return;
+    }
+
+    if(blob.size > CASE_PHOTO_MAX_BYTES){
+      statusEl.textContent = '압축 후에도 파일 용량이 너무 큽니다(최대 1MB). 다른 사진을 선택해주세요.';
+      fileInput.disabled = false;
+      fileInput.value = '';
+      return;
+    }
+
+    statusEl.textContent = '업로드 중...';
+
+    const formData = new FormData();
+    formData.append('type', 'cases');
+    formData.append('caseId', caseId);
+    formData.append('file', blob, 'upload.jpg');
+
+    try {
+      const response = await fetch(CMS_AUTH_WORKER_URL + '/upload-image', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token },
+        body: formData
+      });
+      if(response.status === 401){
+        handleExpiredSession();
+        return;
+      }
+      const data = await response.json().catch(function(){ return null; });
+      if(!response.ok || !data || !data.ok || !data.path){
+        statusEl.textContent = uploadErrorMessage(data && data.error);
+        return;
+      }
+      urlInput.value = data.path;
+      syncPreview();
+      urlInput.dispatchEvent(new Event('input', { bubbles: true }));
+      statusEl.textContent = '업로드 완료: ' + data.path + ' (아직 홈페이지에는 저장되지 않았습니다. "홈페이지에 저장하기"를 눌러 반영하세요.)';
+      showToast('사진 업로드 완료. "홈페이지에 저장하기"를 눌러야 실제로 반영됩니다.');
+    } catch(error){
+      statusEl.textContent = '업로드 중 오류가 발생했습니다. 네트워크 상태를 확인해주세요.';
+    } finally {
+      fileInput.disabled = false;
+      fileInput.value = '';
+    }
+  }
+
+  function uploadErrorMessage(code){
+    const messages = {
+      invalid_session: '로그인이 만료되었습니다. 다시 로그인해주세요.',
+      type_not_allowed: '이 화면에서는 작업사례 사진만 업로드할 수 있습니다.',
+      invalid_case_id: '작업사례를 다시 선택해주세요.',
+      case_not_found: '이 작업사례가 아직 홈페이지에 저장되지 않았습니다. 먼저 "홈페이지에 저장하기"를 눌러주세요.',
+      file_required: '사진 파일을 선택해주세요.',
+      file_too_large: '파일 용량이 너무 큽니다(최대 1MB).',
+      invalid_file_type: '지원하지 않는 파일 형식입니다. jpg, png, webp만 업로드할 수 있습니다.',
+      save_not_configured: 'Worker에 저장 권한이 설정되지 않았습니다. 관리자에게 문의하세요.',
+      github_api_error: 'GitHub 저장 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+    };
+    return messages[code] || '업로드에 실패했습니다. 다시 시도해주세요.';
+  }
+
+  // 캔버스로 다시 그려 최대 1600px, JPEG 품질 0.8 전후로 압축합니다. 캔버스에
+  // 다시 그리는 과정에서 원본 EXIF(GPS 위치 등 메타데이터)는 결과 Blob에
+  // 포함되지 않습니다(원본 파일을 그대로 업로드하지 않기 위한 필수 처리).
+  function compressCasePhoto(file){
+    return new Promise(function(resolve, reject){
+      const objectUrl = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = function(){
+        URL.revokeObjectURL(objectUrl);
+        const scale = Math.min(1, CASE_PHOTO_MAX_DIMENSION / Math.max(img.naturalWidth, img.naturalHeight));
+        const width = Math.max(1, Math.round(img.naturalWidth * scale));
+        const height = Math.max(1, Math.round(img.naturalHeight * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(function(blob){
+          if(blob){
+            resolve(blob);
+          }else{
+            reject(new Error('canvas_encode_failed'));
+          }
+        }, 'image/jpeg', CASE_PHOTO_JPEG_QUALITY);
+      };
+      img.onerror = function(){
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error('image_decode_failed'));
+      };
+      img.src = objectUrl;
+    });
   }
 
   function renderImageUrlPreview(container, src, label){
@@ -1450,6 +1626,11 @@
     });
   }
 
+  // 참고: 아래 photoField()/readPhotoFiles()/renderPhotoPreview()/activePhotoData는
+  // 브라우저 미리보기 + localStorage 임시저장 전용 프로토타입이며, 어떤 화면에도
+  // 연결되어 있지 않습니다(getFields()의 cases 필드 목록에 kind:'photos' 항목이
+  // 없어 실제로 렌더링되지 않습니다). 실제 Worker 업로드는 imageUrlField() 안의
+  // caseImageUploadBlock()/uploadCasePhoto()이며, 이 둘은 서로 다른 기능입니다.
   function photoField(){
     const wrap = document.createElement('div');
     wrap.className = 'full photo-drop';
@@ -2239,7 +2420,9 @@
     if(!src || src.indexOf('data:') === 0 || src.indexOf('/') === 0 || src.indexOf('../') === 0 || /^https?:\/\//i.test(src)){
       return src;
     }
-    return src.indexOf('images/') === 0 ? '../' + src : src;
+    // PR-H5b: 실제 업로드 경로(uploads/cases/...)도 images/와 동일하게 CMS가
+    // /cms/ 하위에서 실행되는 것을 보정해 '../'를 붙여야 미리보기가 정상 표시됩니다.
+    return (src.indexOf('images/') === 0 || src.indexOf('uploads/') === 0) ? '../' + src : src;
   }
 
   function isLikelyImageUrl(src){

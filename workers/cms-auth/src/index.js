@@ -26,6 +26,16 @@
 //         FIXED_ID_SET_TYPES에는 넣지 않습니다. CMS 화면(cms/js/cms.js)은 아직
 //         settings를 saveTargetTypes에 연결하지 않았으므로, 이 PR만으로는 실제 저장
 //         경로가 열리지 않습니다(화면 연결은 PR-H1b에서 진행).
+// PR-H5b: 작업사례(cases) 사진 업로드 전용 엔드포인트(POST /upload-image)를 추가합니다.
+//         기존 세션 인증(requireSession)을 그대로 재사용하며, type은 cases만 허용하고
+//         caseId는 GitHub의 현재 data/cases.json에 실제로 존재하는 id만 허용합니다.
+//         이미지 파일은 uploads/cases/<caseId>-<yyyymmdd>-<8자리 랜덤 hex>.<ext> 경로에
+//         별도로 commit되며, data/cases.json은 이 엔드포인트에서 전혀 읽기 외의 방식으로
+//         건드리지 않습니다(존재 확인을 위해 읽기만 함). image 필드에 업로드 경로를
+//         반영하는 것은 CMS에서 기존 저장 흐름(로컬 저장 → 홈페이지에 저장하기)을 그대로
+//         타는 사용자의 다음 동작입니다. 허용 형식은 jpg/jpeg, png, webp만이며 MIME/
+//         확장자/매직바이트 3중 검증과 1MB 용량 제한을 적용합니다. 기존 SAVE_WHITELIST/
+//         TYPE_VALIDATION_RULES/무결성 검증 로직은 한 글자도 바꾸지 않았습니다.
 //
 // 필요한 Secret (코드에는 절대 값을 넣지 않고 아래 명령으로 등록):
 //   wrangler secret put ADMIN_PIN
@@ -107,6 +117,26 @@ const INTEGRITY_GUARDED_TYPES = ['banners', 'cases', 'reviews', 'prices', 'faq',
 // 정확히 일치해야만 저장을 허용합니다(내용/visible/sort 수정만 허용).
 const FIXED_ID_SET_TYPES = ['services'];
 
+// PR-H5b: 사진 업로드를 허용하는 타입과, 업로드 대상 존재 확인에 쓸 data 파일 경로,
+// 실제 이미지가 저장될 폴더입니다. 지금은 cases 하나만 허용합니다(reviews/다른
+// 타입은 이후 PR에서 별도로 검토).
+const UPLOAD_ALLOWED_TYPES = ['cases'];
+const UPLOAD_DATA_PATH_BY_TYPE = { cases: SAVE_WHITELIST.cases };
+const UPLOAD_DIR_BY_TYPE = { cases: 'uploads/cases' };
+
+// 업로드 가능한 이미지 형식(jpg/jpeg, png, webp만). svg/gif/html/xml/js 등은 전부
+// 거부합니다. MIME 타입, 파일명 확장자, 매직바이트(파일 시그니처) 세 가지가 모두
+// 이 목록과 일치해야 업로드를 허용합니다(하나라도 다르면 위장된 파일로 간주해 거부).
+const ALLOWED_UPLOAD_MIME_TO_EXT = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+};
+const ALLOWED_UPLOAD_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
+// 서버에 실제로 저장하는 파일 최대 용량(1MB). 클라이언트가 이미 축소/압축해서
+// 보내지만, 서버에서도 동일한 상한을 강제해 클라이언트 검증을 우회한 요청을 막습니다.
+const MAX_UPLOAD_BYTES = 1024 * 1024;
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -126,6 +156,10 @@ export default {
 
     if (url.pathname === '/save' && request.method === 'POST') {
       return handleSave(request, env, corsHeaders);
+    }
+
+    if (url.pathname === '/upload-image' && request.method === 'POST') {
+      return handleUploadImage(request, env, corsHeaders);
     }
 
     return jsonResponse({ error: 'not_found' }, 404, corsHeaders);
@@ -266,6 +300,140 @@ async function handleSave(request, env, corsHeaders) {
 
   // dryRun:true이거나 dryRun이 생략된 경우, 안전하게 dry-run으로 처리하고 commit은 수행하지 않습니다.
   return jsonResponse({ ok: true, dryRun: true, unchanged: unchanged, type: type, path: path, sha: current.sha }, 200, corsHeaders);
+}
+
+// PR-H5b: 작업사례 사진 업로드. 인증(세션) 필요 → type=cases만 허용 → caseId가 현재
+// data/cases.json에 실제 존재하는지 확인 → MIME/확장자/매직바이트/용량 검증 →
+// uploads/cases/ 하위에 새 파일로 commit. data/cases.json은 읽기만 하고 절대
+// 수정하지 않습니다(image 필드 반영은 CMS의 기존 저장 흐름이 담당).
+async function handleUploadImage(request, env, corsHeaders) {
+  const session = await requireSession(request, env);
+  if (!session) {
+    return jsonResponse({ error: 'invalid_session' }, 401, corsHeaders);
+  }
+
+  if (!env.GITHUB_SAVE_TOKEN) {
+    return jsonResponse({ error: 'save_not_configured' }, 503, corsHeaders);
+  }
+
+  let form;
+  try {
+    form = await request.formData();
+  } catch (err) {
+    return jsonResponse({ error: 'invalid_request' }, 400, corsHeaders);
+  }
+
+  const type = form.get('type');
+  if (typeof type !== 'string' || UPLOAD_ALLOWED_TYPES.indexOf(type) === -1) {
+    return jsonResponse({ error: 'type_not_allowed' }, 403, corsHeaders);
+  }
+
+  const caseIdRaw = form.get('caseId');
+  const caseId = typeof caseIdRaw === 'string' ? caseIdRaw.trim() : '';
+  if (!caseId) {
+    return jsonResponse({ error: 'invalid_case_id' }, 400, corsHeaders);
+  }
+
+  const file = form.get('file');
+  if (!file || typeof file.arrayBuffer !== 'function') {
+    return jsonResponse({ error: 'file_required' }, 400, corsHeaders);
+  }
+
+  if (typeof file.size === 'number' && file.size > MAX_UPLOAD_BYTES) {
+    return jsonResponse({ error: 'file_too_large', maxBytes: MAX_UPLOAD_BYTES }, 413, corsHeaders);
+  }
+
+  let dataFile;
+  try {
+    dataFile = await fetchGithubFile(UPLOAD_DATA_PATH_BY_TYPE[type], env);
+  } catch (err) {
+    return jsonResponse({ error: 'github_api_error', message: String((err && err.message) || err) }, 502, corsHeaders);
+  }
+
+  const existingIds = getItemIds(dataFile.content);
+  if (existingIds.indexOf(caseId) === -1) {
+    return jsonResponse({ error: 'case_not_found' }, 404, corsHeaders);
+  }
+
+  const declaredMime = typeof file.type === 'string' ? file.type : '';
+  const declaredExt = extractExtension(typeof file.name === 'string' ? file.name : '');
+  if (!ALLOWED_UPLOAD_MIME_TO_EXT[declaredMime]) {
+    return jsonResponse({ error: 'invalid_file_type', reason: 'mime_not_allowed' }, 400, corsHeaders);
+  }
+  if (ALLOWED_UPLOAD_EXTENSIONS.indexOf(declaredExt) === -1) {
+    return jsonResponse({ error: 'invalid_file_type', reason: 'extension_not_allowed' }, 400, corsHeaders);
+  }
+
+  const buffer = await file.arrayBuffer();
+  if (buffer.byteLength > MAX_UPLOAD_BYTES) {
+    return jsonResponse({ error: 'file_too_large', maxBytes: MAX_UPLOAD_BYTES }, 413, corsHeaders);
+  }
+  const bytes = new Uint8Array(buffer);
+  const sniffedMime = sniffImageMimeType(bytes);
+  if (!sniffedMime || sniffedMime !== declaredMime) {
+    return jsonResponse({ error: 'invalid_file_type', reason: 'magic_bytes_mismatch' }, 400, corsHeaders);
+  }
+
+  const ext = ALLOWED_UPLOAD_MIME_TO_EXT[sniffedMime];
+  const fileName = buildUploadFileName(caseId, ext);
+  const path = UPLOAD_DIR_BY_TYPE[type] + '/' + fileName;
+  const message = 'chore(cms): upload case photo ' + fileName;
+
+  let commit;
+  try {
+    commit = await commitGithubBinaryFile(path, bytes, message, env);
+  } catch (err) {
+    return jsonResponse({ error: 'github_api_error', message: String((err && err.message) || err) }, 502, corsHeaders);
+  }
+
+  return jsonResponse({ ok: true, type: type, caseId: caseId, path: path, commitSha: commit.sha }, 200, corsHeaders);
+}
+
+// 원본 파일명 확장자를 소문자로 추출합니다(예: "IMG_1234.JPG" -> "jpg"). 확장자가
+// 없으면 빈 문자열을 반환합니다. 저장 경로/파일명 생성에는 절대 쓰지 않고,
+// 검증(허용 확장자인지 확인)에만 사용합니다.
+function extractExtension(fileName) {
+  const match = /\.([a-z0-9]+)$/i.exec(fileName || '');
+  return match ? match[1].toLowerCase() : '';
+}
+
+// 파일의 첫 바이트(매직바이트/시그니처)로 실제 이미지 형식을 판별합니다. 확장자나
+// Content-Type 헤더는 클라이언트가 위조할 수 있으므로, 이 결과가 최종 판단 기준입니다.
+function sniffImageMimeType(bytes) {
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return 'image/jpeg';
+  }
+  if (
+    bytes.length >= 8 &&
+    bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47 &&
+    bytes[4] === 0x0d && bytes[5] === 0x0a && bytes[6] === 0x1a && bytes[7] === 0x0a
+  ) {
+    return 'image/png';
+  }
+  if (
+    bytes.length >= 12 &&
+    bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+    bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50
+  ) {
+    return 'image/webp';
+  }
+  return null;
+}
+
+// 저장 파일명은 항상 서버가 새로 생성합니다(원본 파일명은 절대 사용하지 않음).
+// caseId-yyyymmdd-8자리랜덤hex.ext 형태라 caseId로 추적 가능하면서도 충돌 위험이
+// 거의 없고, 고객 개인정보(이름/주소/전화번호 등)가 파일명에 들어갈 여지가 없습니다.
+function buildUploadFileName(caseId, ext) {
+  const safeId = (caseId || '').replace(/[^a-zA-Z0-9-]/g, '').slice(0, 40) || 'case';
+  const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const randomPart = randomHexSuffix();
+  return safeId + '-' + datePart + '-' + randomPart + '.' + ext;
+}
+
+function randomHexSuffix() {
+  const bytes = new Uint8Array(4);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
 }
 
 async function requireSession(request, env) {
@@ -664,6 +832,52 @@ async function commitGithubFile(path, payload, sha, env) {
   const data = await response.json();
   const commitInfo = (data && data.commit) || {};
   return { sha: commitInfo.sha, htmlUrl: commitInfo.html_url };
+}
+
+// PR-H5b: JSON 텍스트 commit(commitGithubFile)과 별개로, 이미지 등 바이너리 파일을
+// 새 경로에 commit합니다. 항상 신규 파일 생성이 목적이라 sha를 보내지 않습니다
+// (같은 경로에 이미 파일이 있으면 GitHub Contents API가 422로 거부합니다 - 파일명에
+// 포함된 랜덤 suffix 덕분에 실제로는 거의 발생하지 않습니다).
+async function commitGithubBinaryFile(path, bytes, message, env) {
+  const owner = env.GITHUB_REPO_OWNER;
+  const repo = env.GITHUB_REPO_NAME;
+  const branch = env.GITHUB_BRANCH || 'main';
+  if (!owner || !repo) {
+    throw new Error('GITHUB_REPO_OWNER/GITHUB_REPO_NAME이 설정되지 않았습니다.');
+  }
+
+  const contentBase64 = encodeBytesToStandardBase64(bytes);
+  const apiUrl = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path;
+  const response = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: {
+      'Accept': 'application/vnd.github+json',
+      'User-Agent': 'giftclean-cms-auth-worker',
+      'Authorization': 'Bearer ' + env.GITHUB_SAVE_TOKEN,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      message: message,
+      content: contentBase64,
+      branch: branch,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('GitHub Contents API PUT 실패: ' + response.status);
+  }
+
+  const data = await response.json();
+  const commitInfo = (data && data.commit) || {};
+  return { sha: commitInfo.sha, htmlUrl: commitInfo.html_url };
+}
+
+function encodeBytesToStandardBase64(bytes) {
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i += 1) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
 }
 
 async function createSessionToken(secret) {
