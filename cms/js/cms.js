@@ -369,6 +369,18 @@
   // PR-F1: 저장 전 무결성 검증(existing id 유지/개수 감소 방지)을 위해,
   // refreshRemoteContent()가 받아온 원격 배열도 함께 캐시해둡니다.
   let remoteContentByType = {};
+  // PR-H5e: remoteShaByType은 "지금 이 순간" 다시 조회한 sha라 저장 직전마다
+  // 최신값으로 갱신되지만, cmsData가 실제로 그 sha 시점의 서버 데이터에서
+  // 나온 것인지는 별도로 추적하지 않았습니다(로그인 후 오래된 localStorage
+  // 캐시를 그대로 화면에 쓰고, 그 상태에서 sha만 새로 받아와 저장하면 sha
+  // 비교는 통과하지만 내용은 옛날 값인 사고가 가능했습니다 - 2026-08-01
+  // 작업사례 데이터 사고).
+  // baselineShaByType은 "이 타입의 cmsData를 실제로 언제 서버에서 받아왔는지"를
+  // 기록하는 기준값입니다. 로그인/실제 JSON 다시 불러오기 시점에만 채워지고,
+  // 저장 직전 remoteShaByType(방금 조회한 현재 서버 sha)과 다르면 저장을
+  // 막습니다(saveTypeToRemote 참고).
+  let baselineShaByType = {};
+  const BASELINE_SHA_KEY = 'daehanCmsBaselineSha';
   // PR-F2: 타입별로 실제 배포 data/*.json을 마지막으로 정상 fetch했는지 기록합니다.
   // 'ok' | 'failed' | undefined(아직 확인 전). localStorage 캐시를 화면에 보여주는
   // 것과는 별개로, "지금 이 타입을 실제로 다시 불러올 수 있는가"를 추적해 저장
@@ -472,6 +484,28 @@
     }
   }
 
+  function persistBaselineSha(){
+    localStorage.setItem(BASELINE_SHA_KEY, JSON.stringify(baselineShaByType));
+  }
+
+  // PR-H5e: 실제 data/*.json을 방금 불러온 시점(로그인 직후, 또는 "실제 JSON
+  // 다시 불러오기")에만 호출합니다. 9개 타입 전부의 현재 서버 sha를 받아와
+  // baselineShaByType에 기록합니다 - 이후 saveTypeToRemote()가 저장 직전
+  // "지금 서버 sha"와 이 기준값을 비교해, 그 사이 다른 경로로 파일이 바뀌었으면
+  // 저장을 막습니다. 개별 타입 조회가 실패해도(네트워크 오류 등) 나머지 타입은
+  // 정상 진행하고, 실패한 타입은 baselineShaByType에 값이 비어 저장 시
+  // remoteShaByType 부재 검사(기존 로직)에 걸립니다.
+  async function captureAllBaselineSha(){
+    const types = Object.keys(dataFiles);
+    await Promise.all(types.map(async function(type){
+      await refreshRemoteContent(type);
+      if(remoteShaByType[type]){
+        baselineShaByType[type] = remoteShaByType[type];
+      }
+    }));
+    persistBaselineSha();
+  }
+
   // GitHub로 실제 저장하기 직전에, 화면/localStorage에는 있는 CMS 내부
   // 필드(예: cases/reviews의 visible/sort)를 제거하고 홈페이지 data/*.json이
   // 실제로 쓰는 필드만 남깁니다. cmsData 자체나 localStorage는 건드리지
@@ -517,6 +551,18 @@
     await refreshRemoteContent(type);
     if(!remoteShaByType[type]){
       showToast('최신 데이터를 불러오지 못해 저장할 수 없습니다. 다시 시도해주세요.');
+      return;
+    }
+
+    // PR-H5e: 방금 조회한 "지금 서버 sha"가, 이 화면의 cmsData를 실제로 받아온
+    // 시점(로그인/실제 JSON 다시 불러오기)의 기준 sha와 다르면 저장을 막습니다.
+    // Worker의 sha_conflict(409)는 "확인창을 띄운 순간"과 "저장한 순간" 사이의
+    // 짧은 간격만 잡아내는데, 이 검사는 그보다 훨씬 이전(로그인 이후 전체 기간)
+    // 동안 서버 데이터가 바뀐 경우까지 확인창을 띄우기 전에 미리 잡아냅니다.
+    if(baselineShaByType[type] && remoteShaByType[type] !== baselineShaByType[type]){
+      const message = '다른 변경사항이 먼저 반영되었습니다. 최신 데이터를 다시 불러온 뒤 수정해주세요.';
+      showToast(message);
+      setStatus(message);
       return;
     }
 
@@ -577,6 +623,13 @@
 
       // 저장 성공(또는 무변경) 후에도 화면 내용과 localStorage는 그대로 두고 sha만 갱신합니다.
       await refreshRemoteContent(type);
+      // PR-H5e: 저장 응답의 commitSha는 git 커밋 sha라 /content가 돌려주는 파일
+      // sha와 다른 값이라 기준값으로 쓸 수 없습니다. 대신 방금 refreshRemoteContent()로
+      // 다시 받아온(=저장 직후 실제 파일 상태를 반영하는) sha를 기준으로 갱신합니다.
+      if(remoteShaByType[type]){
+        baselineShaByType[type] = remoteShaByType[type];
+        persistBaselineSha();
+      }
     } catch(e){
       showToast('저장 서버에 연결할 수 없습니다. 잠시 후 다시 시도하세요.');
       setStatus('저장 서버에 연결할 수 없습니다. 잠시 후 다시 시도하세요.');
@@ -943,7 +996,13 @@
   function showApp(){
     document.getElementById('loginView').classList.add('is-hidden');
     document.getElementById('appView').classList.remove('is-hidden');
-    loadData().then(function(){
+    // PR-H5e: 로그인 직후(또는 세션이 남아있는 상태로 페이지를 다시 열었을 때)
+    // 브라우저에 남아있던 오래된 localStorage 캐시를 화면 원본으로 쓰지 않고,
+    // 항상 실제 data/*.json을 다시 불러옵니다(2026-08-01 작업사례 데이터 사고
+    // 재발 방지). forceSample:true는 loadData()의 캐시 우선 분기를 건너뛰는
+    // 기존 옵션으로, "브라우저 임시저장 삭제 후 실제 JSON 다시 불러오기"
+    // 버튼과 동일한 경로를 탑니다.
+    loadData({ forceSample: true }).then(function(){
       visibleCounts = {};
       showScreen('cases');
       setStatus('데이터 로드 완료');
@@ -1027,6 +1086,9 @@
     cmsData = normalizeData(Object.fromEntries(entries));
     persistData();
     renderRemoteLoadWarning();
+    // PR-H5e: 방금 받아온 이 데이터가 어느 시점 서버 상태인지 기준 sha로
+    // 기록합니다(저장 직전 충돌 감지에 사용, saveTypeToRemote 참고).
+    await captureAllBaselineSha();
   }
 
   // PR-F2: localStorage 캐시로 화면을 이미 채운 뒤에도, 실제 배포 data/*.json을
