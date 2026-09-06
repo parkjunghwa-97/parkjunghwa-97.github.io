@@ -36,6 +36,25 @@
 //         타는 사용자의 다음 동작입니다. 허용 형식은 jpg/jpeg, png, webp만이며 MIME/
 //         확장자/매직바이트 3중 검증과 1MB 용량 제한을 적용합니다. 기존 SAVE_WHITELIST/
 //         TYPE_VALIDATION_RULES/무결성 검증 로직은 한 글자도 바꾸지 않았습니다.
+// PR-L1: SEO 랜딩페이지(지역+서비스 독립 페이지, 예: 인천-쓰레기집청소) 저장을 위한
+//        데이터 타입 landing(data/landing-pages.json)을 SAVE_WHITELIST에 추가합니다.
+//        이번 PR 범위는 서버 측 데이터 CRUD + 검증뿐이며, CMS 화면(PR-L2)과 정적
+//        페이지 생성기(PR-L3)는 포함하지 않습니다. slug는 향후 실제 배포 URL
+//        (https://도메인/<slug>/)이 되므로, 소문자/숫자/하이픈만 허용하고 저장소의
+//        기존 최상위 경로와 충돌하는 예약어를 서버에서 차단합니다(validateLandingPayload
+//        참고). publish:false(초안)는 콘텐츠 필드가 비어 있어도 저장을 허용하고,
+//        publish:true(공개)일 때만 SEO/콘텐츠 최소 조건을 검사합니다. 기존
+//        SAVE_WHITELIST/TYPE_VALIDATION_RULES/INTEGRITY_GUARDED_TYPES/
+//        FIXED_ID_SET_TYPES/업로드 로직은 한 글자도 바꾸지 않았습니다. landing은
+//        의도적으로 INTEGRITY_GUARDED_TYPES에 넣지 않았습니다 - 초기값이 빈 배열([])
+//        이고 아직 CMS 화면이 없어 "빈 배열 상태 그대로 저장 가능"해야 하는데,
+//        INTEGRITY_GUARDED_TYPES는 빈 배열 저장 자체를 거부하기 때문입니다.
+//        TODO(PR-L2 착수 시 필수 재검토): CMS 화면이 생겨 실제 landing 항목이
+//        쌓이기 시작하면, 다른 7개 배열 타입과 동일한 삭제/누락 방지를 위해
+//        landing을 INTEGRITY_GUARDED_TYPES에 포함할지(또는 동등한 안전장치를
+//        둘지) 반드시 다시 판단할 것. 지금(빈 배열, CMS 미연결) 시점에는 저장할
+//        실제 콘텐츠가 없어 위험이 없지만, PR-L2 이후에는 이 가드 없이는 손상된
+//        payload가 기존 공개 페이지를 조용히 삭제할 수 있음.
 //
 // 필요한 Secret (코드에는 절대 값을 넣지 않고 아래 명령으로 등록):
 //   wrangler secret put ADMIN_PIN
@@ -62,6 +81,7 @@ const SAVE_WHITELIST = {
   services: 'data/services.json',
   sections: 'data/sections.json',
   settings: 'data/settings.json',
+  landing: 'data/landing-pages.json',
 };
 
 // 타입별 필수 필드 규칙 (cms/js/cms.js의 typeConfig.required와 동일하게 유지)
@@ -98,6 +118,27 @@ const SETTINGS_REQUIRED_STRING_FIELDS = [
 ];
 const SETTINGS_REQUIRED_OBJECT_FIELDS = ['brand', 'contact', 'address', 'assets', 'site'];
 
+// PR-L1: landing(data/landing-pages.json) 전용 상수. slug는 향후 실제 URL 경로
+// (예: https://도메인/incheon-trash-cleaning/)가 되므로 소문자/숫자/하이픈만 허용합니다.
+// 점(.)/슬래시(/)/역슬래시(\)/퍼센트(%)/공백/대문자/비ASCII 문자는 이 허용 문자
+// 집합에 없으므로 자동으로 거부되며(예: "../cms", "test/", "인천-청소"), 시작/끝
+// 하이픈과 연속 하이픈은 별도 검사로 더 명확한 오류 사유를 반환합니다.
+const LANDING_SLUG_ALLOWED_PATTERN = /^[a-z0-9-]+$/;
+
+// 현재 저장소 최상위(리포지토리 루트)에 실제로 존재하는 파일/디렉터리 이름을
+// 확장자 제거 후 소문자로 정리한 목록입니다(2026-09-05 기준, `ls` 결과 직접 확인).
+// landing slug가 이 목록과 겹치면 GitHub Pages에서 실제 경로 충돌/혼동이 생길 수
+// 있어 서버에서 차단합니다. "uploads"는 아직 저장소에 존재하지 않지만 cases 사진
+// 업로드가 uploads/cases/에 저장되는 것과 동일하게 landing 이미지도 향후
+// uploads/landing-pages/에 저장될 예정이라 미리 예약합니다. 저장소 최상위 구조가
+// 바뀌면(새 최상위 파일/폴더 추가 등) 이 목록도 함께 검토해야 합니다.
+const RESERVED_LANDING_SLUGS = [
+  'cms', 'data', 'uploads', 'css', 'js', 'images', 'workers', 'cases',
+  'index', 'privacy', 'partner', 'sitemap', 'robots', 'llms', 'logo', 'hero',
+  'cname', 'nojekyll', 'readme', 'refresh', 'refresh2', 'refresh3', 'refresh4',
+  'refresh5', 'site-refresh', 'naver3b5de69a2e79f1adcbb8e102e40851b2',
+];
+
 // sections는 홈페이지 nav의 고정된 9개 섹션과 1:1로 매칭되는 데이터라, 다른 타입과
 // 달리 개수/전체 id 목록/타입까지 엄격하게 검증합니다(PR-D1c). 2026-07-22 CMS에서
 // 저장 버튼을 눌렀을 때 로컬 캐시가 손상된 1개짜리 payload가 그대로 GitHub에
@@ -120,6 +161,11 @@ const FIXED_ID_SET_TYPES = ['services'];
 // PR-H5b: 사진 업로드를 허용하는 타입과, 업로드 대상 존재 확인에 쓸 data 파일 경로,
 // 실제 이미지가 저장될 폴더입니다. 지금은 cases 하나만 허용합니다(reviews/다른
 // 타입은 이후 PR에서 별도로 검토).
+// PR-L1 참고: landing(SEO 랜딩페이지) 이미지 업로드는 이번 PR 범위가 아니라
+// 여기에 아직 추가하지 않았습니다. handleUploadImage()는 caseId 파라미터명과
+// existingIds 조회 로직이 cases 전용으로 고정돼 있어, landing을 그대로 이
+// 배열에 추가하는 것만으로는 정상 동작하지 않습니다 - 실제 이미지 업로드 UI와
+// 함께 별도 PR(계획상 PR-L2)에서 제대로 설계해 추가할 예정입니다.
 const UPLOAD_ALLOWED_TYPES = ['cases'];
 const UPLOAD_DATA_PATH_BY_TYPE = { cases: SAVE_WHITELIST.cases };
 const UPLOAD_DIR_BY_TYPE = { cases: 'uploads/cases' };
@@ -233,7 +279,9 @@ async function handleSave(request, env, corsHeaders) {
     ? validateSectionsPayload(body.payload)
     : type === 'settings'
       ? validateSettingsPayload(body.payload)
-      : validatePayload(type, body.payload);
+      : type === 'landing'
+        ? validateLandingPayload(body.payload)
+        : validatePayload(type, body.payload);
   if (validationErrors.length) {
     return jsonResponse({ error: 'invalid_payload', details: validationErrors }, 400, corsHeaders);
   }
@@ -586,6 +634,137 @@ function validateSettingsPayload(payload) {
       errors.push('필수 필드 누락 - ' + fieldPath);
     }
   });
+
+  return errors;
+}
+
+// PR-L1: landing(data/landing-pages.json) 전용 검증. 다른 8개 타입과 달리
+// 필수 필드가 publish 값에 따라 달라집니다 - publish:false(초안)는 id/slug 구조만
+// 지키면 되고, publish:true(공개)일 때만 SEO/콘텐츠 최소 조건(seoTitle, meta
+// description, h1, body 최소 길이, FAQ 최소 1개, 이미지-alt 짝, 지원제도 블록
+// 필수 문구)을 검사합니다. slug는 publish 여부와 무관하게 항상 검증합니다 -
+// 초안 단계에서도 나중에 실제 URL이 될 값이 다른 페이지와 충돌하거나 예약
+// 경로를 침범하면 안 되기 때문입니다.
+function validateLandingPayload(payload) {
+  const errors = [];
+  if (!Array.isArray(payload)) {
+    errors.push('payload는 배열이어야 합니다.');
+    return errors;
+  }
+
+  const seenIds = new Set();
+  const seenSlugs = new Set();
+
+  payload.forEach(function (item, index) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      errors.push('index ' + index + ': 객체가 아닙니다.');
+      return;
+    }
+
+    const id = item.id;
+    const label = typeof id === 'string' && id.trim() !== '' ? id : 'index ' + index;
+
+    if (typeof id !== 'string' || id.trim() === '') {
+      errors.push('index ' + index + ': 필수 필드 누락 - id');
+    } else if (seenIds.has(id)) {
+      errors.push(label + ': duplicate_id');
+    } else {
+      seenIds.add(id);
+    }
+
+    validateLandingSlug(item.slug, seenSlugs).forEach(function (reason) {
+      errors.push(label + ': ' + reason);
+    });
+
+    if (typeof item.publish !== 'boolean') {
+      errors.push(label + ': publish must be boolean');
+    }
+
+    if (item.publish === true) {
+      validateLandingPublishRequirements(item).forEach(function (reason) {
+        errors.push(label + ': ' + reason);
+      });
+    }
+  });
+
+  return errors;
+}
+
+// slug 하나에 대한 구조 검증. 항상(publish 여부와 무관하게) 적용됩니다.
+function validateLandingSlug(slug, seenSlugs) {
+  const errors = [];
+  if (typeof slug !== 'string' || slug.trim() === '') {
+    errors.push('slug_required');
+    return errors;
+  }
+  if (!LANDING_SLUG_ALLOWED_PATTERN.test(slug)) {
+    // 허용 문자(a-z, 0-9, -) 밖의 모든 입력(대문자/한글/공백/./\/%  등)이 여기서
+    // 걸러집니다. 예: "Incheon-Cleaning", "인천-청소", "../cms", "test/"
+    errors.push('slug_invalid_chars');
+    return errors;
+  }
+  if (slug.charAt(0) === '-' || slug.charAt(slug.length - 1) === '-') {
+    errors.push('slug_edge_hyphen');
+  }
+  if (slug.indexOf('--') !== -1) {
+    errors.push('slug_consecutive_hyphen');
+  }
+  if (RESERVED_LANDING_SLUGS.indexOf(slug) !== -1) {
+    errors.push('slug_reserved');
+  }
+  if (seenSlugs.has(slug)) {
+    errors.push('slug_duplicate');
+  } else {
+    seenSlugs.add(slug);
+  }
+  return errors;
+}
+
+// publish:true(공개)일 때만 적용되는 최소 콘텐츠/SEO 조건.
+function validateLandingPublishRequirements(item) {
+  const errors = [];
+
+  ['seoTitle', 'metaDescription', 'h1'].forEach(function (field) {
+    if (typeof item[field] !== 'string' || item[field].trim() === '') {
+      errors.push('publish 조건 미충족 - ' + field + ' 필요');
+    }
+  });
+
+  if (typeof item.body !== 'string' || item.body.trim() === '') {
+    errors.push('publish 조건 미충족 - body 필요');
+  }
+
+  const faq = Array.isArray(item.faq) ? item.faq : [];
+  const hasUsableFaq = faq.some(function (entry) {
+    return entry && typeof entry === 'object'
+      && typeof entry.question === 'string' && entry.question.trim() !== ''
+      && typeof entry.answer === 'string' && entry.answer.trim() !== '';
+  });
+  if (!hasUsableFaq) {
+    errors.push('publish 조건 미충족 - FAQ가 최소 1개 이상 필요합니다(question/answer 모두 필요)');
+  }
+
+  [
+    ['heroImage', 'heroImageAlt'],
+    ['beforeImage', 'beforeImageAlt'],
+    ['afterImage', 'afterImageAlt'],
+  ].forEach(function (pair) {
+    const imageField = pair[0];
+    const altField = pair[1];
+    const hasImage = typeof item[imageField] === 'string' && item[imageField].trim() !== '';
+    const hasAlt = typeof item[altField] === 'string' && item[altField].trim() !== '';
+    if (hasImage && !hasAlt) {
+      errors.push('publish 조건 미충족 - ' + imageField + '가 있으면 ' + altField + '가 필요합니다');
+    }
+  });
+
+  if (item.supportInfoEnabled === true) {
+    ['supportInfoTitle', 'supportInfoBody', 'supportInfoDisclaimer', 'supportInfoCtaText'].forEach(function (field) {
+      if (typeof item[field] !== 'string' || item[field].trim() === '') {
+        errors.push('publish 조건 미충족 - supportInfoEnabled가 true이면 ' + field + '가 필요합니다');
+      }
+    });
+  }
 
   return errors;
 }
