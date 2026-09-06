@@ -828,8 +828,11 @@ function validateArrayIntegrity(type, payload, currentContent) {
     // 항목을 하나도 만들지 않은 상태에서 landing 자신을 저장하려 할 때마다
     // 매번 거부당함 - 다른 8개 타입은 처음부터 실제 콘텐츠가 있어 이 경우가
     // 발생하지 않습니다). "원격에 이미 항목이 있는데 빈 배열로 줄이는" 경우는
-    // 기존과 동일하게 반드시 거부합니다(아래로 그대로 진행).
-    const isTrulyUnchangedEmptyLanding = type === 'landing' && !(Array.isArray(currentContent) && currentContent.length > 0);
+    // 기존과 동일하게 반드시 거부합니다(아래로 그대로 진행). currentContent가
+    // 배열이 아닌 비정상 값(예: {}, null - 파일 손상/타입 오류)인 경우는 "이미
+    // 빈 배열"로 간주하지 않고 반드시 거부합니다 - currentContent가 실제로
+    // 빈 배열([])일 때만 무변경으로 허용합니다.
+    const isTrulyUnchangedEmptyLanding = type === 'landing' && Array.isArray(currentContent) && currentContent.length === 0;
     if (isTrulyUnchangedEmptyLanding) {
       return errors;
     }

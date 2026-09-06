@@ -2801,7 +2801,9 @@
       // 정상 상태입니다. 원격도 이미 빈 배열이고 payload도 빈 배열이면 완전
       // 무변경이므로 허용합니다(Worker의 validateArrayIntegrity()와 동일한 규칙).
       // 원격에 이미 항목이 있는데 빈 배열로 줄이는 경우는 기존과 동일하게 거부합니다.
-      const isTrulyUnchangedEmptyLanding = type === 'landing' && !(Array.isArray(currentContent) && currentContent.length > 0);
+      // currentContent가 배열이 아닌 비정상 값(예: {}, null)이면 "이미 빈 배열"로
+      // 간주하지 않고 반드시 거부합니다 - 실제로 빈 배열([])일 때만 허용합니다.
+      const isTrulyUnchangedEmptyLanding = type === 'landing' && Array.isArray(currentContent) && currentContent.length === 0;
       if(isTrulyUnchangedEmptyLanding){
         return errors;
       }
