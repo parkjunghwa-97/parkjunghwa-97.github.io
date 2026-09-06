@@ -44,17 +44,24 @@
 //        기존 최상위 경로와 충돌하는 예약어를 서버에서 차단합니다(validateLandingPayload
 //        참고). publish:false(초안)는 콘텐츠 필드가 비어 있어도 저장을 허용하고,
 //        publish:true(공개)일 때만 SEO/콘텐츠 최소 조건을 검사합니다. 기존
-//        SAVE_WHITELIST/TYPE_VALIDATION_RULES/INTEGRITY_GUARDED_TYPES/
-//        FIXED_ID_SET_TYPES/업로드 로직은 한 글자도 바꾸지 않았습니다. landing은
-//        의도적으로 INTEGRITY_GUARDED_TYPES에 넣지 않았습니다 - 초기값이 빈 배열([])
-//        이고 아직 CMS 화면이 없어 "빈 배열 상태 그대로 저장 가능"해야 하는데,
-//        INTEGRITY_GUARDED_TYPES는 빈 배열 저장 자체를 거부하기 때문입니다.
-//        TODO(PR-L2 착수 시 필수 재검토): CMS 화면이 생겨 실제 landing 항목이
-//        쌓이기 시작하면, 다른 7개 배열 타입과 동일한 삭제/누락 방지를 위해
-//        landing을 INTEGRITY_GUARDED_TYPES에 포함할지(또는 동등한 안전장치를
-//        둘지) 반드시 다시 판단할 것. 지금(빈 배열, CMS 미연결) 시점에는 저장할
-//        실제 콘텐츠가 없어 위험이 없지만, PR-L2 이후에는 이 가드 없이는 손상된
-//        payload가 기존 공개 페이지를 조용히 삭제할 수 있음.
+//        SAVE_WHITELIST/TYPE_VALIDATION_RULES/FIXED_ID_SET_TYPES/기존 업로드
+//        로직은 한 글자도 바꾸지 않았습니다. landing은 최초 도입 시점(빈 배열,
+//        CMS 미연결)에는 의도적으로 INTEGRITY_GUARDED_TYPES에 넣지 않았습니다
+//        (넣으면 "빈 배열 저장 자체 거부" 규칙과 충돌하기 때문). CMS 화면 연결
+//        시점에 반드시 재검토하도록 TODO를 남겨두었고, 아래 PR-L2에서 실제로
+//        추가했습니다.
+// PR-L2: CMS "SEO 랜딩페이지" 화면을 연결하면서 아래 2가지를 추가합니다.
+//   1) landing을 INTEGRITY_GUARDED_TYPES에 추가 - 이제 실제 CMS로 landing
+//      항목이 쌓이기 시작하므로, 다른 7개 배열 타입과 동일하게 기존 id 소실/
+//      개수 감소/빈 배열 저장을 거부합니다. "완전 삭제" 대신 publish:false로
+//      비공개 전환하도록 CMS UI를 설계했습니다(삭제 버튼 자체를 두지 않음).
+//   2) 사진 업로드(POST /upload-image)를 landing(hero/before/after 이미지)에도
+//      허용합니다. 기존 cases와의 하위호환을 위해 HTTP 요청 필드명은 그대로
+//      "caseId"를 유지하며(값은 타입에 맞는 대상 id), handleUploadImage()의
+//      로직은 UPLOAD_DATA_PATH_BY_TYPE[type]/UPLOAD_DIR_BY_TYPE[type]로 이미
+//      타입별로 분기되어 있어 이 두 맵에 landing 항목만 추가하면 됩니다(함수
+//      본문은 변경하지 않음). cases 업로드 동작(필드명, 에러코드, 파일명 규칙)은
+//      그대로 유지됩니다.
 //
 // 필요한 Secret (코드에는 절대 값을 넣지 않고 아래 명령으로 등록):
 //   wrangler secret put ADMIN_PIN
@@ -153,22 +160,21 @@ const REQUIRED_SECTION_IDS = ['home', 'about', 'service', 'price', 'portfolio', 
 // visible:false를 쓰고, 개수 감소가 필요한 명시적 삭제 기능은 이후 별도 PR로
 // 설계합니다. sections는 이미 validateSectionsPayload()로 별도 검증하므로 이
 // 목록에서 제외합니다.
-const INTEGRITY_GUARDED_TYPES = ['banners', 'cases', 'reviews', 'prices', 'faq', 'notices', 'services'];
+const INTEGRITY_GUARDED_TYPES = ['banners', 'cases', 'reviews', 'prices', 'faq', 'notices', 'services', 'landing'];
 // services는 현재 12개 고정 서비스 상세로 운영 중이라, 추가/삭제 없이 기존 id set과
 // 정확히 일치해야만 저장을 허용합니다(내용/visible/sort 수정만 허용).
 const FIXED_ID_SET_TYPES = ['services'];
 
 // PR-H5b: 사진 업로드를 허용하는 타입과, 업로드 대상 존재 확인에 쓸 data 파일 경로,
-// 실제 이미지가 저장될 폴더입니다. 지금은 cases 하나만 허용합니다(reviews/다른
-// 타입은 이후 PR에서 별도로 검토).
-// PR-L1 참고: landing(SEO 랜딩페이지) 이미지 업로드는 이번 PR 범위가 아니라
-// 여기에 아직 추가하지 않았습니다. handleUploadImage()는 caseId 파라미터명과
-// existingIds 조회 로직이 cases 전용으로 고정돼 있어, landing을 그대로 이
-// 배열에 추가하는 것만으로는 정상 동작하지 않습니다 - 실제 이미지 업로드 UI와
-// 함께 별도 PR(계획상 PR-L2)에서 제대로 설계해 추가할 예정입니다.
-const UPLOAD_ALLOWED_TYPES = ['cases'];
-const UPLOAD_DATA_PATH_BY_TYPE = { cases: SAVE_WHITELIST.cases };
-const UPLOAD_DIR_BY_TYPE = { cases: 'uploads/cases' };
+// 실제 이미지가 저장될 폴더입니다.
+// PR-L2: landing(hero/before/after 이미지)을 추가합니다. handleUploadImage()의
+// 로직 자체는 이미 이 세 맵을 통해 타입별로 분기되도록 작성돼 있어(요청 필드명
+// "caseId"는 대상 id를 담는 범용 값으로 그대로 재사용, 하위호환을 위해 이름은
+// 바꾸지 않음), 함수 본문은 한 글자도 바꾸지 않고 아래 맵에 landing 항목만
+// 추가했습니다. cases 업로드 동작(필드명/에러코드/파일명 규칙)은 전혀 영향 없음.
+const UPLOAD_ALLOWED_TYPES = ['cases', 'landing'];
+const UPLOAD_DATA_PATH_BY_TYPE = { cases: SAVE_WHITELIST.cases, landing: SAVE_WHITELIST.landing };
+const UPLOAD_DIR_BY_TYPE = { cases: 'uploads/cases', landing: 'uploads/landing-pages' };
 
 // 업로드 가능한 이미지 형식(jpg/jpeg, png, webp만). svg/gif/html/xml/js 등은 전부
 // 거부합니다. MIME 타입, 파일명 확장자, 매직바이트(파일 시그니처) 세 가지가 모두
@@ -816,6 +822,17 @@ function validateArrayIntegrity(type, payload, currentContent) {
     return errors;
   }
   if (payload.length === 0) {
+    // PR-L2: landing은 data/landing-pages.json이 실제로 빈 배열([])로 시작하는
+    // 정상 상태입니다. "원격도 이미 빈 배열이고 payload도 빈 배열"이면 이건
+    // 삭제가 아니라 완전 무변경이므로 허용해야 합니다(그렇지 않으면 landing에
+    // 항목을 하나도 만들지 않은 상태에서 landing 자신을 저장하려 할 때마다
+    // 매번 거부당함 - 다른 8개 타입은 처음부터 실제 콘텐츠가 있어 이 경우가
+    // 발생하지 않습니다). "원격에 이미 항목이 있는데 빈 배열로 줄이는" 경우는
+    // 기존과 동일하게 반드시 거부합니다(아래로 그대로 진행).
+    const isTrulyUnchangedEmptyLanding = type === 'landing' && !(Array.isArray(currentContent) && currentContent.length > 0);
+    if (isTrulyUnchangedEmptyLanding) {
+      return errors;
+    }
     errors.push('empty_array: ' + type + ' payload는 빈 배열일 수 없습니다. 항목을 숨기려면 visible:false를 사용하세요.');
     return errors;
   }
