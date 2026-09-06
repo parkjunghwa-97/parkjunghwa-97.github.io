@@ -35,6 +35,7 @@
           <button class="menu-btn" type="button" data-screen="notices">공지 관리</button>
           <button class="menu-btn" type="button" data-screen="banners">메인배너 관리</button>
           <button class="menu-btn" type="button" data-screen="services">서비스 상세 관리</button>
+          <button class="menu-btn" type="button" data-screen="landing">SEO 랜딩페이지 관리</button>
           <button class="menu-btn" type="button" data-screen="sections">섹션 표시 관리</button>
           <button class="menu-btn" type="button" data-screen="json">JSON 관리</button>
           <button class="menu-btn" type="button" data-screen="settings">설정</button>
@@ -130,6 +131,16 @@
             <button type="button" class="secondary-btn" data-action="save-remote" data-type="services" title="이 버튼은 현재 화면의 내용을 실제 홈페이지 JSON에 저장합니다.">홈페이지에 저장하기</button>
           </div>
           <div class="services-accordion" id="servicesAccordion"></div>
+        </section>
+
+        <section class="screen" id="screen-landing" data-type="landing">
+          <div class="screen-toolbar">
+            <p>지역+서비스 SEO 랜딩페이지를 홈페이지 data/landing-pages.json 구조로 관리합니다. 항목은 공개/비공개로만 전환되며, 공개를 멈추려면 "공개 중지"를 사용하세요.</p>
+            <button type="button" data-action="new" data-type="landing">SEO 랜딩페이지 추가</button>
+            <button type="button" class="secondary-btn" data-action="save-remote" data-type="landing" title="이 버튼은 현재 화면의 내용을 실제 홈페이지 JSON에 저장합니다.">홈페이지에 저장하기</button>
+          </div>
+          <div class="editor-panel is-hidden" id="landingEditor"></div>
+          <div class="item-list" id="landingList"></div>
         </section>
 
         <section class="screen" id="screen-sections" data-type="sections">
