@@ -1,13 +1,19 @@
 #!/usr/bin/env node
 // PR-L3: data/landing-pages.json의 publish:true 항목만 실제 정적 페이지(<slug>/index.html)로
 // 생성하고, sitemap.xml의 landing 전용 마커 구간을 그 목록으로 교체합니다.
+// PR-L4: 같은 빌드에서 index.html의 LANDING_HOME_LINKS_START/END 마커 구간도 함께
+// 갱신해, #service 페이지에 "지역별 서비스 안내" 실 링크(<a href="/slug/">)를 넣습니다.
+// index.html은 PR-L3까지는 읽기 전용(마커 추출)이었지만, 이제 sitemap.xml처럼 쓰기
+// 대상이기도 합니다 - 단 이 쓰기는 GitHub Actions 러너의 fresh checkout 사본에만
+// 적용되고 git 저장소에는 절대 커밋되지 않습니다(<slug>/index.html, sitemap.xml과
+// 동일한 신뢰 경계).
 //
 // 이 스크립트는 GitHub Actions에서 "Checkout" 직후, "Upload artifact" 이전에 실행됩니다
 // (.github/workflows/pages.yml 참고). 실패하면 process.exit(1)로 종료해 이후 스텝
 // (Upload/Deploy)이 실행되지 않게 합니다 - 깨진 상태가 배포되는 일이 구조적으로
 // 불가능하도록 설계했습니다.
 //
-// 안전 원칙(반드시 지킬 것, PR-L3 설계 승인 조건):
+// 안전 원칙(반드시 지킬 것, PR-L3 설계 승인 조건 + PR-L4에서 확장):
 //   1) 이 스크립트는 삭제 연산(fs.rm/fs.unlink/fs.rmdir 등)을 절대 포함하지 않습니다.
 //      "이번에 필요한 것만 새로 만든다"만 수행하며, 이전 실행의 산출물을 정리하는 책임은
 //      지지 않습니다(실제 운영에서는 GitHub Actions가 매번 fresh checkout이고 GitHub
@@ -16,13 +22,16 @@
 //      사용해야 합니다).
 //   2) slug는 예약어/형식/중복 검증을 통과한 것만 디렉터리로 만듭니다.
 //   3) index.html/sitemap.xml의 마커는 정확히 1쌍씩만 존재해야 하며, 그렇지 않으면
-//      전체 빌드를 실패시킵니다(부분 생성 금지).
+//      전체 빌드를 실패시킵니다(부분 생성 금지). index.html의 LANDING_HOME_LINKS
+//      마커 치환도 동일 원칙을 따르며, 추가로 다른 세 마커(nav/footer/contactbar)의
+//      존재/내용이 훼손되지 않았는지와 round-trip 자기 검증까지 거칩니다.
 import fs from 'node:fs';
 import path from 'node:path';
 import {
   renderLandingPage,
   buildSitemapEntry,
-  escapeXml
+  escapeXml,
+  renderHomeLandingLinksBlock
 } from './landing-page-template.mjs';
 
 const ROOT = process.cwd();
@@ -45,6 +54,8 @@ const CONTACTBAR_START = '<!-- LANDING_TEMPLATE_CONTACTBAR_START -->';
 const CONTACTBAR_END = '<!-- LANDING_TEMPLATE_CONTACTBAR_END -->';
 const SITEMAP_START = '<!-- LANDING_SITEMAP_START -->';
 const SITEMAP_END = '<!-- LANDING_SITEMAP_END -->';
+const HOME_LINKS_START = '<!-- LANDING_HOME_LINKS_START -->';
+const HOME_LINKS_END = '<!-- LANDING_HOME_LINKS_END -->';
 
 class BuildError extends Error {}
 
@@ -250,13 +261,50 @@ export function runBuild() {
     fail('sitemap.xml의 <url>/<\/url> 태그 개수가 일치하지 않습니다(형식 오류)');
   }
 
+  // PR-L4: 홈페이지(#service)의 "지역별 서비스 안내" 링크 블록도 sitemap과 동일하게
+  // 마커 구간 전체를 매번 새로 계산합니다(publish:false로 바뀐 항목은 다음 배포에서
+  // published 배열 자체에서 빠지므로 별도 제거 로직 없이 자동으로 사라집니다).
+  // region/service가 없거나 문자열이 아닌 publish:true 항목이 있으면
+  // renderHomeLandingLinksBlock()이 예외를 던져 빌드 전체가 실패합니다(잘못된 값으로
+  // <a>를 조용히 만들지 않음 - 기존 L3의 fail-closed 원칙과 동일).
+  const homeLinksHtml = renderHomeLandingLinksBlock(published);
+  // sitemap과 동일하게, 마커 앞 들여쓰기(6칸)를 맞춰 항목이 없을 때도 형식이 무너지지
+  // 않게 합니다.
+  const homeLinksMiddle = homeLinksHtml ? ('\n' + homeLinksHtml + '\n      ') : '\n      ';
+  const newIndexHtml = replaceBetweenMarkers(indexHtml, HOME_LINKS_START, HOME_LINKS_END, homeLinksMiddle, 'index.html home links');
+
+  // 안전장치 1: 홈 링크 치환이 실수로 다른 세 마커 쌍(nav/footer/fixed-contact-bar)의
+  // 존재나 내용을 건드리지 않았는지 재검증합니다. 이 값들은 치환 전 원본 indexHtml에서
+  // 이미 추출해 랜딩페이지 렌더링(pagesToWrite)에 사용했으므로, 여기서 값이 달라지거나
+  // 마커가 정확히 1쌍이 아니게 되면(extractBetweenMarkers가 자체적으로 검증) 치환
+  // 로직에 버그가 있다는 뜻이므로 빌드를 실패시킵니다.
+  if (extractBetweenMarkers(newIndexHtml, NAV_START, NAV_END, 'index.html nav(홈 링크 치환 후 회귀 검증)') !== navHtml) {
+    fail('index.html home links 치환 이후 nav 마커 내용이 원본과 달라졌습니다(회귀)');
+  }
+  if (extractBetweenMarkers(newIndexHtml, FOOTER_START, FOOTER_END, 'index.html footer(홈 링크 치환 후 회귀 검증)') !== footerHtml) {
+    fail('index.html home links 치환 이후 footer 마커 내용이 원본과 달라졌습니다(회귀)');
+  }
+  if (extractBetweenMarkers(newIndexHtml, CONTACTBAR_START, CONTACTBAR_END, 'index.html fixed-contact-bar(홈 링크 치환 후 회귀 검증)') !== contactBarHtml) {
+    fail('index.html home links 치환 이후 fixed-contact-bar 마커 내용이 원본과 달라졌습니다(회귀)');
+  }
+
+  // 안전장치 2: round-trip 자기 검증 - 방금 만든 newIndexHtml에서 LANDING_HOME_LINKS
+  // 구간을 다시 추출했을 때, 우리가 넣으려던 내용과 정확히 일치하는지 확인합니다.
+  const homeLinksRoundTrip = extractBetweenMarkers(newIndexHtml, HOME_LINKS_START, HOME_LINKS_END, 'index.html home links(round-trip 검증)');
+  if (homeLinksRoundTrip !== homeLinksMiddle) {
+    fail('index.html home links round-trip 검증 실패(마커 치환 로직 버그 의심)');
+  }
+
   // 여기까지 도달했다면 모든 검증을 통과한 것이므로, 이제부터만 실제로 씁니다.
-  // 삭제 연산은 여전히 전혀 포함하지 않습니다(설계 원칙 §G).
+  // 삭제 연산은 여전히 전혀 포함하지 않습니다(설계 원칙 §G). index.html도 이 러너의
+  // fresh checkout 사본에만 쓰이며, git 저장소에는 절대 커밋되지 않습니다(sitemap.xml/
+  // <slug>/index.html과 동일한 신뢰 경계).
   pagesToWrite.forEach(function (page) {
     fs.mkdirSync(page.dir, { recursive: true });
     fs.writeFileSync(path.join(page.dir, 'index.html'), page.html, 'utf8');
   });
   fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), newSitemap, 'utf8');
+  fs.writeFileSync(path.join(ROOT, 'index.html'), newIndexHtml, 'utf8');
 
   return { publishedCount: published.length, published: published, domain: domain };
 }

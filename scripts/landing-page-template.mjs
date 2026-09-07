@@ -303,3 +303,71 @@ export function buildSitemapEntry(item, domain) {
     '  </url>'
   ].join('\n');
 }
+
+// PR-L4: 홈페이지(#service, LANDING_HOME_LINKS_START/END)에 넣을 "지역별 서비스 안내"
+// 링크 블록에서, 한 번에 노출하는 최대 개수입니다. 이 값을 넘는 나머지 publish:true
+// 항목들은 sitemap.xml에는 그대로 포함되지만(runBuild()의 sitemapEntries는 이 함수와
+// 무관하게 published 전체를 사용) 홈 링크 블록에는 나타나지 않습니다.
+export const HOME_LINKS_MAX = 8;
+
+// region/service는 Worker(validateLandingPayload)/CMS 어느 쪽에서도 필수값으로
+// 검증되지 않는 필드입니다(cases/reviews와 달리 landing publish 조건에 없음). 즉
+// GitHub에서 data/landing-pages.json을 직접 수정해 이 두 필드를 비우거나 문자열이
+// 아닌 값으로 바꿔도 기존 검증을 그대로 통과할 수 있습니다. 홈 링크의 앵커텍스트가
+// 이 두 필드로만 만들어지므로, 여기서만 쓰는 별도의 최소 검증을 둡니다.
+export function isValidHomeLinkText(value) {
+  return typeof value === 'string' && value.trim() !== '';
+}
+
+// publish:true 항목(publishedItems) 전체로부터 홈페이지에 넣을 "지역별 서비스 안내"
+// 링크 블록 HTML을 만듭니다. 항목이 하나도 없으면 빈 문자열을 반환합니다(호출부에서
+// LANDING_HOME_LINKS_START/END 사이를 이 값으로 그대로 교체하면, 제목을 포함한 섹션
+// 전체가 사라집니다).
+//
+// 노출 규칙(PR-L4 임시 규칙): slug 오름차순 정렬 후 앞 HOME_LINKS_MAX개만 노출합니다.
+// region/service 등으로 정렬하지 않는 이유는, 새 지역이 추가될 때 그 정렬 기준에 따라
+// 이미 노출 중이던 기존 링크가 밀려 사라질 수 있기 때문입니다. slug 오름차순은
+// 새 항목이 생겨도 "그 slug가 알파벳상 앞일 때"만 영향을 주므로 더 안정적입니다.
+// 이 규칙은 PR-L5에서 별도의 priority/featured 필드가 도입되기 전까지의 임시 규칙이며,
+// 그 필드가 생기면 이 정렬 로직은 그 필드 기준으로 대체될 예정입니다.
+//
+// region/service가 없거나 문자열이 아닌 publish:true 항목이 하나라도 있으면(노출 대상
+// 8개 안에 들지 않더라도) 잘못된 값으로 <a>를 조용히 만들지 않고 예외를 던져 빌드
+// 전체를 실패시킵니다(기존 L3의 fail-closed/부분 생성 금지 원칙과 동일).
+export function renderHomeLandingLinksBlock(publishedItems) {
+  const items = Array.isArray(publishedItems) ? publishedItems : [];
+
+  items.forEach(function (item) {
+    if (!isValidHomeLinkText(item && item.region)) {
+      throw new Error('landing "' + (item && item.slug) + '": region 값이 없거나 문자열이 아니어서 홈페이지 지역별 안내 링크를 생성할 수 없습니다.');
+    }
+    if (!isValidHomeLinkText(item && item.service)) {
+      throw new Error('landing "' + (item && item.slug) + '": service 값이 없거나 문자열이 아니어서 홈페이지 지역별 안내 링크를 생성할 수 없습니다.');
+    }
+  });
+
+  if (items.length === 0) {
+    return '';
+  }
+
+  const sorted = items.slice().sort(function (a, b) {
+    if (a.slug < b.slug) return -1;
+    if (a.slug > b.slug) return 1;
+    return 0;
+  });
+  const shown = sorted.slice(0, HOME_LINKS_MAX);
+
+  const linkTags = shown.map(function (item) {
+    const label = item.region.trim() + ' ' + item.service.trim() + ' 안내';
+    return '    <a href="/' + escapeAttr(item.slug) + '/">' + escapeHtml(label) + '</a>';
+  }).join('\n');
+
+  return [
+    '<div class="home-landing-links">',
+    '  <h3>지역별 서비스 안내</h3>',
+    '  <div class="home-landing-links-list">',
+    linkTags,
+    '  </div>',
+    '</div>'
+  ].join('\n');
+}
