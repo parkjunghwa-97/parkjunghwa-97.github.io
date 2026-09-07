@@ -52,6 +52,19 @@ export function transformNavForStaticPage(navHtml) {
   return result;
 }
 
+// index.html의 footer는 상대경로 href="privacy.html"을 쓰는데, 이는 index.html과
+// 같은 위치(루트)에서만 유효합니다. 랜딩페이지는 /<slug>/index.html(한 단계 깊은 경로)에
+// 있으므로 그대로 두면 /<slug>/privacy.html로 깨집니다. 추출된 footer 문자열만 바꾸고
+// index.html 원본은 건드리지 않습니다.
+export function transformFooterForStaticPage(footerHtml) {
+  return footerHtml.replace(/href="privacy\.html"/g, 'href="/privacy.html"');
+}
+
+// settings.json의 contact.telLink만 유효한 "tel:" 링크로 인정합니다(예: "tel:010-4122-9207").
+export function isValidTelLink(value) {
+  return typeof value === 'string' && /^tel:\+?[0-9-]+$/.test(value.trim());
+}
+
 function resolveImagePath(relativePath) {
   const cleaned = String(relativePath || '').trim();
   if (!cleaned) {
@@ -88,17 +101,18 @@ function buildBeforeAfterBlock(item, domain) {
   return '<div class="landing-before-after">' + before + after + '</div>';
 }
 
-function buildSupportInfoBlock(item) {
+// telLink는 호출 전에 반드시 isValidTelLink()로 검증된 값이어야 합니다(renderLandingPage 참고).
+// 확정 설계대로 새 상담 목적지를 만들지 않고 기존 전화 상담 경로를 그대로 재사용합니다.
+function buildSupportInfoBlock(item, telLink) {
   if (item.supportInfoEnabled !== true) {
     return '';
   }
-  const ctaHref = '#contact-cta';
   return [
     '<section class="landing-section landing-support-info">',
     '<h3>' + escapeHtml(item.supportInfoTitle) + '</h3>',
     paragraphsFromPlainText(item.supportInfoBody),
     '<p class="landing-support-disclaimer">' + escapeHtml(item.supportInfoDisclaimer) + '</p>',
-    '<a class="hero-btn" href="' + ctaHref + '">' + escapeHtml(item.supportInfoCtaText) + '</a>',
+    '<a class="hero-btn" href="' + escapeAttr(telLink) + '">' + escapeHtml(item.supportInfoCtaText) + '</a>',
     '</section>'
   ].filter(Boolean).join('\n');
 }
@@ -213,7 +227,19 @@ export function renderLandingPage(item, ctx) {
     jsonLdBlocks.push(faqSchema);
   }
 
+  // 확정 설계: 상담 CTA(지원제도 CTA + 최종 CTA)는 새 목적지를 만들지 않고 기존
+  // 전화 상담 경로(settings.contact.telLink)를 그대로 재사용합니다. 이 값이 없거나
+  // 형식이 잘못됐는데 CTA를 렌더링해야 하는 상황이면, 깨진/빈 href를 만드는 대신
+  // 빌드 자체를 실패시킵니다(이 예외는 build-landing-pages.mjs의 main()이 그대로
+  // 잡아 빌드 실패로 처리합니다).
+  const telLink = ctx.settings && ctx.settings.contact && ctx.settings.contact.telLink;
+  const needsTelLink = !!item.ctaText || item.supportInfoEnabled === true;
+  if (needsTelLink && !isValidTelLink(telLink)) {
+    throw new Error('landing "' + item.slug + '": settings.json의 contact.telLink 값이 없거나 올바른 tel: 형식이 아니어서 상담 CTA를 생성할 수 없습니다.');
+  }
+
   const nav = transformNavForStaticPage(ctx.navHtml);
+  const footer = transformFooterForStaticPage(ctx.footerHtml);
 
   const body = [
     '<header>' + nav + '</header>',
@@ -227,13 +253,13 @@ export function renderLandingPage(item, ctx) {
     buildBeforeAfterBlock(item, domain),
     item.priceBasis ? '<section class="landing-section"><h2>비용 결정 기준</h2>' + paragraphsFromPlainText(item.priceBasis) + '</section>' : '',
     item.process ? '<section class="landing-section"><h2>작업 과정</h2>' + paragraphsFromPlainText(item.process) + '</section>' : '',
-    buildSupportInfoBlock(item),
+    buildSupportInfoBlock(item, telLink),
     buildFaqBlock(faqEntries),
     buildTrustBadgesBlock(item.trustBadges),
     buildRelatedLinksBlock(item, ctx.services, ctx.cases),
-    item.ctaText ? '<section class="landing-section" style="text-align:center"><a id="contact-cta" class="hero-btn" href="/index.html#contact">' + escapeHtml(item.ctaText) + '</a></section>' : '',
+    item.ctaText ? '<section class="landing-section landing-final-cta"><a class="hero-btn" href="' + escapeAttr(telLink) + '">' + escapeHtml(item.ctaText) + '</a></section>' : '',
     '</main>',
-    ctx.footerHtml,
+    footer,
     ctx.contactBarHtml
   ].filter(Boolean).join('\n');
 

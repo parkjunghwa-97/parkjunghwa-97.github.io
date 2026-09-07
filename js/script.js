@@ -116,7 +116,24 @@
     }
 
     document.addEventListener('DOMContentLoaded', function(){
+      // PR-L3: SEO 랜딩페이지의 nav/내부링크가 /index.html#service 같은 해시로
+      // 연결되므로, 최초 로드 시 유효한 해시(.page id)가 있으면 인트로 지연 없이
+      // 즉시 해당 화면을 활성화합니다. 해시가 없거나 유효한 .page id가 아니면
+      // 아래 기존 3200ms 인트로 후 홈 노출 동작을 그대로 유지합니다.
+      const initialHashId = (window.location.hash || '').slice(1);
+      const initialHashTarget = initialHashId ? document.getElementById(initialHashId) : null;
+      const hasValidInitialHash = !!(initialHashTarget && initialHashTarget.classList.contains('page'));
+      if(hasValidInitialHash){
+        showPage(initialHashId, true);
+      }
+
       setTimeout(function(){
+        // 위에서 해시로 이미 다른 화면을 활성화했다면, 3200ms 뒤에 홈으로
+        // 덮어쓰지 않습니다(랜딩페이지에서 넘어온 방문자가 다시 홈으로 튕기는
+        // 문제 방지).
+        if(document.querySelector('.page.active')){
+          return;
+        }
         const home = document.getElementById('home');
         if(home){
           home.classList.add('active');
