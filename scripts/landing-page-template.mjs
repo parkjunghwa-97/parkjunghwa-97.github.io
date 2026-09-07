@@ -310,11 +310,14 @@ export function buildSitemapEntry(item, domain) {
 // 무관하게 published 전체를 사용) 홈 링크 블록에는 나타나지 않습니다.
 export const HOME_LINKS_MAX = 8;
 
-// region/service는 Worker(validateLandingPayload)/CMS 어느 쪽에서도 필수값으로
-// 검증되지 않는 필드입니다(cases/reviews와 달리 landing publish 조건에 없음). 즉
-// GitHub에서 data/landing-pages.json을 직접 수정해 이 두 필드를 비우거나 문자열이
-// 아닌 값으로 바꿔도 기존 검증을 그대로 통과할 수 있습니다. 홈 링크의 앵커텍스트가
-// 이 두 필드로만 만들어지므로, 여기서만 쓰는 별도의 최소 검증을 둡니다.
+// CMS(cms/js/cms.js의 typeConfig.landing.required)는 slug/region/service를
+// 필수값으로 검증하지만, Worker의 landing 전용 검증(validateLandingPayload/
+// validateLandingPublishRequirements)에서는 region/service가 필수조건으로 별도
+// 강제되지 않습니다(cases/reviews와 달리 landing publish 조건에 없음). 즉 CMS를
+// 거치지 않고 GitHub에서 data/landing-pages.json을 직접 수정하거나 CMS 검증을
+// 우회한 요청으로 이 두 필드를 비우거나 문자열이 아닌 값으로 바꿔도 Worker 검증은
+// 통과할 수 있습니다. 홈 링크의 앵커텍스트가 이 두 필드로만 만들어지므로, 그 경로까지
+// 방어하기 위해 빌드 단계에서도 별도의 최소 검증을 둡니다.
 export function isValidHomeLinkText(value) {
   return typeof value === 'string' && value.trim() !== '';
 }
