@@ -1,0 +1,37 @@
+/* PR-L3: SEO 랜딩페이지(<slug>/index.html) 전용 최소 스타일.
+   기존 css/style.css는 수정하지 않으며, 이 파일의 모든 클래스는 ".landing-" 접두사만
+   사용해 기존 홈페이지 화면(SPA)의 스타일을 절대 덮어쓰지 않습니다. */
+
+.landing-section{max-width:880px;margin:0 auto;padding:20px}
+.landing-section h2{font-size:20px;color:#0f172a;margin:0 0 14px}
+
+.landing-hero{padding-top:16px;text-align:center}
+.landing-hero h1{font-size:28px;line-height:1.4;color:#0f172a;margin:0 0 16px}
+
+.landing-hero-image{margin:20px auto 0;max-width:640px}
+.landing-hero-image img{width:100%;border-radius:20px;display:block}
+
+.landing-breadcrumb{max-width:880px;margin:96px auto 0;padding:0 20px;font-size:13px;color:#64748b}
+.landing-breadcrumb a{color:#64748b;text-decoration:underline}
+
+.landing-before-after{display:flex;flex-wrap:wrap;gap:16px;max-width:880px;margin:0 auto;padding:0 20px 20px}
+.landing-before-after figure{flex:1 1 240px;margin:0}
+.landing-before-after img{width:100%;border-radius:16px;display:block}
+.landing-before-after figcaption{margin-top:8px;font-size:13px;color:#64748b;text-align:center}
+
+.landing-trust-badges{display:flex;flex-wrap:wrap;gap:10px;max-width:880px;margin:0 auto;padding:0 20px 20px;list-style:none}
+.landing-trust-badges li{background:#f1f5f9;color:#334155;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:700}
+
+.landing-support-info{background:#fff7ed;border:1px solid #fed7aa;border-radius:16px}
+.landing-support-info h3{margin:0 0 8px;font-size:17px;color:#0f172a}
+.landing-support-info p{margin:6px 0;font-size:14px;color:#475569;line-height:1.7}
+.landing-support-disclaimer{font-size:12px;color:#94a3b8;margin-top:10px}
+
+.landing-related a{display:inline-block;margin:4px 8px 4px 0;color:#0f172a;font-weight:700;text-decoration:underline}
+
+.landing-final-cta{text-align:center}
+
+@media(max-width:760px){
+  .landing-hero h1{font-size:22px}
+  .landing-before-after{flex-direction:column}
+}
