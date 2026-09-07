@@ -144,7 +144,7 @@
         'heroImage', 'heroImageAlt', 'beforeImage', 'beforeImageAlt', 'afterImage', 'afterImageAlt',
         'faq', 'relatedServiceIds', 'relatedCaseIds', 'trustBadges', 'ctaText',
         'supportInfoEnabled', 'supportInfoTitle', 'supportInfoBody', 'supportInfoDisclaimer', 'supportInfoCtaText',
-        'publish'
+        'priority', 'publish'
       ],
       required: ['slug', 'region', 'service']
     }
@@ -562,6 +562,19 @@
         const image = item && item.image;
         if(image !== undefined && image !== null && image !== ''){
           normalized.image = image;
+        }
+      }
+      // PR-L5: priority가 REMOTE_SAVE_FIELDS.landing에 있다는 이유만으로 위 공통
+      // 루프가 기본값 ''를 채워 넣으면, priority를 아예 쓰지 않는 기존 항목까지
+      // "priority": ""로 원격 전송되어 Worker의 정수 검증에서 거부될 수 있습니다.
+      // priority가 유효한 1 이상의 정수일 때만 원격 payload에 포함하고, 그렇지
+      // 않으면(미설정 null/undefined 포함) 키 자체를 생략합니다 - reviews.image와
+      // 동일한 패턴입니다.
+      if(type === 'landing'){
+        delete normalized.priority;
+        const priority = item && item.priority;
+        if(typeof priority === 'number' && Number.isSafeInteger(priority) && priority >= 1){
+          normalized.priority = priority;
         }
       }
       return normalized;
@@ -1303,6 +1316,8 @@
         normalized.supportInfoEnabled = cleanFeatured(source.supportInfoEnabled);
       }else if(type === 'landing' && field === 'faq'){
         normalized.faq = cleanLandingFaq(source.faq);
+      }else if(type === 'landing' && field === 'priority'){
+        normalized.priority = cleanLandingPriority(source.priority);
       }else if(type === 'landing' && (field === 'relatedServiceIds' || field === 'relatedCaseIds' || field === 'trustBadges')){
         normalized[field] = cleanStringArray(source[field]);
       }else{
@@ -1361,6 +1376,36 @@
   function cleanSort(value, index){
     const sort = Number(value || 0);
     return Number.isFinite(sort) && sort > 0 ? sort : (index || 0) + 1;
+  }
+
+  // PR-L5: landing 전용 홈 노출 우선순위. cleanSort()와 달리 값이 없거나 잘못됐다고
+  // 해서 임의의 숫자로 자동 보정하지 않습니다 - "미설정"이라는 상태 자체가 의미
+  // 있고(homeLandingLinksBlock이 slug 순서로 fallback), 잘못된 값은 저장을 막아야
+  // 하기 때문입니다(validateLandingForSave가 이 함수의 반환값을 그대로 검사).
+  // <input type="number">는 FormData를 거치며 항상 문자열로 들어오므로("1", "10" 등)
+  // 여기서 명시적으로 숫자로 변환합니다.
+  //   - undefined / null / '' (공백 포함) -> null ("미설정"으로 보존)
+  //   - "1", "10", 1, 10 같은 1 이상의 정수(문자열/숫자 모두) -> 그 정수(number 타입)
+  //   - 그 외("1.5", 1.5, "0", 0, "-1", "abc", boolean 등) -> 원본 값을 그대로 반환해
+  //     validateLandingForSave()/Worker가 명확히 거부하게 함(조용히 고치지 않음)
+  function cleanLandingPriority(value){
+    if(value === undefined || value === null){
+      return null;
+    }
+    if(typeof value === 'number'){
+      return value;
+    }
+    if(typeof value === 'string'){
+      const trimmed = value.trim();
+      if(trimmed === ''){
+        return null;
+      }
+      if(/^[0-9]+$/.test(trimmed)){
+        return Number(trimmed);
+      }
+      return value;
+    }
+    return value;
   }
 
   function openEditor(type, id){
@@ -1535,6 +1580,9 @@
         { name: 'supportInfoBody', label: '지원제도 본문', kind: 'textarea', required: false, group: 'support-info' },
         { name: 'supportInfoDisclaimer', label: '지원제도 면책 문구', kind: 'textarea', required: false, group: 'support-info' },
         { name: 'supportInfoCtaText', label: '지원제도 CTA 문구', kind: 'text', required: false, group: 'support-info' },
+        // PR-L5: 홈페이지 "지역별 서비스 안내" 링크 노출 순서(최대 8개). 낮을수록
+        // 먼저 노출되며, 비워두면 기존과 동일하게 slug 기준으로 자동 정렬됩니다.
+        { name: 'priority', label: '홈 노출 우선순위(선택)', kind: 'number', placeholder: '예: 1 (낮을수록 먼저 노출, 비워두면 기본 순서)', required: false },
         { name: 'publish', label: '공개(publish) - 체크 해제 시 비공개로 전환됩니다', kind: 'checkbox', default: false, required: false }
       ]
     };
@@ -2629,6 +2677,11 @@
         errors.push(label + ': ' + reason);
       });
 
+      // PR-L5: priority도 slug와 마찬가지로 publish 여부와 무관하게 항상 검증합니다.
+      validateLandingPriorityForSave(item.priority).forEach(function(reason){
+        errors.push(label + ': ' + reason);
+      });
+
       if(item.publish === true){
         validateLandingPublishRequirementsForSave(item).forEach(function(reason){
           errors.push(label + ': ' + reason);
@@ -2637,6 +2690,23 @@
     });
 
     return errors;
+  }
+
+  // PR-L5: cleanLandingPriority()가 이미 정리한 값(null=미설정, 유효한 정수, 또는
+  // 여전히 잘못된 원본 값)을 검사합니다. Worker의 validateLandingPriority()와 동일한
+  // 규칙입니다 - null/undefined는 허용, 1 이상의 safe integer만 허용, 그 외는 거부.
+  // Number.isInteger()가 아니라 Number.isSafeInteger()를 쓰는 이유: priority는 순서를
+  // 정확히 결정하는 값인데, JS는 정밀도를 잃은 매우 큰 수(2^53 이상)도 정수로 판정할
+  // 수 있어(예: 9007199254740993 === 9007199254740992) 그런 값을 그대로 허용하면
+  // "정확한 순서"라는 필드의 목적 자체가 깨질 수 있습니다.
+  function validateLandingPriorityForSave(value){
+    if(value === null || value === undefined){
+      return [];
+    }
+    if(typeof value === 'number' && Number.isSafeInteger(value) && value >= 1){
+      return [];
+    }
+    return ['priority_invalid'];
   }
 
   function validateLandingSlugForSave(slug, seenSlugs){
