@@ -721,3 +721,11 @@
 .hero-main{margin:0 auto 24px;letter-spacing:-.04em}
 .service-special-note{font-weight:900;color:#0f172a}
 @media(max-width:760px){.case-json-card{width:82vw!important;max-width:340px!important;height:auto!important;min-height:240px!important}.case-json-image img{height:130px!important}}
+/* PR-L4: 홈페이지(#service)의 "지역별 서비스 안내" 링크 블록 전용 스타일.
+   생성된 <slug>/index.html 전용인 css/landing.css의 .landing-* 네임스페이스와
+   섞이지 않도록 .home-landing-links* 접두사만 사용합니다. */
+.home-landing-links{max-width:880px;margin:22px auto 0;padding:0 20px;text-align:left}
+.home-landing-links h3{font-size:17px;color:#0f172a;margin:0 0 10px}
+.home-landing-links-list{display:flex;flex-wrap:wrap;gap:8px}
+.home-landing-links-list a{display:inline-block;background:#f1f5f9;color:#0f172a;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:700;text-decoration:none}
+.home-landing-links-list a:hover{background:#e2e8f0}
