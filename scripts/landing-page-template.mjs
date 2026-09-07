@@ -323,16 +323,22 @@ export function isValidHomeLinkText(value) {
 }
 
 // PR-L5: 홈 링크 노출 순서를 CMS에서 명시적으로 관리하기 위한 필드입니다. 값이
-// 없으면(undefined/null) "미설정"으로 취급하고, 1 이상의 정수일 때만 "설정"으로
-// 취급합니다. 그 외 값(0, 음수, 소수, 문자열, boolean 등)은 무효입니다 - 자동
-// 반올림이나 1로 보정하지 않고, hasLandingPriority()가 true인데 isValidLandingPriority()가
-// false인 경우 renderHomeLandingLinksBlock()이 예외를 던져 빌드를 실패시킵니다.
+// 없으면(undefined/null) "미설정"으로 취급하고, 1 이상의 safe integer일 때만
+// "설정"으로 취급합니다. 그 외 값(0, 음수, 소수, 문자열, boolean, 2^53 이상의
+// 정밀도를 잃은 큰 수 등)은 무효입니다 - 자동 반올림이나 1로 보정하지 않고,
+// hasLandingPriority()가 true인데 isValidLandingPriority()가 false인 경우
+// renderHomeLandingLinksBlock()이 예외를 던져 빌드를 실패시킵니다.
+// Number.isInteger() 대신 Number.isSafeInteger()를 쓰는 이유: priority는 순서를
+// 정확히 결정하는 값인데, JS는 2^53(Number.MAX_SAFE_INTEGER=9007199254740991)을
+// 넘는 수도 정수로 판정할 수 있고 그 이상에서는 서로 다른 두 값이 정밀도 손실로
+// 같은 값이 될 수 있어(예: 9007199254740992 === 9007199254740993), "정확한 순서"라는
+// 이 필드의 목적 자체가 깨질 수 있습니다.
 export function hasLandingPriority(value) {
   return value !== undefined && value !== null;
 }
 
 export function isValidLandingPriority(value) {
-  return typeof value === 'number' && Number.isInteger(value) && value >= 1;
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 1;
 }
 
 // publish:true 항목(publishedItems) 전체로부터 홈페이지에 넣을 "지역별 서비스 안내"

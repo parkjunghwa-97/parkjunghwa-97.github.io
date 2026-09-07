@@ -573,7 +573,7 @@
       if(type === 'landing'){
         delete normalized.priority;
         const priority = item && item.priority;
-        if(typeof priority === 'number' && Number.isInteger(priority) && priority >= 1){
+        if(typeof priority === 'number' && Number.isSafeInteger(priority) && priority >= 1){
           normalized.priority = priority;
         }
       }
@@ -2694,12 +2694,16 @@
 
   // PR-L5: cleanLandingPriority()가 이미 정리한 값(null=미설정, 유효한 정수, 또는
   // 여전히 잘못된 원본 값)을 검사합니다. Worker의 validateLandingPriority()와 동일한
-  // 규칙입니다 - null/undefined는 허용, 1 이상의 정수만 허용, 그 외는 거부.
+  // 규칙입니다 - null/undefined는 허용, 1 이상의 safe integer만 허용, 그 외는 거부.
+  // Number.isInteger()가 아니라 Number.isSafeInteger()를 쓰는 이유: priority는 순서를
+  // 정확히 결정하는 값인데, JS는 정밀도를 잃은 매우 큰 수(2^53 이상)도 정수로 판정할
+  // 수 있어(예: 9007199254740993 === 9007199254740992) 그런 값을 그대로 허용하면
+  // "정확한 순서"라는 필드의 목적 자체가 깨질 수 있습니다.
   function validateLandingPriorityForSave(value){
     if(value === null || value === undefined){
       return [];
     }
-    if(typeof value === 'number' && Number.isInteger(value) && value >= 1){
+    if(typeof value === 'number' && Number.isSafeInteger(value) && value >= 1){
       return [];
     }
     return ['priority_invalid'];
