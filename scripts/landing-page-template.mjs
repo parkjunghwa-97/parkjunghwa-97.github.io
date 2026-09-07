@@ -322,21 +322,35 @@ export function isValidHomeLinkText(value) {
   return typeof value === 'string' && value.trim() !== '';
 }
 
+// PR-L5: 홈 링크 노출 순서를 CMS에서 명시적으로 관리하기 위한 필드입니다. 값이
+// 없으면(undefined/null) "미설정"으로 취급하고, 1 이상의 정수일 때만 "설정"으로
+// 취급합니다. 그 외 값(0, 음수, 소수, 문자열, boolean 등)은 무효입니다 - 자동
+// 반올림이나 1로 보정하지 않고, hasLandingPriority()가 true인데 isValidLandingPriority()가
+// false인 경우 renderHomeLandingLinksBlock()이 예외를 던져 빌드를 실패시킵니다.
+export function hasLandingPriority(value) {
+  return value !== undefined && value !== null;
+}
+
+export function isValidLandingPriority(value) {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 1;
+}
+
 // publish:true 항목(publishedItems) 전체로부터 홈페이지에 넣을 "지역별 서비스 안내"
 // 링크 블록 HTML을 만듭니다. 항목이 하나도 없으면 빈 문자열을 반환합니다(호출부에서
 // LANDING_HOME_LINKS_START/END 사이를 이 값으로 그대로 교체하면, 제목을 포함한 섹션
 // 전체가 사라집니다).
 //
-// 노출 규칙(PR-L4 임시 규칙): slug 오름차순 정렬 후 앞 HOME_LINKS_MAX개만 노출합니다.
-// region/service 등으로 정렬하지 않는 이유는, 새 지역이 추가될 때 그 정렬 기준에 따라
-// 이미 노출 중이던 기존 링크가 밀려 사라질 수 있기 때문입니다. slug 오름차순은
-// 새 항목이 생겨도 "그 slug가 알파벳상 앞일 때"만 영향을 주므로 더 안정적입니다.
-// 이 규칙은 PR-L5에서 별도의 priority/featured 필드가 도입되기 전까지의 임시 규칙이며,
-// 그 필드가 생기면 이 정렬 로직은 그 필드 기준으로 대체될 예정입니다.
+// 노출 규칙(PR-L5): priority가 설정된 항목을 항상 먼저, 그 안에서는 priority
+// 오름차순(낮을수록 먼저 노출)으로 정렬합니다. priority가 서로 같거나, 둘 다
+// 미설정인 항목끼리는 slug 오름차순으로 tie-break합니다(PR-L4의 slug 정렬 규칙은
+// 삭제된 것이 아니라 "우선순위가 없거나 같을 때의 최종 기준"으로 남습니다). 이
+// 규칙 덕분에 어떤 항목도 priority를 쓰지 않는 현재 상태에서는 PR-L4와 정확히
+// 동일한 결과가 나옵니다(하위호환). 상위 HOME_LINKS_MAX개만 노출합니다.
 //
-// region/service가 없거나 문자열이 아닌 publish:true 항목이 하나라도 있으면(노출 대상
-// 8개 안에 들지 않더라도) 잘못된 값으로 <a>를 조용히 만들지 않고 예외를 던져 빌드
-// 전체를 실패시킵니다(기존 L3의 fail-closed/부분 생성 금지 원칙과 동일).
+// region/service가 없거나 문자열이 아닌, 또는 priority가 설정됐는데 1 이상의
+// 정수가 아닌 publish:true 항목이 하나라도 있으면(노출 대상 8개 안에 들지 않더라도)
+// 잘못된 값으로 <a>를 조용히 만들거나 잘못된 순서로 조용히 정렬하지 않고 예외를
+// 던져 빌드 전체를 실패시킵니다(기존 L3/L4의 fail-closed/부분 생성 금지 원칙과 동일).
 export function renderHomeLandingLinksBlock(publishedItems) {
   const items = Array.isArray(publishedItems) ? publishedItems : [];
 
@@ -347,6 +361,9 @@ export function renderHomeLandingLinksBlock(publishedItems) {
     if (!isValidHomeLinkText(item && item.service)) {
       throw new Error('landing "' + (item && item.slug) + '": service 값이 없거나 문자열이 아니어서 홈페이지 지역별 안내 링크를 생성할 수 없습니다.');
     }
+    if (hasLandingPriority(item && item.priority) && !isValidLandingPriority(item.priority)) {
+      throw new Error('landing "' + (item && item.slug) + '": priority 값이 1 이상의 정수가 아니어서 홈페이지 지역별 안내 노출 순서를 계산할 수 없습니다.');
+    }
   });
 
   if (items.length === 0) {
@@ -354,6 +371,14 @@ export function renderHomeLandingLinksBlock(publishedItems) {
   }
 
   const sorted = items.slice().sort(function (a, b) {
+    const aHasPriority = hasLandingPriority(a.priority);
+    const bHasPriority = hasLandingPriority(b.priority);
+    if (aHasPriority && bHasPriority && a.priority !== b.priority) {
+      return a.priority - b.priority;
+    }
+    if (aHasPriority !== bHasPriority) {
+      return aHasPriority ? -1 : 1;
+    }
     if (a.slug < b.slug) return -1;
     if (a.slug > b.slug) return 1;
     return 0;

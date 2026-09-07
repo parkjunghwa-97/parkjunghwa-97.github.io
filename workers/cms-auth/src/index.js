@@ -682,6 +682,12 @@ function validateLandingPayload(payload) {
       errors.push(label + ': ' + reason);
     });
 
+    // PR-L5: priority도 slug와 마찬가지로 publish 여부와 무관하게 항상 검증합니다
+    // (초안 단계에서 미리 순서를 정해두는 것도 자연스러운 사용이므로).
+    validateLandingPriority(item.priority).forEach(function (reason) {
+      errors.push(label + ': ' + reason);
+    });
+
     if (typeof item.publish !== 'boolean') {
       errors.push(label + ': publish must be boolean');
     }
@@ -694,6 +700,22 @@ function validateLandingPayload(payload) {
   });
 
   return errors;
+}
+
+// PR-L5: 홈페이지 "지역별 서비스 안내" 링크의 노출 순서 필드. 값이 없으면
+// (undefined/null) 미설정으로 허용하고, 1 이상의 정수일 때만 유효합니다. 그 외
+// (빈 문자열 ""을 포함해 문자열/소수/0/음수/boolean 등)는 모두 거부합니다.
+// CMS의 normalizePayloadForRemote()는 priority가 유효한 값일 때만 이 키를 원격
+// payload에 포함시키고 그렇지 않으면 키 자체를 생략하도록 되어 있지만, 이 Worker는
+// CMS를 거치지 않은 직접 API 호출까지 방어하기 위해 별도로 검증합니다.
+function validateLandingPriority(value) {
+  if (value === undefined || value === null) {
+    return [];
+  }
+  if (typeof value === 'number' && Number.isInteger(value) && value >= 1) {
+    return [];
+  }
+  return ['priority_invalid'];
 }
 
 // slug 하나에 대한 구조 검증. 항상(publish 여부와 무관하게) 적용됩니다.
