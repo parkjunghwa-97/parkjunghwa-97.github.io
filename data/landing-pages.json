@@ -45,7 +45,7 @@
     "supportInfoBody": "",
     "supportInfoDisclaimer": "",
     "supportInfoCtaText": "",
-    "publish": false,
+    "publish": true,
     "priority": 1
   }
 ]
