@@ -157,18 +157,23 @@ function findCaseById(cases, id) {
   return (Array.isArray(cases) ? cases : []).find(function (c) { return c && c.id === id; });
 }
 
+// PR-L7: 관련 서비스/사례 링크가 홈의 특정 항목으로 실제 이동하도록 쿼리스트링(?service=id,
+// ?case=id)을 기존 페이지 해시(#service, #portfolio) 뒤에 덧붙입니다. 해시 라우팅 자체는
+// index.html/js/script.js의 showPage()가 그대로 처리하므로 여기서는 바꾸지 않고, 개별 항목
+// 스크롤/오픈은 js/script.js 쪽에서 쿼리스트링을 읽어 처리합니다(landing-page-template.mjs
+// 변경만으로는 동작하지 않고, js/script.js 쪽 보강과 함께여야 완성됩니다).
 function buildRelatedLinksBlock(item, services, cases) {
   const serviceLinks = (Array.isArray(item.relatedServiceIds) ? item.relatedServiceIds : [])
     .map(function (id) { return findServiceById(services, id); })
-    .filter(Boolean)
+    .filter(function (service) { return service && service.visible !== false; })
     .map(function (service) {
-      return '<a href="/index.html#service">' + escapeHtml(service.service) + '</a>';
+      return '<a href="/index.html?service=' + encodeURIComponent(service.id) + '#service">' + escapeHtml(service.service) + '</a>';
     });
   const caseLinks = (Array.isArray(item.relatedCaseIds) ? item.relatedCaseIds : [])
     .map(function (id) { return findCaseById(cases, id); })
     .filter(Boolean)
     .map(function (c) {
-      return '<a href="/index.html#portfolio">' + escapeHtml((c.title || '') + ' · ' + (c.region || '')) + '</a>';
+      return '<a href="/index.html?case=' + encodeURIComponent(c.id) + '#portfolio">' + escapeHtml((c.title || '') + ' · ' + (c.region || '')) + '</a>';
     });
   const links = serviceLinks.concat(caseLinks);
   if (!links.length) {
