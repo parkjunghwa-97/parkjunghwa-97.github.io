@@ -253,6 +253,28 @@
       if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
     })();
 
+    // PR-L7: 랜딩페이지의 관련 서비스/사례 링크(/index.html?service=id#service,
+    // /index.html?case=id#portfolio)가 홈의 특정 항목까지 실제로 도달하도록, 서비스/사례
+    // 목록 렌더링이 끝난 뒤 쿼리스트링을 읽어 해당 요소를 펼치고 스크롤합니다. 대상을 찾지
+    // 못하면(파라미터 없음, 데이터가 그새 바뀌어 항목이 사라짐 등) 아무 것도 하지 않고
+    // 기존 동작(해시로 이동한 섹션에 그대로 머무름)으로 자연스럽게 축소됩니다.
+    // expectedHash가 현재 location.hash와 다르면(예: ?service=id#portfolio 같은 stale/조작된
+    // URL) 다른 섹션에 숨어있는 요소를 열거나 그쪽으로 스크롤하지 않도록 아무 것도 하지 않습니다.
+    function scrollToLandingRelatedTarget(paramName,attrName,expectedHash){
+      if(!window.URLSearchParams){return;}
+      if(window.location.hash!==expectedHash){return;}
+      var id=new URLSearchParams(window.location.search).get(paramName);
+      if(!id){return;}
+      var candidates=document.querySelectorAll('['+attrName+']');
+      var target=null;
+      for(var i=0;i<candidates.length;i++){
+        if(candidates[i].getAttribute(attrName)===id){target=candidates[i];break;}
+      }
+      if(!target){return;}
+      if(target.tagName==='DETAILS'){target.open=true;}
+      target.scrollIntoView({behavior:'auto',block:'start'});
+    }
+
     /* CASES_JSON_INTEGRATION */
     (function(){
       var CASE_LIMIT=12;
@@ -369,6 +391,7 @@
             var cases=Array.isArray(data) ? data.map(normalizeCase).filter(isUsableCase) : [];
             if(cases.length){
               renderCases(target,cases);
+              scrollToLandingRelatedTarget('case','data-case-id','#portfolio');
             }
           })
           .catch(function(){
@@ -913,6 +936,7 @@
             var services=Array.isArray(data) ? data.map(normalizeService).filter(isUsableService) : [];
             if(services.length){
               renderServices(target,services);
+              scrollToLandingRelatedTarget('service','data-service-id','#service');
             }
           })
           .catch(function(){
