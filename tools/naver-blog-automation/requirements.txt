@@ -1,0 +1,32 @@
+# Web automation (로컬 Chrome 전용 — 클라우드에서 실행하지 마세요)
+selenium>=4.15.0
+undetected-chromedriver>=3.5.0
+
+# Clipboard paste (이미지 붙여넣기 삽입에 사용)
+pyperclip>=1.8.2
+pyautogui>=0.9.54
+
+# LLM APIs (글 생성 — 하나 이상 필요)
+anthropic>=0.45.0
+openai>=1.50.0
+pydantic>=2.5.0
+
+# HTTP requests (네이버 API)
+requests>=2.31.0
+
+# 이미지 처리 (EXIF 제거)
+Pillow>=10.0.0
+
+# Local web app
+fastapi>=0.110.0
+uvicorn>=0.27.0
+
+# 환경변수
+python-dotenv>=1.0.0
+
+# Python 3.12+ 호환 (undetected-chromedriver가 distutils 사용)
+setuptools>=68.0.0
+
+# 테스트
+pytest>=8.0.0
+httpx>=0.27.0

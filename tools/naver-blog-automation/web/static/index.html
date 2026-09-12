@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>기프트클린 블로그 작성 도우미</title>
+<style>
+  :root { --navy:#021E42; --accent:#0b5fff; --warn:#c0392b; --bg:#f6f7f9; --card:#fff; --line:#e3e6eb; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; background:var(--bg); color:#1b1f24; }
+  header { background:var(--navy); color:#fff; padding:18px 24px; }
+  header h1 { margin:0; font-size:20px; }
+  header .sub { font-size:13px; opacity:.85; margin-top:4px; }
+  .wrap { max-width:900px; margin:0 auto; padding:20px; }
+  .banner { padding:12px 16px; border-radius:8px; margin-bottom:16px; font-size:14px; font-weight:600; }
+  .banner.dry { background:#fff4e5; color:#8a5300; border:1px solid #ffd8a8; }
+  .banner.live { background:#ffe9e9; color:#8a1f1f; border:1px solid #ffb3b3; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px; margin-bottom:16px; }
+  .card h2 { margin:0 0 12px; font-size:16px; }
+  label { display:block; font-size:13px; font-weight:600; margin:10px 0 4px; }
+  label .opt { font-weight:400; color:#888; }
+  input[type=text], input[type=number], input[type=url], input[type=tel], textarea, select {
+    width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:6px; font-size:14px; font-family:inherit;
+  }
+  textarea { min-height:60px; resize:vertical; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; }
+  .row > div { flex:1; min-width:180px; }
+  button { cursor:pointer; border:none; border-radius:7px; padding:10px 16px; font-size:14px; font-weight:600; }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-primary:disabled { background:#aac2f0; cursor:not-allowed; }
+  .btn-ghost { background:#eef1f5; color:#333; }
+  .pill { display:inline-block; padding:2px 10px; border-radius:999px; background:#eef1f5; font-size:12px; margin:2px; }
+  .pill.on { background:var(--accent); color:#fff; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th, td { border-bottom:1px solid var(--line); padding:6px 8px; text-align:left; }
+  th { background:#f0f2f5; }
+  .warn-box { background:#fff3f3; border:1px solid #ffc9c9; color:#8a1f1f; padding:10px 12px; border-radius:8px; font-size:13px; margin-top:10px; }
+  .ok-box { background:#eefaf0; border:1px solid #b7e4c7; color:#1e6b3c; padding:10px 12px; border-radius:8px; font-size:13px; margin-top:10px; }
+  .muted { color:#888; font-size:12px; }
+  .photo-group { border:1px dashed var(--line); border-radius:8px; padding:10px; margin-top:8px; }
+  .photo-group h3 { margin:0 0 6px; font-size:13px; }
+  .thumbs { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+  .thumbs img { width:56px; height:56px; object-fit:cover; border-radius:6px; border:1px solid var(--line); }
+  .step { display:none; }
+  .step.active { display:block; }
+  .progress-log { background:#0d1117; color:#c9d1d9; font-family:monospace; font-size:12px; padding:10px; border-radius:8px; max-height:220px; overflow:auto; }
+  .checklist { font-size:13px; background:#f0f4ff; border:1px solid #cdd8f5; padding:10px 12px; border-radius:8px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>기프트클린 · 네이버 블로그 작성 도우미</h1>
+  <div class="sub">깨끗한 공간, 새로운 시작을 선물합니다. — 임시저장까지만 자동화합니다. 발행은 사람이 직접 검토 후 누릅니다.</div>
+</header>
+
+<div class="wrap">
+  <div id="statusBanner"></div>
+
+  <!-- STEP 1: 입력 -->
+  <div class="step active" id="step1">
+    <div class="card">
+      <h2>1. 글 정보 입력</h2>
+      <div class="row">
+        <div>
+          <label>글 유형 *</label>
+          <select id="postType">
+            <option value="정보형">정보형 (사진 없이도 작성 가능)</option>
+            <option value="작업사례형">작업사례형 (작업 전/중/후 사진 필요)</option>
+          </select>
+        </div>
+        <div>
+          <label>서비스 종류 *</label>
+          <select id="serviceType">
+            <option>화재청소</option><option>쓰레기집 청소</option><option>특수청소</option>
+            <option>유품정리</option><option>고독사 특수청소</option><option>비둘기 퇴치</option>
+            <option>입주청소</option><option>이사청소</option><option>거주청소</option>
+            <option>사무실·상가청소</option><option>침수청소</option><option>폐기물 처리</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div><label>주요 지역 *</label><input type="text" id="region" placeholder="예: 서울 강동구"/></div>
+        <div><label>핵심 주제 *</label><input type="text" id="topic" placeholder="예: 쓰레기집 청소 비용과 절차"/></div>
+      </div>
+      <label>현장 또는 정보 메모 *</label>
+      <textarea id="memo" placeholder="실제로 알고 있는 현장 상황이나 전달하고 싶은 정보를 적어주세요. 여기 없는 내용은 글에서 지어내지 않습니다."></textarea>
+
+      <div class="row">
+        <div><label>핵심 키워드 *</label><input type="text" id="mainKeyword" placeholder="키워드 조사 후 자동 채움 (직접 입력도 가능)"/></div>
+        <div><label>보조 키워드 <span class="opt">(쉼표 구분)</span></label><input type="text" id="subKeywords"/></div>
+      </div>
+      <label>문의 유도 문구 *</label>
+      <input type="text" id="ctaPhrase" placeholder="예: 사진만 보내주셔도 1차 상담이 가능합니다"/>
+
+      <h2 style="margin-top:18px;">선택 입력</h2>
+      <div class="row">
+        <div><label>평수</label><input type="text" id="areaPyeong"/></div>
+        <div><label>작업 날짜</label><input type="text" id="workDate"/></div>
+      </div>
+      <div class="row">
+        <div><label>작업 전 상태</label><textarea id="beforeState"></textarea></div>
+        <div><label>작업 과정</label><textarea id="processDesc"></textarea></div>
+        <div><label>작업 결과</label><textarea id="resultDesc"></textarea></div>
+      </div>
+      <div class="row">
+        <div><label>사용 장비 또는 약품</label><input type="text" id="equipment"/></div>
+        <div><label>고객 요청사항</label><input type="text" id="customerRequest"/></div>
+        <div><label>주의사항</label><input type="text" id="precautions"/></div>
+      </div>
+      <div class="row">
+        <div><label>관련 홈페이지 URL</label><input type="url" id="homepageUrl"/></div>
+        <div><label>카카오채널 URL</label><input type="url" id="kakaoUrl"/></div>
+        <div><label>전화번호</label><input type="tel" id="phoneNumber"/></div>
+      </div>
+
+      <h2 style="margin-top:18px;">사진 선택 *</h2>
+      <div class="muted" id="photoHint">정보형은 사진 없이도 진행할 수 있습니다.</div>
+      <div id="photoGroupsCase" style="display:none;">
+        <div class="photo-group"><h3>작업 전</h3><input type="file" multiple accept="image/*" data-group="작업 전"/><div class="thumbs" data-thumbs="작업 전"></div></div>
+        <div class="photo-group"><h3>작업 중</h3><input type="file" multiple accept="image/*" data-group="작업 중"/><div class="thumbs" data-thumbs="작업 중"></div></div>
+        <div class="photo-group"><h3>작업 후</h3><input type="file" multiple accept="image/*" data-group="작업 후"/><div class="thumbs" data-thumbs="작업 후"></div></div>
+      </div>
+      <div id="photoGroupsInfo">
+        <div class="photo-group"><input type="file" multiple accept="image/*" data-group=""/><div class="thumbs" data-thumbs=""></div></div>
+      </div>
+      <label style="display:inline-flex; align-items:center; gap:6px; margin-top:8px;">
+        <input type="checkbox" id="stripGps" checked style="width:auto;"/> 사진의 GPS 위치정보(EXIF)를 자동으로 제거합니다
+      </label>
+
+      <div style="margin-top:16px;"><button class="btn-primary" onclick="goKeywordResearch()">다음: 키워드 조사 →</button></div>
+    </div>
+  </div>
+
+  <!-- STEP 2: 키워드 조사 -->
+  <div class="step" id="step2">
+    <div class="card">
+      <h2>2. 키워드 조사 (AI 추측이 아닌 실데이터 기반)</h2>
+      <div id="keywordApiNote" class="muted"></div>
+      <div id="keywordTableWrap" style="overflow-x:auto; margin-top:10px;"></div>
+      <div class="row" style="margin-top:12px;">
+        <div><label>메인 키워드</label><input type="text" id="selMain"/></div>
+        <div><label>보조 키워드(쉼표)</label><input type="text" id="selSub"/></div>
+      </div>
+      <div class="row">
+        <div><label>질문형 키워드(쉼표)</label><input type="text" id="selQuestion"/></div>
+        <div><label>지역 확장 키워드(쉼표)</label><input type="text" id="selRegion"/></div>
+      </div>
+      <div style="margin-top:14px;">
+        <button class="btn-ghost" onclick="showStep(1)">← 이전</button>
+        <button class="btn-primary" onclick="approveKeywordsAndGenerate()">키워드 승인하고 글 생성 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: 생성 결과 -->
+  <div class="step" id="step3">
+    <div class="card">
+      <h2>3. 생성된 글 확인</h2>
+      <div id="genWarnings"></div>
+      <div id="genPii"></div>
+      <label>제목</label><input type="text" id="genTitle"/>
+      <label>본문 (직접 수정 가능)</label><textarea id="genBody" style="min-height:320px;"></textarea>
+      <label>태그(쉼표)</label><input type="text" id="genTags"/>
+      <div id="genFaq" class="muted" style="margin-top:8px;"></div>
+      <div id="genCaptions" class="muted" style="margin-top:8px;"></div>
+      <div style="margin-top:14px;">
+        <button class="btn-ghost" onclick="showStep(2)">← 이전</button>
+        <button class="btn-primary" onclick="goFinalCheck()">다음: 임시저장 최종 확인 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: 최종 확인 + 임시저장 -->
+  <div class="step" id="step4">
+    <div class="card">
+      <h2>4. 임시저장 전 최종 확인</h2>
+      <table>
+        <tr><th>제목</th><td id="finalTitle"></td></tr>
+        <tr><th>글자 수</th><td id="finalChars"></td></tr>
+        <tr><th>사진 수</th><td id="finalPhotos"></td></tr>
+        <tr><th>태그</th><td id="finalTags"></td></tr>
+        <tr><th>개인정보 경고</th><td id="finalPii"></td></tr>
+      </table>
+      <div class="checklist" id="finalChecklist" style="margin-top:10px;"></div>
+      <label style="display:inline-flex; align-items:center; gap:6px; margin-top:12px;">
+        <input type="checkbox" id="finalConfirm" style="width:auto;"/> 위 내용을 확인했으며 저장을 진행합니다
+      </label>
+      <div style="margin-top:14px;">
+        <button class="btn-ghost" onclick="showStep(3)">← 이전</button>
+        <button class="btn-primary" id="btnPublish" disabled onclick="doPublish()">임시저장 실행</button>
+      </div>
+      <div id="progressWrap" style="margin-top:14px; display:none;">
+        <div class="progress-log" id="progressLog"></div>
+      </div>
+      <div id="publishResult"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "";
+let STATE = { photos: [], generated: null, research: null };
+
+async function fetchStatus() {
+  const r = await fetch(API + "/api/status");
+  const s = await r.json();
+  const el = document.getElementById("statusBanner");
+  if (s.dry_run) {
+    el.innerHTML = '<div class="banner dry">🧪 DRY_RUN 모드 — 실제 네이버에 아무 것도 입력/저장하지 않습니다. (.env의 DRY_RUN=false로 바꾸면 실제 저장됩니다)</div>';
+  } else {
+    el.innerHTML = '<div class="banner live">⚠ 실제 저장 모드 — 임시저장 시 실제로 네이버 블로그에 저장됩니다. 발행은 절대 자동으로 하지 않습니다.</div>';
+  }
+  if (!s.ok) {
+    el.innerHTML += `<div class="banner live">${esc(s.error||"환경설정 오류")}</div>`;
+  }
+}
+fetchStatus();
+
+function esc(s) { return (s||"").toString().replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+function showStep(n) {
+  document.querySelectorAll(".step").forEach(el => el.classList.remove("active"));
+  document.getElementById("step" + n).classList.add("active");
+}
+
+document.getElementById("postType").addEventListener("change", (e) => {
+  const isCase = e.target.value === "작업사례형";
+  document.getElementById("photoGroupsCase").style.display = isCase ? "block" : "none";
+  document.getElementById("photoGroupsInfo").style.display = isCase ? "none" : "block";
+  document.getElementById("photoHint").textContent = isCase
+    ? "작업사례형은 작업 전/중/후 사진을 그룹별로 올려주세요."
+    : "정보형은 사진 없이도 진행할 수 있습니다.";
+});
+
+document.querySelectorAll('input[type=file]').forEach(input => {
+  input.addEventListener("change", async (e) => {
+    const group = e.target.getAttribute("data-group") || null;
+    const thumbsEl = document.querySelector(`[data-thumbs="${group||''}"]`);
+    for (const file of e.target.files) {
+      const b64 = await fileToBase64(file);
+      const order = STATE.photos.filter(p => p.group === group).length;
+      STATE.photos.push({ filename: file.name, media_type: file.type || "image/jpeg", data: b64, group, order });
+      const img = document.createElement("img");
+      img.src = "data:" + (file.type||"image/jpeg") + ";base64," + b64;
+      thumbsEl.appendChild(img);
+    }
+  });
+});
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function buildPostPayload() {
+  const postType = document.getElementById("postType").value;
+  return {
+    post_type: postType,
+    service_type: document.getElementById("serviceType").value,
+    region: document.getElementById("region").value.trim(),
+    topic: document.getElementById("topic").value.trim(),
+    memo: document.getElementById("memo").value.trim(),
+    main_keyword: document.getElementById("mainKeyword").value.trim() || document.getElementById("topic").value.trim(),
+    sub_keywords: splitCsv(document.getElementById("subKeywords").value),
+    cta_phrase: document.getElementById("ctaPhrase").value.trim(),
+    photos: STATE.photos.map(p => ({...p, strip_gps: document.getElementById("stripGps").checked})),
+    area_pyeong: valOrNull("areaPyeong"), work_date: valOrNull("workDate"),
+    before_state: valOrNull("beforeState"), process_desc: valOrNull("processDesc"),
+    result_desc: valOrNull("resultDesc"), equipment: valOrNull("equipment"),
+    customer_request: valOrNull("customerRequest"), precautions: valOrNull("precautions"),
+    homepage_url: valOrNull("homepageUrl"), kakao_channel_url: valOrNull("kakaoUrl"),
+    phone_number: valOrNull("phoneNumber"),
+  };
+}
+function valOrNull(id) { const v = document.getElementById(id).value.trim(); return v || null; }
+function splitCsv(s) { return (s||"").split(",").map(x=>x.trim()).filter(Boolean); }
+
+async function goKeywordResearch() {
+  const post = buildPostPayload();
+  if (!post.region || !post.topic || !post.memo || !post.cta_phrase) {
+    alert("필수 입력 항목을 채워주세요 (지역/주제/메모/문의 유도 문구)."); return;
+  }
+  if (post.post_type === "작업사례형" && post.photos.length === 0) {
+    alert("작업사례형은 사진이 최소 1장 필요합니다."); return;
+  }
+  showStep(2);
+  document.getElementById("keywordTableWrap").innerHTML = "조사 중...";
+  try {
+    const r = await fetch(API + "/api/keywords/research", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ service_type: post.service_type, region: post.region, topic: post.topic, extra_seeds: post.sub_keywords }),
+    });
+    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+    STATE.research = await r.json();
+    renderKeywordTable(STATE.research);
+  } catch (e) {
+    document.getElementById("keywordTableWrap").innerHTML = `<div class="warn-box">키워드 조사 실패: ${esc(e.message)}</div>`;
+  }
+}
+
+function renderKeywordTable(res) {
+  const note = document.getElementById("keywordApiNote");
+  if (!res.api_available) {
+    note.innerHTML = "⚠ 검색광고 API 키가 없어 <b>검색량 확인 불가</b> — 수동 입력 모드입니다. 아래 후보 중 직접 골라주세요.";
+  } else {
+    note.innerHTML = "네이버 검색광고/데이터랩 실데이터 기반 조사 결과입니다. (데이터랩 추세는 절대 검색량이 아닌 상대값입니다)";
+  }
+  let rows = res.candidates.map(c => `
+    <tr>
+      <td>${esc(c.keyword)}</td>
+      <td>${c.pc_volume ?? "-"}</td><td>${c.mobile_volume ?? "-"}</td><td>${c.total_volume ?? "-"}</td>
+      <td>${c.competition_docs ?? "확인불가"}</td><td>${esc(c.trend_direction)}</td>
+      <td>${c.region_match ? "O" : "-"}</td><td>${c.service_fit ? "O" : "-"}</td>
+      <td>${esc(c.search_intent)}</td>
+      <td>${c.data_available ? (c.final_score||0) + "점 (" + esc(c.recommend_grade||"") + ")" : "확인 불가"}</td>
+    </tr>`).join("");
+  document.getElementById("keywordTableWrap").innerHTML = `
+    <table><thead><tr>
+      <th>키워드</th><th>PC</th><th>모바일</th><th>총검색량</th><th>경쟁(문서수)</th><th>추세</th>
+      <th>지역성</th><th>서비스적합</th><th>검색의도</th><th>점수/등급</th>
+    </tr></thead><tbody>${rows}</tbody></table>`;
+  document.getElementById("selMain").value = res.main_keyword || "";
+  document.getElementById("selSub").value = (res.sub_keywords||[]).join(", ");
+  document.getElementById("selQuestion").value = (res.question_keywords||[]).join(", ");
+  document.getElementById("selRegion").value = (res.region_keywords||[]).join(", ");
+}
+
+async function approveKeywordsAndGenerate() {
+  const post = buildPostPayload();
+  post.main_keyword = document.getElementById("selMain").value.trim() || post.main_keyword;
+  const keywords = {
+    main: post.main_keyword, sub: splitCsv(document.getElementById("selSub").value),
+    question: splitCsv(document.getElementById("selQuestion").value),
+    region: splitCsv(document.getElementById("selRegion").value), user_edited: true,
+  };
+  document.getElementById("keywordTableWrap").insertAdjacentHTML("beforeend", "<div class='muted'>글을 생성하고 있어요...</div>");
+  try {
+    const r = await fetch(API + "/api/generate", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ post, keywords }),
+    });
+    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+    STATE.generated = await r.json();
+    STATE.postPayload = post;
+    renderGenerated(STATE.generated);
+    showStep(3);
+  } catch (e) {
+    alert("글 생성 실패: " + e.message);
+  }
+}
+
+function renderGenerated(g) {
+  document.getElementById("genTitle").value = g.title || "";
+  document.getElementById("genBody").value = g.body || "";
+  document.getElementById("genTags").value = (g.tags||[]).join(", ");
+  const warnEl = document.getElementById("genWarnings");
+  warnEl.innerHTML = (g.warnings && g.warnings.length)
+    ? `<div class="warn-box">${g.warnings.map(esc).join("<br/>")}</div>` : "";
+  const piiEl = document.getElementById("genPii");
+  piiEl.innerHTML = (g.pii_warning && g.pii_warning.has_warning)
+    ? `<div class="warn-box">개인정보 경고: ${g.pii_warning.findings.map(esc).join("<br/>")}</div>` : "";
+  if (g.manual_photo_checklist) {
+    piiEl.innerHTML += `<div class="checklist">${esc(g.manual_photo_checklist)}</div>`;
+  }
+  document.getElementById("genFaq").innerHTML = (g.faq||[]).length
+    ? "<b>FAQ</b><br/>" + g.faq.map(f => `Q. ${esc(f.question)}<br/>A. ${esc(f.answer)}`).join("<br/><br/>") : "";
+  document.getElementById("genCaptions").innerHTML = (g.photo_captions||[]).length
+    ? "<b>사진 설명(그룹별)</b><br/>" + g.photo_captions.map(c => `[${esc(c.group)}] ${esc(c.caption)}`).join("<br/>") : "";
+}
+
+function goFinalCheck() {
+  const title = document.getElementById("genTitle").value.trim();
+  const body = document.getElementById("genBody").value.trim();
+  const tags = splitCsv(document.getElementById("genTags").value);
+  const charCount = body.replace(/\s+/g, "").length;
+  document.getElementById("finalTitle").textContent = title;
+  document.getElementById("finalChars").textContent = charCount + "자";
+  document.getElementById("finalPhotos").textContent = STATE.photos.length + "장";
+  document.getElementById("finalTags").textContent = tags.join(", ") || "(없음)";
+  const pii = STATE.generated.pii_warning || {has_warning:false, findings:[]};
+  document.getElementById("finalPii").innerHTML = pii.has_warning
+    ? `<span style="color:#c0392b; font-weight:700;">⚠ 있음 — ${pii.findings.map(esc).join("; ")}</span>` : "없음";
+  document.getElementById("finalChecklist").innerHTML =
+    (STATE.photos.length ? esc(STATE.generated.manual_photo_checklist || "") + "<br/>" : "") +
+    "임시저장만 수행되며, 발행/공개 버튼은 절대 클릭하지 않습니다.";
+  document.getElementById("finalConfirm").checked = false;
+  document.getElementById("btnPublish").disabled = true;
+  showStep(4);
+}
+
+document.getElementById("finalConfirm").addEventListener("change", (e) => {
+  document.getElementById("btnPublish").disabled = !e.target.checked;
+});
+
+async function doPublish() {
+  const title = document.getElementById("genTitle").value.trim();
+  const body = document.getElementById("genBody").value.trim();
+  const tags = splitCsv(document.getElementById("genTags").value);
+  const sections = body.split(/\n(?=##\s)/).map(chunk => {
+    const m = chunk.match(/^##\s*(.*)\n\n?([\s\S]*)$/);
+    return m ? { heading: m[1].trim(), body: m[2].trim() } : { heading: "", body: chunk.trim() };
+  }).filter(s => s.body);
+
+  const captionsByGroup = {};
+  (STATE.generated.photo_captions || []).forEach(c => {
+    (captionsByGroup[c.group] = captionsByGroup[c.group] || []).push(c.caption);
+  });
+  const order = { "작업 전": 0, "작업 중": 1, "작업 후": 2, "null": 9 };
+  const sortedPhotos = [...STATE.photos].sort((a,b) => (order[a.group]??9) - (order[b.group]??9) || a.order - b.order);
+  const groupCounts = {};
+  const photosPayload = sortedPhotos.map(p => {
+    const key = p.group || "";
+    const idx = (groupCounts[key] = (groupCounts[key]||0));
+    groupCounts[key]++;
+    const caps = captionsByGroup[key] || [];
+    const caption = caps.length ? caps[idx % caps.length] : "";
+    return { media_type: p.media_type, data: p.data, filename: p.filename, group: p.group, order: p.order, caption, strip_gps: document.getElementById("stripGps").checked };
+  });
+
+  document.getElementById("progressWrap").style.display = "block";
+  const log = document.getElementById("progressLog");
+  log.textContent = "임시저장 요청 중...\n";
+  document.getElementById("btnPublish").disabled = true;
+
+  try {
+    const r = await fetch(API + "/api/publish", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ title, sections, tags, photos: photosPayload, confirmed: true }),
+    });
+    if (!r.ok) throw new Error((await r.json()).detail || r.statusText);
+    const { job_id } = await r.json();
+    const es = new EventSource(API + "/api/progress/" + job_id);
+    es.onmessage = (ev) => {
+      const data = JSON.parse(ev.data);
+      if (data.type === "progress") {
+        log.textContent += `[${data.pct}%] ${data.step}\n`;
+        log.scrollTop = log.scrollHeight;
+      } else if (data.type === "done") {
+        log.textContent += `\n${data.msg}\n`;
+        const resEl = document.getElementById("publishResult");
+        resEl.innerHTML = `<div class="${data.ok ? 'ok-box' : 'warn-box'}">${esc(data.msg)}</div>`;
+        es.close();
+      }
+    };
+  } catch (e) {
+    log.textContent += "오류: " + e.message + "\n";
+    document.getElementById("btnPublish").disabled = false;
+  }
+}
+</script>
+</body>
+</html>
